@@ -1,0 +1,12 @@
+# Binary
+terraform-provider-supermetal
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Local session files
+.claude/
+CLAUDE.md
+PLAN.md

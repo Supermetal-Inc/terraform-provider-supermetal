@@ -1,0 +1,57 @@
+---
+page_title: "Supermetal Provider"
+description: "The Supermetal provider manages CDC connectors on Supermetal agents."
+---
+
+# Supermetal Provider
+
+The Supermetal provider manages [CDC connectors](https://docs.supermetal.io/docs/main/) on
+[Supermetal](https://supermetal.io) agents. Each connector replicates data from a source
+database to a destination target.
+
+## Supported sources
+
+[PostgreSQL](https://docs.supermetal.io/docs/main/sources/pg),
+[MySQL](https://docs.supermetal.io/docs/main/sources/mysql),
+[SQL Server](https://docs.supermetal.io/docs/main/sources/sqlserver),
+[Oracle](https://docs.supermetal.io/docs/main/sources/oracle),
+[MongoDB](https://docs.supermetal.io/docs/main/sources/mongo),
+[File (S3, GCS, Azure Blob)](https://docs.supermetal.io/docs/main/sources/file)
+
+## Supported targets
+
+[Snowflake](https://docs.supermetal.io/docs/main/targets/snowflake),
+[BigQuery](https://docs.supermetal.io/docs/main/targets/bigquery),
+[Databricks](https://docs.supermetal.io/docs/main/targets/databricks),
+[ClickHouse](https://docs.supermetal.io/docs/main/targets/clickhouse),
+[Apache Iceberg](https://docs.supermetal.io/docs/main/targets/iceberg),
+[Apache Kafka](https://docs.supermetal.io/docs/main/targets/kafka),
+[DuckDB](https://docs.supermetal.io/docs/main/targets/duckdb),
+[MotherDuck](https://docs.supermetal.io/docs/main/targets/motherduck),
+[PostgreSQL](https://docs.supermetal.io/docs/main/targets/postgres),
+[Apache Doris](https://docs.supermetal.io/docs/main/targets/doris),
+[Webhook](https://docs.supermetal.io/docs/main/targets/webhook)
+
+## Prerequisites
+
+A running Supermetal agent. See [Deployment](https://docs.supermetal.io/docs/main/concepts/deployment)
+for installation options (local binary, Kubernetes Helm chart, or Terraform module for AWS).
+
+## Example Usage
+
+{{ tffile "examples/provider/provider.tf" }}
+
+## Authentication
+
+The provider supports HTTP basic authentication. Credentials can be set
+in the provider block or via environment variables.
+
+| Attribute | Environment Variable |
+|-----------|---------------------|
+| `endpoint` | `SUPERMETAL_ENDPOINT` |
+| `username` | `SUPERMETAL_USERNAME` |
+| `password` | `SUPERMETAL_PASSWORD` |
+| `ca_cert` | `SUPERMETAL_CA_CERT` |
+| `skip_validation` | `SUPERMETAL_SKIP_VALIDATION` |
+
+{{ .SchemaMarkdown | trimspace }}
