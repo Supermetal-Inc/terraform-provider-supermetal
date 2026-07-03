@@ -1,0 +1,48 @@
+---
+page_title: "supermetal_connector Resource"
+description: "Manages a Supermetal CDC connector."
+---
+
+# supermetal_connector (Resource)
+
+Manages a [Supermetal CDC connector](https://docs.supermetal.io/docs/main/). A connector
+replicates data from exactly one source to exactly one target.
+
+For source and target setup guides, see the
+[Supermetal documentation](https://docs.supermetal.io/docs/main/).
+
+## Example Usage
+
+### PostgreSQL to DuckDB
+
+{{ tffile "examples/resources/supermetal_connector/pg_to_duckdb.tf" }}
+
+### PostgreSQL to Snowflake
+
+{{ tffile "examples/resources/supermetal_connector/pg_to_snowflake.tf" }}
+
+### Production setup
+
+{{ tffile "examples/resources/supermetal_connector/production.tf" }}
+
+### SSH tunnel
+
+{{ tffile "examples/resources/supermetal_connector/ssh_tunnel.tf" }}
+
+### Table selection
+
+{{ tffile "examples/resources/supermetal_connector/table_selection.tf" }}
+
+### Disabled connector
+
+{{ tffile "examples/resources/supermetal_connector/disabled.tf" }}
+
+### Shared connection
+
+{{ tffile "examples/resources/supermetal_connector/shared_connection.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/supermetal_connector/import.sh" }}
