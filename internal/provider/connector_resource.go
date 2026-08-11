@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
@@ -43,49 +44,54 @@ func (r *ConnectorResource) Metadata(_ context.Context, req resource.MetadataReq
 }
 
 func (r *ConnectorResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	attributes := map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			MarkdownDescription: "Unique identifier for this connector. Used in the API path and for import. " +
+				"Must contain only letters, numbers, hyphens, and underscores (max 30 characters).",
+			Required: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+			},
+			Validators: []validator.String{
+				stringvalidator.LengthAtMost(30),
+				stringvalidator.RegexMatches(
+					connectorIDPattern,
+					"must contain only letters, numbers, hyphens, and underscores",
+				),
+			},
+		},
+		"name": schema.StringAttribute{
+			MarkdownDescription: "Display name for the connector.",
+			Optional:            true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtMost(100),
+			},
+		},
+		"disabled": schema.BoolAttribute{
+			MarkdownDescription: "Whether this connector is disabled.",
+			Optional:            true,
+			Computed:            true,
+			Default:             booldefault.StaticBool(false),
+		},
+		"source": schema.SingleNestedAttribute{
+			MarkdownDescription: "Source configuration. Exactly one source type must be specified.",
+			Required:            true,
+			Attributes:          sourceAttributes(),
+		},
+		"sink": schema.SingleNestedAttribute{
+			MarkdownDescription: "Sink configuration. Exactly one sink type must be specified.",
+			Required:            true,
+			Attributes:          sinkAttributes(),
+		},
+	}
+	for name, attribute := range connectorEnvelopeAttributes() {
+		attributes[name] = attribute
+	}
+
 	resp.Schema = schema.Schema{
 		Version:             1,
 		MarkdownDescription: "Manages a Supermetal CDC connector.",
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				MarkdownDescription: "Unique identifier for this connector. Used in the API path and for import. " +
-					"Must contain only letters, numbers, hyphens, and underscores (max 30 characters).",
-				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Validators: []validator.String{
-					stringvalidator.LengthAtMost(30),
-					stringvalidator.RegexMatches(
-						connectorIDPattern,
-						"must contain only letters, numbers, hyphens, and underscores",
-					),
-				},
-			},
-			"name": schema.StringAttribute{
-				MarkdownDescription: "Display name for the connector.",
-				Optional:            true,
-				Validators: []validator.String{
-					stringvalidator.LengthAtMost(100),
-				},
-			},
-			"disabled": schema.BoolAttribute{
-				MarkdownDescription: "Whether this connector is disabled.",
-				Optional:            true,
-				Computed:            true,
-				Default:             booldefault.StaticBool(false),
-			},
-			"source": schema.SingleNestedAttribute{
-				MarkdownDescription: "Source configuration. Exactly one source type must be specified.",
-				Required:            true,
-				Attributes:          sourceAttributes(),
-			},
-			"sink": schema.SingleNestedAttribute{
-				MarkdownDescription: "Sink configuration. Exactly one sink type must be specified.",
-				Required:            true,
-				Attributes:          sinkAttributes(),
-			},
-		},
+		Attributes:          attributes,
 	}
 }
 
@@ -106,6 +112,10 @@ func (r *ConnectorResource) Configure(_ context.Context, req resource.ConfigureR
 }
 
 func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	if !req.Config.Raw.IsFullyKnown() {
+		return
+	}
+
 	var config ConnectorModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
@@ -274,6 +284,16 @@ func (r *ConnectorResource) Update(ctx context.Context, req resource.UpdateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var state ConnectorModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	stateConnector, stateDiags := state.toAPIConnector()
+	resp.Diagnostics.Append(stateDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	connector, diags := plan.toAPIConnector()
 	resp.Diagnostics.Append(diags...)
@@ -289,7 +309,18 @@ func (r *ConnectorResource) Update(ctx context.Context, req resource.UpdateReque
 		}
 	}
 
-	apiResp, err := r.client.CreateConnectorWithResponse(ctx, plan.ID.ValueString(), nil, connector)
+	body, err := connectorJSONWithSecretTombstones(connector, stateConnector)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to encode connector update", err.Error())
+		return
+	}
+	apiResp, err := r.client.CreateConnectorWithBodyWithResponse(
+		ctx,
+		plan.ID.ValueString(),
+		nil,
+		"application/json",
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to update connector", err.Error())
 		return
@@ -472,6 +503,27 @@ func (r *ConnectorResource) validateConnector(ctx context.Context, connector api
 	if reason := extractValidationFailure(sourceResp.JSON200); reason != "" {
 		diags.AddError("Source validation failed", reason)
 		return
+	}
+
+	if connector.Buffer != nil {
+		bufferParams := &api.ValidateBufferParams{ConnectorId: connectorID}
+		bufferBody := api.ValidateBufferJSONRequestBody{Buffer: *connector.Buffer}
+		bufferResp, err := r.client.ValidateBufferWithResponse(ctx, bufferParams, bufferBody)
+		if err != nil {
+			diags.AddError("Buffer validation failed", err.Error())
+			return
+		}
+		if bufferResp.StatusCode() != http.StatusOK {
+			diags.AddError(
+				"Buffer validation failed",
+				fmt.Sprintf("API returned status %d: %s", bufferResp.StatusCode(), string(bufferResp.Body)),
+			)
+			return
+		}
+		if reason := extractValidationFailure(bufferResp.JSON200); reason != "" {
+			diags.AddError("Buffer validation failed", reason)
+			return
+		}
 	}
 
 	sinkParams := &api.ValidateSinkParams{ConnectorId: connectorID}

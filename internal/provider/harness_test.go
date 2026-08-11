@@ -44,6 +44,7 @@ type configParams struct {
 	sslMode        string
 	disabled       bool
 	skipValidation bool
+	bufferURL      string
 	catalog        string
 	extra          string
 }
@@ -66,6 +67,10 @@ func withCatalog(hcl string) configOpt {
 
 func withValidation() configOpt {
 	return func(p *configParams) { p.skipValidation = false }
+}
+
+func withBuffer(url string) configOpt {
+	return func(p *configParams) { p.bufferURL = url }
 }
 
 func withExtra(hcl string) configOpt {
@@ -129,11 +134,21 @@ provider "supermetal" {
 	if p.catalog != "" {
 		catalogBlock = fmt.Sprintf("\n\n      catalog = {\n%s\n      }", p.catalog)
 	}
+	bufferBlock := ""
+	if p.bufferURL != "" {
+		bufferBlock = fmt.Sprintf(`
+
+  buffer = {
+    object_store = {
+      url = %q
+    }
+  }`, p.bufferURL)
+	}
 
 	fmt.Fprintf(&b, `
 resource "supermetal_connector" %q {
   id   = %q
-  name = %q%s
+  name = %q%s%s
 
   source = {
     postgres = {
@@ -162,7 +177,7 @@ resource "supermetal_connector" %q {
     }
   }
 }
-`, p.resourceName, p.id, p.name, disabledLine,
+`, p.resourceName, p.id, p.name, disabledLine, bufferBlock,
 		p.host, p.port, p.database, p.user, passwordVal, p.sslMode,
 		catalogBlock)
 

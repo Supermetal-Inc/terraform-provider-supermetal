@@ -110,7 +110,7 @@ func TestPostgresSourceToAPI_WithCatalogAndColumns(t *testing.T) {
 		t.Error("expected 'password_hash' column")
 	}
 	action, _ := pwCol.Action.AsConnectorCatalogAction()
-	if action != api.Exclude {
+	if action != api.ConnectorCatalogActionExclude {
 		t.Errorf("expected password_hash column action Exclude, got %v", action)
 	}
 }
@@ -126,12 +126,12 @@ func TestPostgresSourceMerge_WithColumns(t *testing.T) {
 	}
 
 	actionInclude := api.ConnectorCatalogTable_Action{}
-	_ = actionInclude.FromConnectorCatalogAction(api.Include)
+	_ = actionInclude.FromConnectorCatalogAction(api.ConnectorCatalogActionInclude)
 
 	colActionInclude := api.ConnectorCatalogColumn_Action{}
-	_ = colActionInclude.FromConnectorCatalogAction(api.Include)
+	_ = colActionInclude.FromConnectorCatalogAction(api.ConnectorCatalogActionInclude)
 	colActionExclude := api.ConnectorCatalogColumn_Action{}
-	_ = colActionExclude.FromConnectorCatalogAction(api.Exclude)
+	_ = colActionExclude.FromConnectorCatalogAction(api.ConnectorCatalogActionExclude)
 
 	apiResp := api.ConnectorPostgresPostgresSource{
 		Catalog: &api.ConnectorCatalogCatalog{

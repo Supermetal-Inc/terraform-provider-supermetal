@@ -3,6 +3,8 @@ package provider_test
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -14,7 +16,12 @@ import (
 func TestAccConnectorResource_basic(t *testing.T) {
 	h := newTestHarness(t)
 
-	config := h.config("test-pg-duckdb", "Test Connector")
+	bufferURL := "file://" + filepath.Join(h.tempDir, "buffer")
+	config := h.config(
+		"test-pg-duckdb",
+		"Test Connector",
+		withBuffer(bufferURL),
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -25,6 +32,7 @@ func TestAccConnectorResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("supermetal_connector.test", "id", "test-pg-duckdb"),
 					resource.TestCheckResourceAttr("supermetal_connector.test", "name", "Test Connector"),
 					resource.TestCheckResourceAttr("supermetal_connector.test", "disabled", "false"),
+					resource.TestCheckResourceAttr("supermetal_connector.test", "buffer.object_store.url", bufferURL),
 				),
 			},
 			{
@@ -33,6 +41,85 @@ func TestAccConnectorResource_basic(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
+				},
+			},
+		},
+	})
+}
+
+func TestAccConnectorResource_bigQueryMergeGCS(t *testing.T) {
+	projectID := os.Getenv("SUPERMETAL_TEST_BIGQUERY_PROJECT_ID")
+	dataset := os.Getenv("SUPERMETAL_TEST_BIGQUERY_DATASET")
+	serviceAccountKey := os.Getenv("SUPERMETAL_TEST_GCP_SERVICE_ACCOUNT_KEY_JSON")
+	bufferURL := os.Getenv("SUPERMETAL_TEST_GCS_BUFFER_URL")
+	if projectID == "" || dataset == "" || serviceAccountKey == "" || bufferURL == "" {
+		t.Skip("BigQuery/GCS certification requires SUPERMETAL_TEST_BIGQUERY_PROJECT_ID, " +
+			"SUPERMETAL_TEST_BIGQUERY_DATASET, SUPERMETAL_TEST_GCP_SERVICE_ACCOUNT_KEY_JSON, " +
+			"and SUPERMETAL_TEST_GCS_BUFFER_URL")
+	}
+
+	h := newTestHarness(t)
+	config := fmt.Sprintf(`
+provider "supermetal" {
+  endpoint = %q
+}
+
+resource "supermetal_connector" "test" {
+  id   = "certify-bigquery-merge-gcs"
+  name = "BigQuery merge with GCS certification"
+
+  buffer = {
+    object_store = {
+      url = %q
+      options = {
+        service_account_key = {
+          value = %q
+        }
+      }
+    }
+  }
+
+  source = {
+    postgres = {
+      host     = %q
+      port     = %d
+      database = "testdb"
+      user     = "testuser"
+      password = "testpass"
+      ssl_mode = "Disable"
+
+      replication_type = {
+        snapshot = {}
+      }
+    }
+  }
+
+  sink = {
+    big_query = {
+      project_id = %q
+      dataset    = %q
+      auth = {
+        service_account_key = {
+          key_json = %q
+        }
+      }
+      write_mode = {
+        merge = {}
+      }
+    }
+  }
+}
+`, h.agentEndpoint, bufferURL, serviceAccountKey, h.postgresHost, h.postgresPort,
+		projectID, dataset, serviceAccountKey)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: config},
+			{
+				Config: config,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
 			},
 		},
@@ -361,25 +448,69 @@ func TestAccConnectorResource_catalogMutationDrift(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: h.config("test-catalog-drift", "Catalog Drift Test Round 1", catalogEmpty),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("supermetal_connector.test", "name", "Catalog Drift Test Round 1"),
-				),
+				Config: h.config("test-catalog-drift", "Catalog Drift Test", catalogEmpty),
 			},
 			{
-				Config: h.config("test-catalog-drift", "Catalog Drift Test Round 2", catalogEmpty),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("supermetal_connector.test", "name", "Catalog Drift Test Round 2"),
-				),
+				PreConfig: func() {
+					modifiedConnector := fmt.Sprintf(`{
+  "id": "test-catalog-drift",
+  "name": "Catalog Drift Test",
+  "source": {
+    "postgres": {
+      "connection": {
+        "host": %q,
+        "port": %d,
+        "database": "testdb",
+        "user": "testuser",
+        "password": "testpass",
+        "ssl_mode": "Disable"
+      },
+      "replication_type": { "snapshot": {} },
+      "catalog": {
+        "name": "testdb",
+        "schemas": [{
+          "name": "public",
+          "tables": [{ "name": "added_outside_terraform" }]
+        }]
+      }
+    }
+  },
+  "sink": {
+    "duckdb": {
+      "target_database": "main",
+      "connection": {
+        "quack": { "url": "http://localhost:9494", "ssl": false }
+      }
+    }
+  }
+}`, h.postgresHost, h.postgresPort)
+					req, err := http.NewRequest(
+						"POST",
+						h.agentEndpoint+"/api/v1/connectors/test-catalog-drift",
+						strings.NewReader(modifiedConnector),
+					)
+					if err != nil {
+						t.Fatal(err)
+					}
+					req.Header.Set("Content-Type", "application/json")
+					resp, err := http.DefaultClient.Do(req)
+					if err != nil {
+						t.Fatalf("mutating catalog through API: %v", err)
+					}
+					_ = resp.Body.Close()
+					if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+						t.Fatalf("mutating catalog through API returned %d", resp.StatusCode)
+					}
+				},
+				Config: h.config("test-catalog-drift", "Catalog Drift Test", catalogEmpty),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+					},
+				},
 			},
 			{
-				Config: h.config("test-catalog-drift", "Catalog Drift Test Round 3", catalogEmpty),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("supermetal_connector.test", "name", "Catalog Drift Test Round 3"),
-				),
-			},
-			{
-				Config: h.config("test-catalog-drift", "Catalog Drift Test Round 3", catalogEmpty),
+				Config: h.config("test-catalog-drift", "Catalog Drift Test", catalogEmpty),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

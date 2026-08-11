@@ -125,6 +125,124 @@ resource "supermetal_connector" "snowflake_keypair" {
 }
 ```
 
+### PostgreSQL to BigQuery via GCS
+
+```terraform
+# PostgreSQL to BigQuery in merge mode. BigQuery merge writes Parquet files to
+# the GCS buffer before loading and merging them into destination tables.
+
+variable "bigquery_service_account_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "postgres_tables" {
+  description = "PostgreSQL tables to replicate from the public schema"
+  type        = set(string)
+}
+
+resource "supermetal_connector" "postgres_to_bigquery_via_gcs" {
+  id   = "orders-to-bigquery"
+  name = "PostgreSQL to BigQuery via GCS"
+
+  source = {
+    postgres = {
+      host     = var.pg_host
+      port     = 5432
+      database = var.pg_database
+      user     = var.pg_user
+      password = var.pg_password
+      ssl_mode = "Require"
+
+      replication_type = {
+        logical_replication = {}
+      }
+
+      catalog = {
+        name           = var.pg_database
+        default_action = "Exclude"
+        schemas = {
+          public = {
+            tables = {
+              for table_name in var.postgres_tables : table_name => {}
+            }
+          }
+        }
+      }
+    }
+  }
+
+  sink = {
+    big_query = {
+      project_id = "analytics-project"
+      dataset    = "raw"
+
+      auth = {
+        service_account_key = {
+          key_json = var.bigquery_service_account_key
+        }
+      }
+
+      write_mode = {
+        merge = {}
+      }
+    }
+  }
+
+  buffer = {
+    object_store = {
+      url = "gs://supermetal-staging/orders"
+      options = {
+        service_account_key = {
+          value = var.bigquery_service_account_key
+        }
+      }
+    }
+  }
+}
+```
+
+### DB2 to DuckDB
+
+```terraform
+# DB2 source with a DuckDB destination.
+
+variable "db2_password" {
+  type      = string
+  sensitive = true
+}
+
+resource "supermetal_connector" "db2_to_duckdb" {
+  id   = "db2-to-duckdb"
+  name = "DB2 to DuckDB"
+
+  source = {
+    db2 = {
+      host     = "db2.internal"
+      port     = 50000
+      database = "PRODUCTION"
+      user     = "db2inst1"
+      password = var.db2_password
+
+      replication_type = {
+        snapshot = {}
+      }
+    }
+  }
+
+  sink = {
+    duckdb = {
+      target_database = "main"
+      connection = {
+        quack = {
+          url = var.duckdb_url
+        }
+      }
+    }
+  }
+}
+```
+
 ### Production setup
 
 ```terraform
@@ -296,7 +414,7 @@ resource "supermetal_connector" "include_by_default" {
 }
 
 # Pattern 2. Replicate only specific tables.
-# Tables listed under an Exclude default are implicitly included.
+# Set schema and default to Exclude, then Include individual tables.
 resource "supermetal_connector" "exclude_by_default" {
   id   = "exclude-by-default"
   name = "Exclude by default"
@@ -317,10 +435,11 @@ resource "supermetal_connector" "exclude_by_default" {
         default_action = "Exclude"
         schemas = {
           public = {
+            action = "Exclude"
             tables = {
-              orders      = {}
-              order_items = {}
-              customers   = {}
+              orders      = { action = "Include" }
+              order_items = { action = "Include" }
+              customers   = { action = "Include" }
             }
           }
         }
@@ -521,8 +640,12 @@ resource "supermetal_connector" "customers" {
 
 ### Optional
 
+- `buffer` (Attributes) (see [below for nested schema](#nestedatt--buffer))
 - `disabled` (Boolean) Whether this connector is disabled.
+- `identifier_naming` (Attributes) (see [below for nested schema](#nestedatt--identifier_naming))
+- `limits` (Attributes) (see [below for nested schema](#nestedatt--limits))
 - `name` (String) Display name for the connector.
+- `schedule` (Attributes) (see [below for nested schema](#nestedatt--schedule))
 
 <a id="nestedatt--sink"></a>
 ### Nested Schema for `sink`
@@ -534,10 +657,12 @@ Optional:
 - `databricks` (Attributes) Databricks destination (see [below for nested schema](#nestedatt--sink--databricks))
 - `doris` (Attributes) Apache Doris sink configuration (see [below for nested schema](#nestedatt--sink--doris))
 - `duckdb` (Attributes) DuckDB sink (see [below for nested schema](#nestedatt--sink--duckdb))
+- `file_sink` (Attributes) Writes snapshot and CDC rows as files in object storage like S3/ABS/GCS etc. (see [below for nested schema](#nestedatt--sink--file_sink))
 - `iceberg` (Attributes) Iceberg destination (see [below for nested schema](#nestedatt--sink--iceberg))
 - `kafka` (Attributes) Kafka destination (see [below for nested schema](#nestedatt--sink--kafka))
 - `motherduck` (Attributes) DuckDB sink (see [below for nested schema](#nestedatt--sink--motherduck))
 - `postgres` (Attributes) PostgreSQL destination (see [below for nested schema](#nestedatt--sink--postgres))
+- `redshift` (Attributes) Amazon Redshift destination (see [below for nested schema](#nestedatt--sink--redshift))
 - `snowflake` (Attributes) Snowflake destination (see [below for nested schema](#nestedatt--sink--snowflake))
 - `webhook` (Attributes) Webhook destination (see [below for nested schema](#nestedatt--sink--webhook))
 
@@ -546,17 +671,17 @@ Optional:
 
 Required:
 
-- `auth` (Attributes) Authentication method for connecting to BigQuery (see [below for nested schema](#nestedatt--sink--big_query--auth))
-- `dataset` (String)
-- `project_id` (String)
+- `auth` (Attributes) Authentication method and its credentials (see [below for nested schema](#nestedatt--sink--big_query--auth))
+- `dataset` (String) Target dataset. The `<dataset>` part of `<project>.<dataset>.<table>`.
+- `project_id` (String) GCP project identifier containing the target dataset, for example "my-project-123"
 - `write_mode` (Attributes) How the target writes data into BigQuery (see [below for nested schema](#nestedatt--sink--big_query--write_mode))
 
 Optional:
 
-- `disable_schema_prefix` (Boolean)
-- `history_mode` (Attributes) How to preserve change history (see [below for nested schema](#nestedatt--sink--big_query--history_mode))
+- `disable_schema_prefix` (Boolean) Do not prefix target table names with the source schema. By default, a source table `public.users` lands as `public_users`; with this enabled it lands as `users`. Only safe when source table names are unique across schemas.
+- `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--history_mode))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--migration_strategy))
-- `query_priority` (String) Priority for BigQuery query jobs such as DDL, MERGE, and scripts. Load jobs are unaffected.
+- `query_priority` (String)
 
 <a id="nestedatt--sink--big_query--auth"></a>
 ### Nested Schema for `sink.big_query.auth`
@@ -620,7 +745,7 @@ Optional:
 
 Optional:
 
-- `allowed` (String)
+- `allowed` (List of String)
 - `disable_all` (Boolean)
 
 
@@ -630,27 +755,64 @@ Optional:
 
 Required:
 
-- `http_url` (String)
-- `target_database` (String)
+- `http_url` (String) HTTP(S) URL of the ClickHouse server ("http://localhost:8123" or "https://<instance_id>.<region>.aws.clickhouse.cloud:8443")
+- `target_database` (String) Name of the database in ClickHouse where data will be written
 
 Optional:
 
-- `async_inserts` (Boolean)
-- `disable_schema_prefix` (Boolean)
-- `engine` (String) ClickHouse table engine
-- `history_mode` (Attributes) How to preserve change history (see [below for nested schema](#nestedatt--sink--clickhouse--history_mode))
-- `max_snapshot_concurrency` (Number)
+- `async_inserts` (Boolean) Enable asynchronous inserts for higher throughput
+- `cluster` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--cluster))
+- `compression` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--compression))
+- `disable_schema_prefix` (Boolean) Do not prefix target table names with the source schema. By default, a source table `public.users` lands as `public_users`; with this enabled it lands as `users`. Only safe when source table names are unique across schemas.
+- `engine` (String)
+- `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--history_mode))
+- `max_snapshot_concurrency` (Number) Max concurrent snapshot loads to ClickHouse (0 = no limit). Lower this if ClickHouse runs out of memory during large snapshots.
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--migration_strategy))
-- `non_nullable_columns` (Boolean)
-- `password` (String, Sensitive)
-- `preserve_source_nullability` (Boolean)
-- `ssl_client_cert_pem` (String, Sensitive)
-- `ssl_client_key_pem` (String, Sensitive)
-- `ssl_root_cert` (String, Sensitive)
-- `ssl_verify` (Boolean)
-- `table_name_modifier` (Attributes) Modifier for target table names. (see [below for nested schema](#nestedatt--sink--clickhouse--table_name_modifier))
-- `ttl_days` (Number)
-- `user` (String)
+- `non_nullable_columns` (Boolean) Create all columns as non-Nullable. NULLs from the source land as type defaults (0, '', epoch). Customize via `ALTER TABLE ... MODIFY COLUMN ... DEFAULT ...`.
+- `password` (String, Sensitive) Password for ClickHouse authentication
+- `preserve_source_nullability` (Boolean) Preserve NOT NULL constraints from source schema.
+Default off, all non-PK columns are nullable to handle CDC edge cases with large object types.
+- `ssl_client_cert_pem` (String, Sensitive) Client's SSL certificate content in PEM format, if client certificate authentication is required
+- `ssl_client_key_pem` (String, Sensitive) Client's SSL private key content in PEM format (if separate from certificate)
+- `ssl_root_cert` (String, Sensitive) SSL root certificate content to verify the server's certificate
+- `ssl_verify` (Boolean) Verify the server's SSL certificate when using an HTTPS connection
+- `table_name_modifier` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--table_name_modifier))
+- `ttl_days` (Number) Data retention in days based on sync time (0 = retain indefinitely)
+- `user` (String) Username for ClickHouse authentication
+
+<a id="nestedatt--sink--clickhouse--cluster"></a>
+### Nested Schema for `sink.clickhouse.cluster`
+
+Required:
+
+- `name` (String) Cluster name from the server's remote_servers configuration
+
+Optional:
+
+- `create_distributed_table` (Boolean) Create and manage a Distributed table under the target name. Disable to write directly to the suffixed replicated table on the connected shard
+- `local_table_suffix` (String) Suffix for the replicated tables on each shard. Defaults to _local
+
+
+<a id="nestedatt--sink--clickhouse--compression"></a>
+### Nested Schema for `sink.clickhouse.compression`
+
+Optional:
+
+- `overrides` (Attributes List) Codec overrides by type family, applied even with the server default policy (see [below for nested schema](#nestedatt--sink--clickhouse--compression--overrides))
+- `policy` (String)
+
+<a id="nestedatt--sink--clickhouse--compression--overrides"></a>
+### Nested Schema for `sink.clickhouse.compression.overrides`
+
+Required:
+
+- `codec` (String) Codec list such as "DoubleDelta, ZSTD(1)". Use "Default" for the server default
+
+Optional:
+
+- `type_family` (String)
+
+
 
 <a id="nestedatt--sink--clickhouse--history_mode"></a>
 ### Nested Schema for `sink.clickhouse.history_mode`
@@ -673,7 +835,7 @@ Optional:
 
 Optional:
 
-- `allowed` (String)
+- `allowed` (List of String)
 - `disable_all` (Boolean)
 
 
@@ -708,18 +870,18 @@ Required:
 
 Required:
 
-- `auth` (Attributes) Authentication method for connecting to Databricks (see [below for nested schema](#nestedatt--sink--databricks--auth))
-- `target_catalog` (String)
-- `volume` (String)
-- `warehouse` (String)
+- `auth` (Attributes) Authentication method and its credentials for Databricks (see [below for nested schema](#nestedatt--sink--databricks--auth))
+- `target_catalog` (String) Target catalog name in Databricks Unity Catalog
+- `volume` (String) Path to a Unity Catalog managed volume for staging data ("/Volumes/mycatalog/myschema/my_volume")
+- `warehouse` (String) Databricks SQL Warehouse ID to use for SQL execution ("0123456789abcdef")
 
 Optional:
 
-- `history_mode` (Attributes) How to preserve change history (see [below for nested schema](#nestedatt--sink--databricks--history_mode))
+- `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--databricks--history_mode))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--databricks--migration_strategy))
-- `storage_credential` (String)
-- `table_features` (Attributes) Delta table features to enable. If false, the workspace default is respected and Supermetal does not explicitly disable features. (see [below for nested schema](#nestedatt--sink--databricks--table_features))
-- `target_schema` (String)
+- `storage_credential` (String) Name of the Databricks storage credential for direct access to the object store buffer
+- `table_features` (Attributes) (see [below for nested schema](#nestedatt--sink--databricks--table_features))
+- `target_schema` (String) Target schema name within the specified target catalog
 
 <a id="nestedatt--sink--databricks--auth"></a>
 ### Nested Schema for `sink.databricks.auth`
@@ -775,7 +937,7 @@ Optional:
 
 Optional:
 
-- `allowed` (String)
+- `allowed` (List of String)
 - `disable_all` (Boolean)
 
 
@@ -795,27 +957,27 @@ Optional:
 
 Required:
 
-- `fe_http_url` (String)
-- `target_database` (String)
-- `user` (String)
+- `fe_http_url` (String) Frontend HTTP or HTTPS URL such as http://fe.doris:8030.
+- `target_database` (String) Target database name. Created if it doesn't exist.
+- `user` (String) Username. Needs CREATE, ALTER, SELECT, INSERT, DELETE, and LOAD on the target database.
 
 Optional:
 
-- `binary_handling_mode` (String) Encoding for binary columns stored as Apache Doris STRING
-- `disable_schema_prefix` (Boolean)
-- `fe_mysql_pool_max` (Number)
-- `fe_mysql_port` (Number)
-- `history_mode` (Attributes) How to preserve change history (see [below for nested schema](#nestedatt--sink--doris--history_mode))
-- `max_snapshot_concurrency` (Number)
+- `binary_handling_mode` (String)
+- `disable_schema_prefix` (Boolean) Do not prefix target table names with the source schema. By default, a source table `public.users` lands as `public_users`; with this enabled it lands as `users`. Only safe when source table names are unique across schemas.
+- `fe_mysql_pool_max` (Number) Max MySQL connections per connector for SQL and metadata. 0 uses the default of 32.
+- `fe_mysql_port` (Number) MySQL wire protocol port for SQL and metadata. Default 9030 matches Apache Doris and all Apache Doris tiers.
+- `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--doris--history_mode))
+- `max_snapshot_concurrency` (Number) Max concurrent writes per connector. 0 leaves writes unbounded. Lower to 2 or 4 if Apache Doris backends hit memory pressure during large snapshots.
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--doris--migration_strategy))
-- `password` (String, Sensitive)
-- `preserve_source_nullability` (Boolean)
-- `ssl_client_cert_pem` (String, Sensitive)
-- `ssl_client_key_pem` (String, Sensitive)
-- `ssl_root_cert` (String, Sensitive)
-- `ssl_verify` (Boolean)
-- `table_model` (String) Apache Doris table model (Unique Key, Duplicate Key, or Auto).
-- `table_name_modifier` (Attributes) Optional prefix or suffix on target table names (see [below for nested schema](#nestedatt--sink--doris--table_name_modifier))
+- `password` (String, Sensitive) Apache Doris password. Leave blank if the cluster has no authentication.
+- `preserve_source_nullability` (Boolean) Carry NOT NULL from source schema. When off, only key columns are NOT NULL and the rest stay nullable to tolerate CDC edge cases.
+- `ssl_client_cert_pem` (String, Sensitive) Client SSL certificate (PEM). Required for mTLS.
+- `ssl_client_key_pem` (String, Sensitive) Client SSL private key (PEM).
+- `ssl_root_cert` (String, Sensitive) Root CA certificate (PEM). Required when the server uses a private CA.
+- `ssl_verify` (Boolean) Verify the server's TLS certificate on HTTPS endpoints.
+- `table_model` (String)
+- `table_name_modifier` (Attributes) (see [below for nested schema](#nestedatt--sink--doris--table_name_modifier))
 
 <a id="nestedatt--sink--doris--history_mode"></a>
 ### Nested Schema for `sink.doris.history_mode`
@@ -838,7 +1000,7 @@ Optional:
 
 Optional:
 
-- `allowed` (String)
+- `allowed` (List of String)
 - `disable_all` (Boolean)
 
 
@@ -873,18 +1035,18 @@ Required:
 
 Required:
 
-- `connection` (Attributes) Connection protocol (see [below for nested schema](#nestedatt--sink--duckdb--connection))
-- `target_database` (String)
+- `connection` (Attributes) Connection to the target DuckDB instance (see [below for nested schema](#nestedatt--sink--duckdb--connection))
+- `target_database` (String) Database to write into
 
 Optional:
 
-- `enable_primary_keys` (Boolean)
-- `history_mode` (Attributes) How to preserve change history (see [below for nested schema](#nestedatt--sink--duckdb--history_mode))
-- `max_snapshot_concurrency` (Number)
+- `enable_primary_keys` (Boolean) Create primary key constraints on target tables
+- `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--duckdb--history_mode))
+- `max_snapshot_concurrency` (Number) Maximum number of tables to snapshot in parallel. 0 means no limit.
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--duckdb--migration_strategy))
-- `preserve_source_nullability` (Boolean)
-- `target_schema` (String)
-- `use_transactions` (Boolean)
+- `preserve_source_nullability` (Boolean) Preserve NOT NULL constraints from the source schema
+- `target_schema` (String) Override the target schema for all tables. When unset, each table keeps its source schema.
+- `use_transactions` (Boolean) Wrap CDC batches in a multi table transaction
 
 <a id="nestedatt--sink--duckdb--connection"></a>
 ### Nested Schema for `sink.duckdb.connection`
@@ -1000,8 +1162,127 @@ Optional:
 
 Optional:
 
-- `allowed` (String)
+- `allowed` (List of String)
 - `disable_all` (Boolean)
+
+
+
+<a id="nestedatt--sink--file_sink"></a>
+### Nested Schema for `sink.file_sink`
+
+Required:
+
+- `object_store` (Attributes) Object store used for output files. (see [below for nested schema](#nestedatt--sink--file_sink--object_store))
+
+Optional:
+
+- `output_format` (Attributes) (see [below for nested schema](#nestedatt--sink--file_sink--output_format))
+- `path_template` (String) Path template used for output files. Supported variables are {connector_id}, {database}, {schema}, {table}, {year}, {month}, {day}, and {date}. Date variables use UTC and are evaluated for each output file. If omitted, files use {connector_id}/{database}/{schema}/{table}/dt={date}. Omit {connector_id} only when sharing an output namespace across connectors is intentional.
+- `target_file_size_mb` (Number) Target approximate uncompressed input size in MiB. Compression does not affect splitting. Files split after an input batch or completed CDC transaction, so a large batch or transaction may exceed this value.
+
+<a id="nestedatt--sink--file_sink--object_store"></a>
+### Nested Schema for `sink.file_sink.object_store`
+
+Required:
+
+- `url` (String) URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path", "gdrive:///optional/root", "dropbox:///optional/root", "sftp://host:22/optional/root"
+
+Optional:
+
+- `allow_http` (Boolean) Allow HTTP connections (default: false, HTTPS only)
+- `allow_invalid_certificates` (Boolean) Allow invalid/self-signed certificates (default: false)
+- `max_concurrent_parts` (Number) Max concurrent part uploads per file. Set to 1 for cross-region or to prevent part upload failures and timeouts due to limited bandwidth.
+- `max_concurrent_requests` (Number) Max concurrent requests to the object store. 0 means no limit.
+- `options` (Attributes Map) Configuration options (key-value pairs)
+
+S3: [{"name": "region", "value": "us-east-1"}, {"name": "access_key_id", "value": "AKIA..."}, {"name": "secret_access_key", "value": "..."}]
+
+Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "value": "..."} or {"name": "sas_token", "value": "sp=..."}]
+
+GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
+
+GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
+
+Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
+
+Google Drive and Dropbox refresh token: [{"name": "auth_type", "value": "refresh_token"}, {"name": "refresh_token", "value": "..."}, {"name": "client_id", "value": "..."}, {"name": "client_secret", "value": "..."}]
+
+SFTP key authentication: [{"name": "user", "value": "alice"}, {"name": "private_key", "value": "-----BEGIN OPENSSH PRIVATE KEY-----..."}, {"name": "server_public_key", "value": "ssh-ed25519 AAAA..."}] (see [below for nested schema](#nestedatt--sink--file_sink--object_store--options))
+- `root_certificate_pem` (String, Sensitive) PEM-encoded root certificate(s) for TLS verification
+
+<a id="nestedatt--sink--file_sink--object_store--options"></a>
+### Nested Schema for `sink.file_sink.object_store.options`
+
+Required:
+
+- `value` (String, Sensitive) Option value
+
+
+
+<a id="nestedatt--sink--file_sink--output_format"></a>
+### Nested Schema for `sink.file_sink.output_format`
+
+Optional:
+
+- `avro` (Attributes) (see [below for nested schema](#nestedatt--sink--file_sink--output_format--avro))
+- `csv` (Attributes) (see [below for nested schema](#nestedatt--sink--file_sink--output_format--csv))
+- `json` (Attributes) (see [below for nested schema](#nestedatt--sink--file_sink--output_format--json))
+- `parquet` (Attributes) (see [below for nested schema](#nestedatt--sink--file_sink--output_format--parquet))
+
+<a id="nestedatt--sink--file_sink--output_format--avro"></a>
+### Nested Schema for `sink.file_sink.output_format.avro`
+
+Optional:
+
+- `compression` (String)
+
+
+<a id="nestedatt--sink--file_sink--output_format--csv"></a>
+### Nested Schema for `sink.file_sink.output_format.csv`
+
+Optional:
+
+- `compression` (String)
+- `date_format` (String) Date format pattern such as %Y-%m-%d. If omitted, values look like 2026-03-16.
+- `datetime_format` (String) Date-time format pattern such as %Y-%m-%d %H:%M:%S. If omitted, values look like 2026-03-16T11:33:20.123.
+- `delimiter` (String) Field delimiter. Must contain exactly one byte. If omitted, uses a comma.
+- `double_quote` (Boolean) Escape quote characters by writing them twice.
+- `encoding` (String) Character encoding for output files, such as UTF-8 or windows-1252. Empty uses UTF-8.
+- `escape` (String) Escape character used when double quoting is disabled. Must contain exactly one byte. If omitted, uses a backslash.
+- `has_header` (Boolean) Write column names as the first row.
+- `null_value` (String) Text written for null values. If omitted, writes an empty field.
+- `quote` (String) Quote character. Must contain exactly one byte. If omitted, uses a double quote.
+- `terminator` (String) Line terminator. Use LF, CRLF, or a single-byte character. Empty uses LF.
+- `time_format` (String) Time format pattern such as %H:%M:%S. If omitted, values look like 11:33:20.123.
+- `timestamp_format` (String) Timestamp format pattern such as %Y-%m-%dT%H:%M:%S. If omitted, values look like 2026-03-16T11:33:20.123456789.
+- `timestamp_tz_format` (String) Timestamp-with-time-zone format pattern such as %Y-%m-%dT%H:%M:%S%:z. If omitted, UTC values look like 2026-03-16T11:33:20.123456789Z.
+
+
+<a id="nestedatt--sink--file_sink--output_format--json"></a>
+### Nested Schema for `sink.file_sink.output_format.json`
+
+Optional:
+
+- `compression` (String)
+- `flatten` (Boolean) Recursively flatten nested object fields. Arrays and maps remain nested.
+- `flatten_separator` (String) Separator placed between nested field names when flattening. If omitted, uses double underscores.
+- `format` (String)
+- `null_fields` (String)
+
+
+<a id="nestedatt--sink--file_sink--output_format--parquet"></a>
+### Nested Schema for `sink.file_sink.output_format.parquet`
+
+Optional:
+
+- `compression` (String)
+- `compression_level` (Number) Compression level. A value of 0 uses the codec default.
+- `data_page_size_bytes` (Number) Target uncompressed data page size in bytes. If omitted, uses the Parquet writer default of 1,048,576 bytes.
+- `dictionary_enabled` (Boolean) Enable dictionary encoding for supported columns. If omitted, dictionary encoding is enabled.
+- `max_row_group_rows` (Number) Maximum rows in each row group. If omitted, uses the Parquet writer default of 1,048,576 rows.
+- `statistics` (String)
+- `version` (String)
+
 
 
 
@@ -1010,22 +1291,21 @@ Optional:
 
 Required:
 
-- `catalog` (Attributes) Iceberg catalog type (see [below for nested schema](#nestedatt--sink--iceberg--catalog))
-- `target_namespace` (List of String)
+- `catalog` (Attributes) Iceberg catalog connection (see [below for nested schema](#nestedatt--sink--iceberg--catalog))
+- `target_namespace` (List of String) Target namespace (e.g., ["my_database", "my_schema"])
 
 Optional:
 
-- `max_catalog_concurrency` (Number)
-- `metadata_compression` (String) Iceberg metadata file compression
+- `max_catalog_concurrency` (Number) Maximum concurrent catalog operations. 0 means unbounded.
+- `metadata_compression` (String)
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--migration_strategy))
-- `parquet` (Attributes) Parquet writer settings (see [below for nested schema](#nestedatt--sink--iceberg--parquet))
-- `spec_version` (String) Iceberg table format version
-- `storage_credentials` (Attributes) Storage credentials for accessing data files (see [below for nested schema](#nestedatt--sink--iceberg--storage_credentials))
-- `truncate_table_if_exists` (Boolean)
-- `type_conversion` (Attributes) Opt-in type conversions applied before writing to the target.
-Omit a subfield to keep the target's default behaviour for that type. (see [below for nested schema](#nestedatt--sink--iceberg--type_conversion))
-- `vended_credentials` (Boolean)
-- `write_mode` (Attributes) Write mode for CDC operations (see [below for nested schema](#nestedatt--sink--iceberg--write_mode))
+- `parquet` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--parquet))
+- `spec_version` (String)
+- `storage_credentials` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--storage_credentials))
+- `truncate_table_if_exists` (Boolean) Truncate existing table data before snapshot load to prevent duplicates. Old data remains in previous Iceberg snapshots for time-travel recovery. The truncation snapshot stores `sm.truncated_from_snapshot` in its summary properties, queryable via `SELECT * FROM table$snapshots`.
+- `type_conversion` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--type_conversion))
+- `vended_credentials` (Boolean) Unused, reserved for future vended credentials support
+- `write_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--write_mode))
 
 <a id="nestedatt--sink--iceberg--catalog"></a>
 ### Nested Schema for `sink.iceberg.catalog`
@@ -1064,7 +1344,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -1087,7 +1367,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -1168,7 +1448,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -1195,7 +1475,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -1222,7 +1502,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -1245,7 +1525,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -1268,7 +1548,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -1278,7 +1558,7 @@ Required:
 
 Optional:
 
-- `allowed` (String)
+- `allowed` (List of String)
 - `disable_all` (Boolean)
 
 
@@ -1325,7 +1605,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -1342,7 +1622,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -1361,7 +1641,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -1386,7 +1666,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -1468,14 +1748,14 @@ Optional:
 
 Required:
 
-- `connection` (Attributes) Kafka connection details and client settings (see [below for nested schema](#nestedatt--sink--kafka--connection))
-- `format` (Attributes) Message format for Kafka payloads (see [below for nested schema](#nestedatt--sink--kafka--format))
-- `topic_options` (Attributes) Defaults and optional per-topic configuration for topic creation (see [below for nested schema](#nestedatt--sink--kafka--topic_options))
+- `connection` (Attributes) Connection details for the target Kafka cluster (see [below for nested schema](#nestedatt--sink--kafka--connection))
+- `format` (Attributes) Message format (Debezium, Supermetal) and serialization (JSON, Avro, Protobuf) (see [below for nested schema](#nestedatt--sink--kafka--format))
+- `topic_options` (Attributes) Defaults and per-topic configuration for topic creation (see [below for nested schema](#nestedatt--sink--kafka--topic_options))
 
 Optional:
 
-- `name` (String)
-- `topic_name_template` (String)
+- `name` (String) A logical name for this Kafka sink instance (defaults to the connector_id if not set)
+- `topic_name_template` (String) Template for generating Kafka topic names, supporting placeholders like {database}, {schema}, {table}, and {database_or_schema} ("prefix.{schema}.{table}" or "single-topic-name" or "prefix.{database}.{table}")
 
 <a id="nestedatt--sink--kafka--connection"></a>
 ### Nested Schema for `sink.kafka.connection`
@@ -1538,7 +1818,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 <a id="nestedatt--sink--kafka--connection--config--producer_properties"></a>
@@ -1547,7 +1827,7 @@ Required:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 <a id="nestedatt--sink--kafka--connection--config--transactions"></a>
@@ -2265,7 +2545,7 @@ Optional:
 Required:
 
 - `key` (String) Property key
-- `value` (String) Property value
+- `value` (String, Sensitive) Property value
 
 
 
@@ -2275,18 +2555,18 @@ Required:
 
 Required:
 
-- `connection` (Attributes) Connection protocol (see [below for nested schema](#nestedatt--sink--motherduck--connection))
-- `target_database` (String)
+- `connection` (Attributes) Connection to the target DuckDB instance (see [below for nested schema](#nestedatt--sink--motherduck--connection))
+- `target_database` (String) Database to write into
 
 Optional:
 
-- `enable_primary_keys` (Boolean)
-- `history_mode` (Attributes) How to preserve change history (see [below for nested schema](#nestedatt--sink--motherduck--history_mode))
-- `max_snapshot_concurrency` (Number)
+- `enable_primary_keys` (Boolean) Create primary key constraints on target tables
+- `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--motherduck--history_mode))
+- `max_snapshot_concurrency` (Number) Maximum number of tables to snapshot in parallel. 0 means no limit.
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--motherduck--migration_strategy))
-- `preserve_source_nullability` (Boolean)
-- `target_schema` (String)
-- `use_transactions` (Boolean)
+- `preserve_source_nullability` (Boolean) Preserve NOT NULL constraints from the source schema
+- `target_schema` (String) Override the target schema for all tables. When unset, each table keeps its source schema.
+- `use_transactions` (Boolean) Wrap CDC batches in a multi table transaction
 
 <a id="nestedatt--sink--motherduck--connection"></a>
 ### Nested Schema for `sink.motherduck.connection`
@@ -2402,7 +2682,7 @@ Optional:
 
 Optional:
 
-- `allowed` (String)
+- `allowed` (List of String)
 - `disable_all` (Boolean)
 
 
@@ -2412,32 +2692,30 @@ Optional:
 
 Required:
 
-- `database` (String)
-- `host` (String)
-- `password` (String, Sensitive)
-- `user` (String)
+- `database` (String) Name of the database to connect to
+- `host` (String) Database server hostname or IP address ("localhost" or "mydb.123456789012.us-east-1.rds.amazonaws.com")
+- `password` (String, Sensitive) Password for database authentication
+- `user` (String) Username for database authentication
 
 Optional:
 
-- `max_pool_size` (Number)
+- `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for default)
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--postgres--migration_strategy))
-- `operation_lock_timeout_seconds` (Number)
-- `port` (Number)
-- `ssl_cert` (String, Sensitive)
-- `ssl_key` (String, Sensitive)
-- `ssl_mode` (String) SSL connection mode for the PostgreSQL server
-- `ssl_root_cert` (String, Sensitive)
-- `target_schema` (String)
-- `tunnel` (Attributes) Optional network transport. Leave unset for direct TCP; pick a
- variant to tunnel the connection. Today only SSH bastion is supported;
- additional transports (e.g. PrivateLink) can be added as new variants. (see [below for nested schema](#nestedatt--sink--postgres--tunnel))
+- `operation_lock_timeout_seconds` (Number) Enables fail-fast behavior for data operations (COPY, INSERT, MERGE) by setting a `lock_timeout`. This prevents operations from waiting indefinitely when tables are locked by either long running transactions, DDL or Maintenance operations. Disabled by default, operations wait indefinitely. Set to a non-zero value (e.g., '60') to let operations fail-fast. https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
+- `port` (Number) Port number for the PostgreSQL server
+- `ssl_cert` (String, Sensitive) Client's SSL certificate content
+- `ssl_key` (String, Sensitive) Client's private SSL key content
+- `ssl_mode` (String)
+- `ssl_root_cert` (String, Sensitive) SSL root certificate content for server verification
+- `target_schema` (String) Target schema name within the database
+- `tunnel` (Attributes) (see [below for nested schema](#nestedatt--sink--postgres--tunnel))
 
 <a id="nestedatt--sink--postgres--migration_strategy"></a>
 ### Nested Schema for `sink.postgres.migration_strategy`
 
 Optional:
 
-- `allowed` (String)
+- `allowed` (List of String)
 - `disable_all` (Boolean)
 
 
@@ -2491,24 +2769,152 @@ Required:
 
 
 
+<a id="nestedatt--sink--redshift"></a>
+### Nested Schema for `sink.redshift`
+
+Required:
+
+- `auth` (Attributes) Authentication method and its credentials (see [below for nested schema](#nestedatt--sink--redshift--auth))
+- `database` (String) Name of the database to connect to
+- `host` (String) Cluster endpoint hostname ("mycluster.abc123xyz.us-east-1.redshift.amazonaws.com")
+- `user` (String) Username for database authentication
+
+Optional:
+
+- `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--redshift--history_mode))
+- `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for a default matched to the cluster's query concurrency)
+- `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--redshift--migration_strategy))
+- `port` (Number) Port number for the Redshift cluster
+- `sort_dist_keys` (Boolean) Set the distribution key and sort key from the primary key when creating tables. Changing table layout later requires a table rewrite. Tables created ahead of time keep their own layout.
+- `ssl_mode` (String)
+- `ssl_root_cert` (String, Sensitive) SSL root certificate content for server verification
+- `target_schema` (String) Target schema name within the database
+- `tunnel` (Attributes) (see [below for nested schema](#nestedatt--sink--redshift--tunnel))
+- `use_transactions` (Boolean) Enable transactional DML (disabled by default)
+
+<a id="nestedatt--sink--redshift--auth"></a>
+### Nested Schema for `sink.redshift.auth`
+
+Optional:
+
+- `iam_credentials` (Attributes) IAM authentication with temporary database credentials (see [below for nested schema](#nestedatt--sink--redshift--auth--iam_credentials))
+- `password` (Attributes) Password-based authentication (see [below for nested schema](#nestedatt--sink--redshift--auth--password))
+
+<a id="nestedatt--sink--redshift--auth--iam_credentials"></a>
+### Nested Schema for `sink.redshift.auth.iam_credentials`
+
+Optional:
+
+- `access_key_id` (String) AWS access key ID. Leave unset to use the instance role or environment credentials.
+- `auto_create` (Boolean) Create the database user if it does not exist. Requires the redshift:CreateClusterUser permission.
+- `cluster_identifier` (String) Cluster identifier. Leave unset to derive it from the endpoint hostname.
+- `region` (String) AWS region of the cluster. Leave unset to derive it from the endpoint hostname.
+- `secret_access_key` (String, Sensitive) AWS secret access key
+- `session_token` (String, Sensitive) AWS session token for temporary credentials
+
+
+<a id="nestedatt--sink--redshift--auth--password"></a>
+### Nested Schema for `sink.redshift.auth.password`
+
+Required:
+
+- `password` (String, Sensitive) Password for database authentication
+
+
+
+<a id="nestedatt--sink--redshift--history_mode"></a>
+### Nested Schema for `sink.redshift.history_mode`
+
+Optional:
+
+- `append` (Attributes) Write events to a parallel table (see [below for nested schema](#nestedatt--sink--redshift--history_mode--append))
+
+<a id="nestedatt--sink--redshift--history_mode--append"></a>
+### Nested Schema for `sink.redshift.history_mode.append`
+
+Optional:
+
+- `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+
+
+
+<a id="nestedatt--sink--redshift--migration_strategy"></a>
+### Nested Schema for `sink.redshift.migration_strategy`
+
+Optional:
+
+- `allowed` (List of String)
+- `disable_all` (Boolean)
+
+
+<a id="nestedatt--sink--redshift--tunnel"></a>
+### Nested Schema for `sink.redshift.tunnel`
+
+Optional:
+
+- `ssh` (Attributes) Tunnel through an SSH bastion host (see [below for nested schema](#nestedatt--sink--redshift--tunnel--ssh))
+
+<a id="nestedatt--sink--redshift--tunnel--ssh"></a>
+### Nested Schema for `sink.redshift.tunnel.ssh`
+
+Required:
+
+- `auth` (Attributes) How to authenticate against the bastion (see [below for nested schema](#nestedatt--sink--redshift--tunnel--ssh--auth))
+- `bastion_host` (String) Hostname or IP of the SSH bastion server
+- `user` (String) SSH username on the bastion server
+
+Optional:
+
+- `bastion_alternates` (List of String) Fallback bastion hostnames, tried in order if the primary is unreachable
+- `bastion_port` (Number) SSH port on the bastion server
+
+<a id="nestedatt--sink--redshift--tunnel--ssh--auth"></a>
+### Nested Schema for `sink.redshift.tunnel.ssh.auth`
+
+Optional:
+
+- `bring_your_own_key` (Attributes) Paste your own private key (see [below for nested schema](#nestedatt--sink--redshift--tunnel--ssh--auth--bring_your_own_key))
+- `generated_key` (Attributes) Supermetal generates the keypair; you install the public key on the bastion (see [below for nested schema](#nestedatt--sink--redshift--tunnel--ssh--auth--generated_key))
+
+<a id="nestedatt--sink--redshift--tunnel--ssh--auth--bring_your_own_key"></a>
+### Nested Schema for `sink.redshift.tunnel.ssh.auth.bring_your_own_key`
+
+Required:
+
+- `private_key` (String, Sensitive) OpenSSH-encoded private key
+
+
+<a id="nestedatt--sink--redshift--tunnel--ssh--auth--generated_key"></a>
+### Nested Schema for `sink.redshift.tunnel.ssh.auth.generated_key`
+
+Required:
+
+- `private_key` (String, Sensitive) Private key (managed by Supermetal)
+- `public_key` (String) Public key — add this line to ~/.ssh/authorized_keys on your bastion
+
+
+
+
+
+
 <a id="nestedatt--sink--snowflake"></a>
 ### Nested Schema for `sink.snowflake`
 
 Required:
 
-- `account_identifier` (String)
-- `auth` (Attributes) Authentication method for connecting to Snowflake (see [below for nested schema](#nestedatt--sink--snowflake--auth))
-- `target_database` (String)
-- `user` (String)
-- `warehouse` (String)
+- `account_identifier` (String) Snowflake account identifier ("myorg-account123")
+- `auth` (Attributes) Authentication method and its credentials (see [below for nested schema](#nestedatt--sink--snowflake--auth))
+- `target_database` (String) Name of the target database within Snowflake where data will be written
+- `user` (String) Snowflake username for login
+- `warehouse` (String) Name of the Snowflake virtual warehouse to use
 
 Optional:
 
-- `history_mode` (Attributes) How to preserve change history (see [below for nested schema](#nestedatt--sink--snowflake--history_mode))
+- `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--snowflake--history_mode))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--snowflake--migration_strategy))
-- `role` (String)
-- `target_schema` (String)
-- `use_transactions` (Boolean)
+- `role` (String) Snowflake role to use after establishing the connection
+- `target_schema` (String) Target schema name within the specified target database
+- `use_transactions` (Boolean) Enable transactional DML (disabled by default)
 
 <a id="nestedatt--sink--snowflake--auth"></a>
 ### Nested Schema for `sink.snowflake.auth`
@@ -2560,7 +2966,7 @@ Optional:
 
 Optional:
 
-- `allowed` (String)
+- `allowed` (List of String)
 - `disable_all` (Boolean)
 
 
@@ -2570,19 +2976,19 @@ Optional:
 
 Required:
 
-- `format` (Attributes) Message format for Kafka payloads (see [below for nested schema](#nestedatt--sink--webhook--format))
-- `url` (String)
+- `format` (Attributes) Message format (Debezium or Supermetal) (see [below for nested schema](#nestedatt--sink--webhook--format))
+- `url` (String) Base endpoint URL
 
 Optional:
 
-- `auth` (Attributes) Authentication method (see [below for nested schema](#nestedatt--sink--webhook--auth))
-- `batch` (Attributes) Batching behavior for outbound requests (see [below for nested schema](#nestedatt--sink--webhook--batch))
-- `compression` (String) Request body compression
-- `headers` (Attributes) Header configuration for outbound requests (see [below for nested schema](#nestedatt--sink--webhook--headers))
-- `path_template` (String)
-- `rate_limit` (Attributes) Rate limiting for outbound requests (see [below for nested schema](#nestedatt--sink--webhook--rate_limit))
-- `request_timeout_ms` (Number)
-- `retry` (Attributes) Retry behavior for failed requests (see [below for nested schema](#nestedatt--sink--webhook--retry))
+- `auth` (Attributes) (see [below for nested schema](#nestedatt--sink--webhook--auth))
+- `batch` (Attributes) (see [below for nested schema](#nestedatt--sink--webhook--batch))
+- `compression` (String)
+- `headers` (Attributes) (see [below for nested schema](#nestedatt--sink--webhook--headers))
+- `path_template` (String) Path template appended to URL. Supports {schema} and {table} placeholders.
+- `rate_limit` (Attributes) (see [below for nested schema](#nestedatt--sink--webhook--rate_limit))
+- `request_timeout_ms` (Number) Request timeout in milliseconds
+- `retry` (Attributes) (see [below for nested schema](#nestedatt--sink--webhook--retry))
 
 <a id="nestedatt--sink--webhook--format"></a>
 ### Nested Schema for `sink.webhook.format`
@@ -3332,7 +3738,7 @@ Optional:
 
 Required:
 
-- `value` (String) Header value
+- `value` (String, Sensitive) Header value
 
 
 
@@ -3376,19 +3782,19 @@ Optional:
 
 Required:
 
-- `database` (String)
-- `host` (String)
-- `password` (String, Sensitive)
-- `replication_type` (Attributes) Specifies the Db2 replication method (see [below for nested schema](#nestedatt--source--db2--replication_type))
-- `user` (String)
+- `database` (String) Database name
+- `host` (String) Database server hostname or IP address ("localhost" or "mydb.123456789012.us-east-1.rds.amazonaws.com")
+- `password` (String, Sensitive) Database user password
+- `replication_type` (Attributes) Choose a replication type (see [below for nested schema](#nestedatt--source--db2--replication_type))
+- `user` (String) Database user name. E.g. db2inst1
 
 Optional:
 
 - `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog))
-- `keyless_table_strategy` (Attributes) How to replicate tables without a primary key (see [below for nested schema](#nestedatt--source--db2--keyless_table_strategy))
-- `max_pool_size` (Number)
-- `port` (Number)
-- `system_columns` (Attributes) Optional metadata columns to append to every row (e.g. `_sm_synced_at`) (see [below for nested schema](#nestedatt--source--db2--system_columns))
+- `keyless_table_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--db2--keyless_table_strategy))
+- `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for default)
+- `port` (Number) Database server port (default: 50000)
+- `system_columns` (Attributes) (see [below for nested schema](#nestedatt--source--db2--system_columns))
 
 <a id="nestedatt--source--db2--replication_type"></a>
 ### Nested Schema for `source.db2.replication_type`
@@ -3440,6 +3846,9 @@ Optional:
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--columns))
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--iceberg_partition_spec))
+- `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--on_mongo_type_conflict))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--source_option))
+- `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--target_option))
 
 <a id="nestedatt--source--db2--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.db2.catalog.schemas.tables.columns`
@@ -3520,6 +3929,95 @@ Optional:
 
 
 
+<a id="nestedatt--source--db2--catalog--schemas--tables--on_mongo_type_conflict"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.on_mongo_type_conflict`
+
+Optional:
+
+- `coerce` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--on_mongo_type_conflict--coerce))
+- `widentostring` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--on_mongo_type_conflict--widentostring))
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--on_mongo_type_conflict--coerce"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.on_mongo_type_conflict.coerce`
+
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--source_option"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.source_option`
+
+Optional:
+
+- `file` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--source_option--file))
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--source_option--file"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.source_option.file`
+
+Optional:
+
+- `primary_keys` (List of String) Primary key columns for this table. Rows are deduplicated by these keys, keeping the latest file. Leave empty to append.
+
+
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--target_option"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.target_option`
+
+Optional:
+
+- `clickhouse` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--target_option--clickhouse))
+- `file_sink` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--target_option--file_sink))
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--target_option--clickhouse"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.target_option.clickhouse`
+
+Optional:
+
+- `order_by` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--target_option--clickhouse--order_by))
+- `partitioning` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--target_option--clickhouse--partitioning))
+- `sharding_key` (String) Sharding expression for this table. Defaults to a hash of its primary key, or rand() for a keyless table. Under Fivetran naming, use target column names
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--target_option--clickhouse--order_by"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.target_option.clickhouse.order_by`
+
+Optional:
+
+- `entries` (List of String) ORDER BY entries such as ["country", "created_at", "id"]. Replaces the default primary key ordering. Values must be immutable per row. Under Fivetran naming, use target column names.
+
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--target_option--clickhouse--partitioning"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.target_option.clickhouse.partitioning`
+
+Optional:
+
+- `expression` (String) PARTITION BY expression such as toYYYYMM(created_at). Values must be immutable per row, or updates and deletes leave stale rows in old partitions. Under Fivetran naming, use target column names.
+
+
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--target_option--file_sink"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.target_option.file_sink`
+
+Required:
+
+- `fields` (Attributes List) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--target_option--file_sink--fields))
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--target_option--file_sink--fields"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.target_option.file_sink.fields`
+
+Required:
+
+- `source_column` (String) Source column used to create this partition.
+
+Optional:
+
+- `name` (String) Optional folder key. Defaults to the final column name plus the transform suffix.
+- `transform` (String)
+
+
+
+
 
 
 
@@ -3573,26 +4071,28 @@ Optional:
 
 Required:
 
-- `object_store` (Attributes) Object store configuration (see [below for nested schema](#nestedatt--source--file_source--object_store))
+- `object_store` (Attributes) Object store backend (S3, GCS, Azure Blob, local filesystem) (see [below for nested schema](#nestedatt--source--file_source--object_store))
 
 Optional:
 
-- `discovery` (Attributes) File discovery method (see [below for nested schema](#nestedatt--source--file_source--discovery))
-- `error_handling` (Attributes) File processing error handling (see [below for nested schema](#nestedatt--source--file_source--error_handling))
-- `exclude_patterns` (List of String)
-- `format_details` (Attributes) Format-specific parsing options (see [below for nested schema](#nestedatt--source--file_source--format_details))
-- `glob_patterns` (List of String)
-- `post_processing` (Attributes) Action to take on source files after successful processing (see [below for nested schema](#nestedatt--source--file_source--post_processing))
-- `start_date` (Number)
-- `system_columns` (Attributes) Optional metadata columns to append to every row (e.g. `_sm_synced_at`) (see [below for nested schema](#nestedatt--source--file_source--system_columns))
-- `table_mapping` (Attributes) How files map to destination tables (see [below for nested schema](#nestedatt--source--file_source--table_mapping))
+- `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog))
+- `disable_zero_copy` (Boolean) Load files through the connector instead of having the destination read them directly from the bucket. Direct reads are faster but share the bucket credentials with the destination.
+- `discovery` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--discovery))
+- `error_handling` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--error_handling))
+- `exclude_patterns` (List of String) Glob patterns for excluding files (["**/_temporary/**", "**/.staging/**"])
+- `format_details` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--format_details))
+- `glob_patterns` (List of String) Glob patterns for selecting files (["**/*.csv", "data/*.parquet"])
+- `post_processing` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--post_processing))
+- `start_date` (Number) Ignore files with last_modified before this timestamp (unix epoch seconds)
+- `system_columns` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--system_columns))
+- `table_mapping` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--table_mapping))
 
 <a id="nestedatt--source--file_source--object_store"></a>
 ### Nested Schema for `source.file_source.object_store`
 
 Required:
 
-- `url` (String) URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path"
+- `url` (String) URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path", "gdrive:///optional/root", "dropbox:///optional/root", "sftp://host:22/optional/root"
 
 Optional:
 
@@ -3606,7 +4106,15 @@ S3: [{"name": "region", "value": "us-east-1"}, {"name": "access_key_id", "value"
 
 Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "value": "..."} or {"name": "sas_token", "value": "sp=..."}]
 
-GCS: [{"name": "service_account_key", "value": "{...JSON...}"}] (see [below for nested schema](#nestedatt--source--file_source--object_store--options))
+GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
+
+GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
+
+Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
+
+Google Drive and Dropbox refresh token: [{"name": "auth_type", "value": "refresh_token"}, {"name": "refresh_token", "value": "..."}, {"name": "client_id", "value": "..."}, {"name": "client_secret", "value": "..."}]
+
+SFTP key authentication: [{"name": "user", "value": "alice"}, {"name": "private_key", "value": "-----BEGIN OPENSSH PRIVATE KEY-----..."}, {"name": "server_public_key", "value": "ssh-ed25519 AAAA..."}] (see [below for nested schema](#nestedatt--source--file_source--object_store--options))
 - `root_certificate_pem` (String, Sensitive) PEM-encoded root certificate(s) for TLS verification
 
 <a id="nestedatt--source--file_source--object_store--options"></a>
@@ -3614,7 +4122,213 @@ GCS: [{"name": "service_account_key", "value": "{...JSON...}"}] (see [below for 
 
 Required:
 
-- `value` (String) Option value
+- `value` (String, Sensitive) Option value
+
+
+
+<a id="nestedatt--source--file_source--catalog"></a>
+### Nested Schema for `source.file_source.catalog`
+
+Required:
+
+- `name` (String)
+- `schemas` (Attributes Map) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas))
+
+Optional:
+
+- `default_action` (String)
+
+<a id="nestedatt--source--file_source--catalog--schemas"></a>
+### Nested Schema for `source.file_source.catalog.schemas`
+
+Required:
+
+- `tables` (Attributes Map) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables))
+
+Optional:
+
+- `action` (String)
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables`
+
+Optional:
+
+- `action` (String)
+- `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--columns))
+- `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec))
+- `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--on_mongo_type_conflict))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--source_option))
+- `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--target_option))
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--columns"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.columns`
+
+Optional:
+
+- `action` (String)
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.iceberg_partition_spec`
+
+Required:
+
+- `fields` (Attributes List) Partition fields, applied in order (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields))
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.iceberg_partition_spec.fields`
+
+Required:
+
+- `source_column` (String) Source column name
+- `transform` (Attributes) Transform applied to the source column (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform))
+
+Optional:
+
+- `name` (String) Partition column name in Iceberg. Defaults to {source_column}_{transform} (e.g. created_at_day)
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.iceberg_partition_spec.fields.transform`
+
+Optional:
+
+- `bucket` (Attributes) Hash into a fixed number of buckets (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--bucket))
+- `day` (Attributes) Day of a date or timestamp (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--day))
+- `hour` (Attributes) Hour of a timestamp (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--hour))
+- `identity` (Attributes) Source value, unchanged (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--identity))
+- `month` (Attributes) Month of a date or timestamp (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--month))
+- `truncate` (Attributes) Truncate to a fixed width (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--truncate))
+- `year` (Attributes) Year of a date or timestamp (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--year))
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--bucket"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.iceberg_partition_spec.fields.transform.bucket`
+
+Optional:
+
+- `num_buckets` (Number) Number of hash buckets
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--day"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.iceberg_partition_spec.fields.transform.day`
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--hour"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.iceberg_partition_spec.fields.transform.hour`
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--identity"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.iceberg_partition_spec.fields.transform.identity`
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--month"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.iceberg_partition_spec.fields.transform.month`
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--truncate"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.iceberg_partition_spec.fields.transform.truncate`
+
+Optional:
+
+- `width` (Number) Truncation width: characters for strings, bytes for binary, modulus for integers and decimals
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec--fields--transform--year"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.iceberg_partition_spec.fields.transform.year`
+
+
+
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--on_mongo_type_conflict"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.on_mongo_type_conflict`
+
+Optional:
+
+- `coerce` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--on_mongo_type_conflict--coerce))
+- `widentostring` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--on_mongo_type_conflict--widentostring))
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--on_mongo_type_conflict--coerce"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.on_mongo_type_conflict.coerce`
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--source_option"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.source_option`
+
+Optional:
+
+- `file` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--source_option--file))
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--source_option--file"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.source_option.file`
+
+Optional:
+
+- `primary_keys` (List of String) Primary key columns for this table. Rows are deduplicated by these keys, keeping the latest file. Leave empty to append.
+
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--target_option"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.target_option`
+
+Optional:
+
+- `clickhouse` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--target_option--clickhouse))
+- `file_sink` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--target_option--file_sink))
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--target_option--clickhouse"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.target_option.clickhouse`
+
+Optional:
+
+- `order_by` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--target_option--clickhouse--order_by))
+- `partitioning` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--target_option--clickhouse--partitioning))
+- `sharding_key` (String) Sharding expression for this table. Defaults to a hash of its primary key, or rand() for a keyless table. Under Fivetran naming, use target column names
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--target_option--clickhouse--order_by"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.target_option.clickhouse.order_by`
+
+Optional:
+
+- `entries` (List of String) ORDER BY entries such as ["country", "created_at", "id"]. Replaces the default primary key ordering. Values must be immutable per row. Under Fivetran naming, use target column names.
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--target_option--clickhouse--partitioning"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.target_option.clickhouse.partitioning`
+
+Optional:
+
+- `expression` (String) PARTITION BY expression such as toYYYYMM(created_at). Values must be immutable per row, or updates and deletes leave stale rows in old partitions. Under Fivetran naming, use target column names.
+
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--target_option--file_sink"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.target_option.file_sink`
+
+Required:
+
+- `fields` (Attributes List) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--target_option--file_sink--fields))
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--target_option--file_sink--fields"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.target_option.file_sink.fields`
+
+Required:
+
+- `source_column` (String) Source column used to create this partition.
+
+Optional:
+
+- `name` (String) Optional folder key. Defaults to the final column name plus the transform suffix.
+- `transform` (String)
+
+
+
+
 
 
 
@@ -3777,21 +4491,21 @@ Required:
 
 Required:
 
-- `address` (String)
-- `database` (String)
-- `replication_type` (Attributes) MongoDB replication method (see [below for nested schema](#nestedatt--source--mongo--replication_type))
+- `address` (String) MongoDB connection string URI ("mongodb://host:27017" or "mongodb+srv://cluster.mongodb.net")
+- `database` (String) Name of the database to replicate
+- `replication_type` (Attributes) How documents are mapped to the target schema (see [below for nested schema](#nestedatt--source--mongo--replication_type))
 
 Optional:
 
-- `authentication_source` (String)
+- `authentication_source` (String) Database to authenticate against (defaults to admin if not specified)
 - `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog))
-- `flatten_body` (Boolean)
-- `flatten_max_depth` (Number)
-- `max_pool_size` (Number)
-- `password` (String, Sensitive)
-- `ssl_mode` (Attributes) SSL connection mode for MongoDB (see [below for nested schema](#nestedatt--source--mongo--ssl_mode))
-- `system_columns` (Attributes) Optional metadata columns to append to every row (e.g. `_sm_synced_at`) (see [below for nested schema](#nestedatt--source--mongo--system_columns))
-- `user` (String)
+- `flatten_body` (Boolean) Flatten nested document fields to top-level columns (address.city becomes address__city)
+- `flatten_max_depth` (Number) Caps flatten_body at N nested-document layers; deeper subtrees stay as JSON. 0 = unlimited (default). Arrays don't count toward depth.
+- `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for default)
+- `password` (String, Sensitive) Password for authentication (optional for X.509 or unauthenticated clusters)
+- `ssl_mode` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--ssl_mode))
+- `system_columns` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--system_columns))
+- `user` (String) Username for authentication (optional for X.509 or unauthenticated clusters)
 
 <a id="nestedatt--source--mongo--replication_type"></a>
 ### Nested Schema for `source.mongo.replication_type`
@@ -3826,14 +4540,16 @@ Optional:
 Optional:
 
 - `infer_typed_strings` (Boolean) Infer numeric and temporal types from BSON string values (e.g. "123" -> Int64, "2024-01-01" -> Date32)
+- `majority_type_threshold` (Number) Use the dominant type per field when it covers at least this fraction of values (e.g. 0.95). Mismatches become null. 0 disables.
 - `object_store` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--replication_type--change_streams--replication_mode--schema_mode--object_store))
+- `on_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--replication_type--change_streams--replication_mode--schema_mode--on_type_conflict))
 
 <a id="nestedatt--source--mongo--replication_type--change_streams--replication_mode--schema_mode--object_store"></a>
 ### Nested Schema for `source.mongo.replication_type.change_streams.replication_mode.schema_mode.object_store`
 
 Required:
 
-- `url` (String) URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path"
+- `url` (String) URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path", "gdrive:///optional/root", "dropbox:///optional/root", "sftp://host:22/optional/root"
 
 Optional:
 
@@ -3847,7 +4563,15 @@ S3: [{"name": "region", "value": "us-east-1"}, {"name": "access_key_id", "value"
 
 Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "value": "..."} or {"name": "sas_token", "value": "sp=..."}]
 
-GCS: [{"name": "service_account_key", "value": "{...JSON...}"}] (see [below for nested schema](#nestedatt--source--mongo--replication_type--change_streams--replication_mode--schema_mode--object_store--options))
+GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
+
+GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
+
+Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
+
+Google Drive and Dropbox refresh token: [{"name": "auth_type", "value": "refresh_token"}, {"name": "refresh_token", "value": "..."}, {"name": "client_id", "value": "..."}, {"name": "client_secret", "value": "..."}]
+
+SFTP key authentication: [{"name": "user", "value": "alice"}, {"name": "private_key", "value": "-----BEGIN OPENSSH PRIVATE KEY-----..."}, {"name": "server_public_key", "value": "ssh-ed25519 AAAA..."}] (see [below for nested schema](#nestedatt--source--mongo--replication_type--change_streams--replication_mode--schema_mode--object_store--options))
 - `root_certificate_pem` (String, Sensitive) PEM-encoded root certificate(s) for TLS verification
 
 <a id="nestedatt--source--mongo--replication_type--change_streams--replication_mode--schema_mode--object_store--options"></a>
@@ -3855,7 +4579,24 @@ GCS: [{"name": "service_account_key", "value": "{...JSON...}"}] (see [below for 
 
 Required:
 
-- `value` (String) Option value
+- `value` (String, Sensitive) Option value
+
+
+
+<a id="nestedatt--source--mongo--replication_type--change_streams--replication_mode--schema_mode--on_type_conflict"></a>
+### Nested Schema for `source.mongo.replication_type.change_streams.replication_mode.schema_mode.on_type_conflict`
+
+Optional:
+
+- `coerce` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--replication_type--change_streams--replication_mode--schema_mode--on_type_conflict--coerce))
+- `widentostring` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--replication_type--change_streams--replication_mode--schema_mode--on_type_conflict--widentostring))
+
+<a id="nestedatt--source--mongo--replication_type--change_streams--replication_mode--schema_mode--on_type_conflict--coerce"></a>
+### Nested Schema for `source.mongo.replication_type.change_streams.replication_mode.schema_mode.on_type_conflict.coerce`
+
+
+<a id="nestedatt--source--mongo--replication_type--change_streams--replication_mode--schema_mode--on_type_conflict--widentostring"></a>
+### Nested Schema for `source.mongo.replication_type.change_streams.replication_mode.schema_mode.on_type_conflict.widentostring`
 
 
 
@@ -3887,14 +4628,16 @@ Optional:
 Optional:
 
 - `infer_typed_strings` (Boolean) Infer numeric and temporal types from BSON string values (e.g. "123" -> Int64, "2024-01-01" -> Date32)
+- `majority_type_threshold` (Number) Use the dominant type per field when it covers at least this fraction of values (e.g. 0.95). Mismatches become null. 0 disables.
 - `object_store` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--replication_type--snapshot--replication_mode--schema_mode--object_store))
+- `on_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--replication_type--snapshot--replication_mode--schema_mode--on_type_conflict))
 
 <a id="nestedatt--source--mongo--replication_type--snapshot--replication_mode--schema_mode--object_store"></a>
 ### Nested Schema for `source.mongo.replication_type.snapshot.replication_mode.schema_mode.object_store`
 
 Required:
 
-- `url` (String) URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path"
+- `url` (String) URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path", "gdrive:///optional/root", "dropbox:///optional/root", "sftp://host:22/optional/root"
 
 Optional:
 
@@ -3908,7 +4651,15 @@ S3: [{"name": "region", "value": "us-east-1"}, {"name": "access_key_id", "value"
 
 Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "value": "..."} or {"name": "sas_token", "value": "sp=..."}]
 
-GCS: [{"name": "service_account_key", "value": "{...JSON...}"}] (see [below for nested schema](#nestedatt--source--mongo--replication_type--snapshot--replication_mode--schema_mode--object_store--options))
+GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
+
+GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
+
+Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
+
+Google Drive and Dropbox refresh token: [{"name": "auth_type", "value": "refresh_token"}, {"name": "refresh_token", "value": "..."}, {"name": "client_id", "value": "..."}, {"name": "client_secret", "value": "..."}]
+
+SFTP key authentication: [{"name": "user", "value": "alice"}, {"name": "private_key", "value": "-----BEGIN OPENSSH PRIVATE KEY-----..."}, {"name": "server_public_key", "value": "ssh-ed25519 AAAA..."}] (see [below for nested schema](#nestedatt--source--mongo--replication_type--snapshot--replication_mode--schema_mode--object_store--options))
 - `root_certificate_pem` (String, Sensitive) PEM-encoded root certificate(s) for TLS verification
 
 <a id="nestedatt--source--mongo--replication_type--snapshot--replication_mode--schema_mode--object_store--options"></a>
@@ -3916,7 +4667,24 @@ GCS: [{"name": "service_account_key", "value": "{...JSON...}"}] (see [below for 
 
 Required:
 
-- `value` (String) Option value
+- `value` (String, Sensitive) Option value
+
+
+
+<a id="nestedatt--source--mongo--replication_type--snapshot--replication_mode--schema_mode--on_type_conflict"></a>
+### Nested Schema for `source.mongo.replication_type.snapshot.replication_mode.schema_mode.on_type_conflict`
+
+Optional:
+
+- `coerce` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--replication_type--snapshot--replication_mode--schema_mode--on_type_conflict--coerce))
+- `widentostring` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--replication_type--snapshot--replication_mode--schema_mode--on_type_conflict--widentostring))
+
+<a id="nestedatt--source--mongo--replication_type--snapshot--replication_mode--schema_mode--on_type_conflict--coerce"></a>
+### Nested Schema for `source.mongo.replication_type.snapshot.replication_mode.schema_mode.on_type_conflict.coerce`
+
+
+<a id="nestedatt--source--mongo--replication_type--snapshot--replication_mode--schema_mode--on_type_conflict--widentostring"></a>
+### Nested Schema for `source.mongo.replication_type.snapshot.replication_mode.schema_mode.on_type_conflict.widentostring`
 
 
 
@@ -3959,6 +4727,9 @@ Optional:
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--columns))
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--iceberg_partition_spec))
+- `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--on_mongo_type_conflict))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--source_option))
+- `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--target_option))
 
 <a id="nestedatt--source--mongo--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.mongo.catalog.schemas.tables.columns`
@@ -4039,6 +4810,95 @@ Optional:
 
 
 
+<a id="nestedatt--source--mongo--catalog--schemas--tables--on_mongo_type_conflict"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.on_mongo_type_conflict`
+
+Optional:
+
+- `coerce` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--on_mongo_type_conflict--coerce))
+- `widentostring` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--on_mongo_type_conflict--widentostring))
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--on_mongo_type_conflict--coerce"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.on_mongo_type_conflict.coerce`
+
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--source_option"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.source_option`
+
+Optional:
+
+- `file` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--source_option--file))
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--source_option--file"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.source_option.file`
+
+Optional:
+
+- `primary_keys` (List of String) Primary key columns for this table. Rows are deduplicated by these keys, keeping the latest file. Leave empty to append.
+
+
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--target_option"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.target_option`
+
+Optional:
+
+- `clickhouse` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--target_option--clickhouse))
+- `file_sink` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--target_option--file_sink))
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--target_option--clickhouse"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.target_option.clickhouse`
+
+Optional:
+
+- `order_by` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--target_option--clickhouse--order_by))
+- `partitioning` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--target_option--clickhouse--partitioning))
+- `sharding_key` (String) Sharding expression for this table. Defaults to a hash of its primary key, or rand() for a keyless table. Under Fivetran naming, use target column names
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--target_option--clickhouse--order_by"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.target_option.clickhouse.order_by`
+
+Optional:
+
+- `entries` (List of String) ORDER BY entries such as ["country", "created_at", "id"]. Replaces the default primary key ordering. Values must be immutable per row. Under Fivetran naming, use target column names.
+
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--target_option--clickhouse--partitioning"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.target_option.clickhouse.partitioning`
+
+Optional:
+
+- `expression` (String) PARTITION BY expression such as toYYYYMM(created_at). Values must be immutable per row, or updates and deletes leave stale rows in old partitions. Under Fivetran naming, use target column names.
+
+
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--target_option--file_sink"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.target_option.file_sink`
+
+Required:
+
+- `fields` (Attributes List) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--target_option--file_sink--fields))
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--target_option--file_sink--fields"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.target_option.file_sink.fields`
+
+Required:
+
+- `source_column` (String) Source column used to create this partition.
+
+Optional:
+
+- `name` (String) Optional folder key. Defaults to the final column name plus the transform suffix.
+- `transform` (String)
+
+
+
+
 
 
 
@@ -4097,25 +4957,23 @@ Optional:
 
 Required:
 
-- `host` (String)
+- `host` (String) MySQL server hostname or IP address ("mysql.example.com" or "192.168.0.10")
 
 Optional:
 
 - `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog))
-- `database` (String)
-- `infer_tinyint1_as_boolean` (Boolean)
-- `keyless_table_strategy` (Attributes) How to replicate tables without a primary key (see [below for nested schema](#nestedatt--source--mysql--keyless_table_strategy))
-- `max_pool_size` (Number)
-- `parallel_snapshots_enabled` (Boolean)
-- `password` (String, Sensitive)
-- `port` (Number)
-- `skip_snapshot` (Boolean)
-- `ssl_mode` (Attributes) SSL encryption mode for the connection to MySQL (see [below for nested schema](#nestedatt--source--mysql--ssl_mode))
-- `system_columns` (Attributes) Optional metadata columns to append to every row (e.g. `_sm_synced_at`) (see [below for nested schema](#nestedatt--source--mysql--system_columns))
-- `tunnel` (Attributes) Optional network transport. Leave unset for direct TCP; pick a
- variant to tunnel the connection. Today only SSH bastion is supported;
- additional transports (e.g. PrivateLink) can be added as new variants. (see [below for nested schema](#nestedatt--source--mysql--tunnel))
-- `user` (String)
+- `database` (String) Name of the database to connect to (if not specified, will discover all accessible databases)
+- `infer_tinyint1_as_boolean` (Boolean) Map MySQL `TINYINT(1)` columns to boolean on the target. Disable to keep them as integers when columns can hold values outside `{0, 1}`. `BIT(1)` is always mapped to boolean (MySQL constrains its storage).
+- `keyless_table_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--keyless_table_strategy))
+- `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for default)
+- `parallel_snapshots_enabled` (Boolean) Use parallel snapshots for initial data synchronization
+- `password` (String, Sensitive) MySQL password for authentication
+- `port` (Number) Port number for the MySQL server
+- `skip_snapshot` (Boolean) Skip the initial snapshot and start CDC from the current binlog position
+- `ssl_mode` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--ssl_mode))
+- `system_columns` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--system_columns))
+- `tunnel` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--tunnel))
+- `user` (String) MySQL username for authentication
 
 <a id="nestedatt--source--mysql--catalog"></a>
 ### Nested Schema for `source.mysql.catalog`
@@ -4148,6 +5006,9 @@ Optional:
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--columns))
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--iceberg_partition_spec))
+- `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--on_mongo_type_conflict))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--source_option))
+- `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--target_option))
 
 <a id="nestedatt--source--mysql--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.mysql.catalog.schemas.tables.columns`
@@ -4224,6 +5085,95 @@ Optional:
 <a id="nestedatt--source--mysql--catalog--schemas--tables--iceberg_partition_spec--fields--transform--year"></a>
 ### Nested Schema for `source.mysql.catalog.schemas.tables.iceberg_partition_spec.fields.transform.year`
 
+
+
+
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--on_mongo_type_conflict"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.on_mongo_type_conflict`
+
+Optional:
+
+- `coerce` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--on_mongo_type_conflict--coerce))
+- `widentostring` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--on_mongo_type_conflict--widentostring))
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--on_mongo_type_conflict--coerce"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.on_mongo_type_conflict.coerce`
+
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--source_option"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.source_option`
+
+Optional:
+
+- `file` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--source_option--file))
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--source_option--file"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.source_option.file`
+
+Optional:
+
+- `primary_keys` (List of String) Primary key columns for this table. Rows are deduplicated by these keys, keeping the latest file. Leave empty to append.
+
+
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--target_option"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.target_option`
+
+Optional:
+
+- `clickhouse` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--target_option--clickhouse))
+- `file_sink` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--target_option--file_sink))
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--target_option--clickhouse"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.target_option.clickhouse`
+
+Optional:
+
+- `order_by` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--target_option--clickhouse--order_by))
+- `partitioning` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--target_option--clickhouse--partitioning))
+- `sharding_key` (String) Sharding expression for this table. Defaults to a hash of its primary key, or rand() for a keyless table. Under Fivetran naming, use target column names
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--target_option--clickhouse--order_by"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.target_option.clickhouse.order_by`
+
+Optional:
+
+- `entries` (List of String) ORDER BY entries such as ["country", "created_at", "id"]. Replaces the default primary key ordering. Values must be immutable per row. Under Fivetran naming, use target column names.
+
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--target_option--clickhouse--partitioning"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.target_option.clickhouse.partitioning`
+
+Optional:
+
+- `expression` (String) PARTITION BY expression such as toYYYYMM(created_at). Values must be immutable per row, or updates and deletes leave stale rows in old partitions. Under Fivetran naming, use target column names.
+
+
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--target_option--file_sink"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.target_option.file_sink`
+
+Required:
+
+- `fields` (Attributes List) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--target_option--file_sink--fields))
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--target_option--file_sink--fields"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.target_option.file_sink.fields`
+
+Required:
+
+- `source_column` (String) Source column used to create this partition.
+
+Optional:
+
+- `name` (String) Optional folder key. Defaults to the final column name plus the transform suffix.
+- `transform` (String)
 
 
 
@@ -4365,19 +5315,19 @@ Required:
 
 Required:
 
-- `connect_string` (String)
-- `password` (String, Sensitive)
-- `replication_type` (Attributes) Oracle replication method (see [below for nested schema](#nestedatt--source--oracle--replication_type))
-- `user` (String)
+- `connect_string` (String) Oracle connection string ("//localhost:1521/ORCLCDB")
+- `password` (String, Sensitive) Oracle database password
+- `replication_type` (Attributes) Replication method and its specific settings (see [below for nested schema](#nestedatt--source--oracle--replication_type))
+- `user` (String) Oracle database username
 
 Optional:
 
 - `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog))
-- `keyless_table_strategy` (Attributes) How to replicate tables without a primary key (see [below for nested schema](#nestedatt--source--oracle--keyless_table_strategy))
-- `max_pool_size` (Number)
-- `parallel_snapshots_enabled` (Boolean)
-- `pdb` (String)
-- `system_columns` (Attributes) Optional metadata columns to append to every row (e.g. `_sm_synced_at`) (see [below for nested schema](#nestedatt--source--oracle--system_columns))
+- `keyless_table_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--keyless_table_strategy))
+- `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for default)
+- `parallel_snapshots_enabled` (Boolean) Use parallel snapshots for initial data synchronization
+- `pdb` (String) Pluggable Database (PDB) name
+- `system_columns` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--system_columns))
 
 <a id="nestedatt--source--oracle--replication_type"></a>
 ### Nested Schema for `source.oracle.replication_type`
@@ -4429,6 +5379,9 @@ Optional:
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--columns))
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--iceberg_partition_spec))
+- `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--on_mongo_type_conflict))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--source_option))
+- `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--target_option))
 
 <a id="nestedatt--source--oracle--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.oracle.catalog.schemas.tables.columns`
@@ -4509,6 +5462,95 @@ Optional:
 
 
 
+<a id="nestedatt--source--oracle--catalog--schemas--tables--on_mongo_type_conflict"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.on_mongo_type_conflict`
+
+Optional:
+
+- `coerce` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--on_mongo_type_conflict--coerce))
+- `widentostring` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--on_mongo_type_conflict--widentostring))
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--on_mongo_type_conflict--coerce"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.on_mongo_type_conflict.coerce`
+
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--source_option"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.source_option`
+
+Optional:
+
+- `file` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--source_option--file))
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--source_option--file"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.source_option.file`
+
+Optional:
+
+- `primary_keys` (List of String) Primary key columns for this table. Rows are deduplicated by these keys, keeping the latest file. Leave empty to append.
+
+
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--target_option"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.target_option`
+
+Optional:
+
+- `clickhouse` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--target_option--clickhouse))
+- `file_sink` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--target_option--file_sink))
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--target_option--clickhouse"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.target_option.clickhouse`
+
+Optional:
+
+- `order_by` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--target_option--clickhouse--order_by))
+- `partitioning` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--target_option--clickhouse--partitioning))
+- `sharding_key` (String) Sharding expression for this table. Defaults to a hash of its primary key, or rand() for a keyless table. Under Fivetran naming, use target column names
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--target_option--clickhouse--order_by"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.target_option.clickhouse.order_by`
+
+Optional:
+
+- `entries` (List of String) ORDER BY entries such as ["country", "created_at", "id"]. Replaces the default primary key ordering. Values must be immutable per row. Under Fivetran naming, use target column names.
+
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--target_option--clickhouse--partitioning"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.target_option.clickhouse.partitioning`
+
+Optional:
+
+- `expression` (String) PARTITION BY expression such as toYYYYMM(created_at). Values must be immutable per row, or updates and deletes leave stale rows in old partitions. Under Fivetran naming, use target column names.
+
+
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--target_option--file_sink"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.target_option.file_sink`
+
+Required:
+
+- `fields` (Attributes List) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--target_option--file_sink--fields))
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--target_option--file_sink--fields"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.target_option.file_sink.fields`
+
+Required:
+
+- `source_column` (String) Source column used to create this partition.
+
+Optional:
+
+- `name` (String) Optional folder key. Defaults to the final column name plus the transform suffix.
+- `transform` (String)
+
+
+
+
 
 
 
@@ -4562,29 +5604,27 @@ Optional:
 
 Required:
 
-- `database` (String)
-- `host` (String)
-- `password` (String, Sensitive)
-- `replication_type` (Attributes) Specifies the PostgreSQL replication method (see [below for nested schema](#nestedatt--source--postgres--replication_type))
-- `user` (String)
+- `database` (String) Name of the database to connect to
+- `host` (String) Database server hostname or IP address ("localhost" or "mydb.123456789012.us-east-1.rds.amazonaws.com")
+- `password` (String, Sensitive) Password for database authentication
+- `replication_type` (Attributes) Choose a replication type (see [below for nested schema](#nestedatt--source--postgres--replication_type))
+- `user` (String) Username for database authentication
 
 Optional:
 
 - `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog))
-- `keyless_table_strategy` (Attributes) How to replicate tables without a primary key (see [below for nested schema](#nestedatt--source--postgres--keyless_table_strategy))
-- `max_pool_size` (Number)
-- `operation_lock_timeout_seconds` (Number)
-- `parallel_snapshots_enabled` (Boolean)
-- `partitions_as_root` (Boolean)
-- `port` (Number)
-- `ssl_cert` (String, Sensitive)
-- `ssl_key` (String, Sensitive)
-- `ssl_mode` (String) SSL connection mode for the PostgreSQL server
-- `ssl_root_cert` (String, Sensitive)
-- `system_columns` (Attributes) Optional metadata columns to append to every row (e.g. `_sm_synced_at`) (see [below for nested schema](#nestedatt--source--postgres--system_columns))
-- `tunnel` (Attributes) Optional network transport. Leave unset for direct TCP; pick a
- variant to tunnel the connection. Today only SSH bastion is supported;
- additional transports (e.g. PrivateLink) can be added as new variants. (see [below for nested schema](#nestedatt--source--postgres--tunnel))
+- `keyless_table_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--keyless_table_strategy))
+- `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for default)
+- `operation_lock_timeout_seconds` (Number) Enables fail-fast behavior for data operations (COPY, INSERT, MERGE) by setting a `lock_timeout`. This prevents operations from waiting indefinitely when tables are locked by either long running transactions, DDL or Maintenance operations. Disabled by default, operations wait indefinitely. Set to a non-zero value (e.g., '60') to let operations fail-fast. https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
+- `parallel_snapshots_enabled` (Boolean) Use parallel snapshots for initial data synchronization
+- `partitions_as_root` (Boolean) Sync partitioned tables as a single root table instead of one table per partition. Applies to logical replication only.
+- `port` (Number) Port number for the PostgreSQL server
+- `ssl_cert` (String, Sensitive) Client's SSL certificate content
+- `ssl_key` (String, Sensitive) Client's private SSL key content
+- `ssl_mode` (String)
+- `ssl_root_cert` (String, Sensitive) SSL root certificate content for server verification
+- `system_columns` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--system_columns))
+- `tunnel` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--tunnel))
 
 <a id="nestedatt--source--postgres--replication_type"></a>
 ### Nested Schema for `source.postgres.replication_type`
@@ -4603,6 +5643,7 @@ Optional:
 - `publication_name` (String) Existing publication to subscribe to. Superusers can leave this empty to create one automatically.
 - `retry_window_seconds` (Number) Maximum time window (in seconds) to retry transient connection errors before failing. Defaults to 300 seconds.
 - `skip_snapshots` (Boolean) Skip the initial snapshot/backfill and start streaming changes from the replication slot's consistent point. Use when existing data does not need to be replicated.
+- `toast_mode` (String)
 
 
 <a id="nestedatt--source--postgres--replication_type--query_based"></a>
@@ -4634,7 +5675,7 @@ Optional:
 
 Required:
 
-- `url` (String) URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path"
+- `url` (String) URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path", "gdrive:///optional/root", "dropbox:///optional/root", "sftp://host:22/optional/root"
 
 Optional:
 
@@ -4648,7 +5689,15 @@ S3: [{"name": "region", "value": "us-east-1"}, {"name": "access_key_id", "value"
 
 Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "value": "..."} or {"name": "sas_token", "value": "sp=..."}]
 
-GCS: [{"name": "service_account_key", "value": "{...JSON...}"}] (see [below for nested schema](#nestedatt--source--postgres--replication_type--query_based--delete_tracking--enabled--pk_index_store--options))
+GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
+
+GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
+
+Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
+
+Google Drive and Dropbox refresh token: [{"name": "auth_type", "value": "refresh_token"}, {"name": "refresh_token", "value": "..."}, {"name": "client_id", "value": "..."}, {"name": "client_secret", "value": "..."}]
+
+SFTP key authentication: [{"name": "user", "value": "alice"}, {"name": "private_key", "value": "-----BEGIN OPENSSH PRIVATE KEY-----..."}, {"name": "server_public_key", "value": "ssh-ed25519 AAAA..."}] (see [below for nested schema](#nestedatt--source--postgres--replication_type--query_based--delete_tracking--enabled--pk_index_store--options))
 - `root_certificate_pem` (String, Sensitive) PEM-encoded root certificate(s) for TLS verification
 
 <a id="nestedatt--source--postgres--replication_type--query_based--delete_tracking--enabled--pk_index_store--options"></a>
@@ -4656,7 +5705,7 @@ GCS: [{"name": "service_account_key", "value": "{...JSON...}"}] (see [below for 
 
 Required:
 
-- `value` (String) Option value
+- `value` (String, Sensitive) Option value
 
 
 
@@ -4699,6 +5748,9 @@ Optional:
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--columns))
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--iceberg_partition_spec))
+- `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--on_mongo_type_conflict))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--source_option))
+- `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--target_option))
 
 <a id="nestedatt--source--postgres--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.postgres.catalog.schemas.tables.columns`
@@ -4775,6 +5827,95 @@ Optional:
 <a id="nestedatt--source--postgres--catalog--schemas--tables--iceberg_partition_spec--fields--transform--year"></a>
 ### Nested Schema for `source.postgres.catalog.schemas.tables.iceberg_partition_spec.fields.transform.year`
 
+
+
+
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--on_mongo_type_conflict"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.on_mongo_type_conflict`
+
+Optional:
+
+- `coerce` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--on_mongo_type_conflict--coerce))
+- `widentostring` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--on_mongo_type_conflict--widentostring))
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--on_mongo_type_conflict--coerce"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.on_mongo_type_conflict.coerce`
+
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--source_option"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.source_option`
+
+Optional:
+
+- `file` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--source_option--file))
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--source_option--file"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.source_option.file`
+
+Optional:
+
+- `primary_keys` (List of String) Primary key columns for this table. Rows are deduplicated by these keys, keeping the latest file. Leave empty to append.
+
+
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--target_option"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.target_option`
+
+Optional:
+
+- `clickhouse` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--target_option--clickhouse))
+- `file_sink` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--target_option--file_sink))
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--target_option--clickhouse"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.target_option.clickhouse`
+
+Optional:
+
+- `order_by` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--target_option--clickhouse--order_by))
+- `partitioning` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--target_option--clickhouse--partitioning))
+- `sharding_key` (String) Sharding expression for this table. Defaults to a hash of its primary key, or rand() for a keyless table. Under Fivetran naming, use target column names
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--target_option--clickhouse--order_by"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.target_option.clickhouse.order_by`
+
+Optional:
+
+- `entries` (List of String) ORDER BY entries such as ["country", "created_at", "id"]. Replaces the default primary key ordering. Values must be immutable per row. Under Fivetran naming, use target column names.
+
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--target_option--clickhouse--partitioning"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.target_option.clickhouse.partitioning`
+
+Optional:
+
+- `expression` (String) PARTITION BY expression such as toYYYYMM(created_at). Values must be immutable per row, or updates and deletes leave stale rows in old partitions. Under Fivetran naming, use target column names.
+
+
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--target_option--file_sink"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.target_option.file_sink`
+
+Required:
+
+- `fields` (Attributes List) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--target_option--file_sink--fields))
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--target_option--file_sink--fields"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.target_option.file_sink.fields`
+
+Required:
+
+- `source_column` (String) Source column used to create this partition.
+
+Optional:
+
+- `name` (String) Optional folder key. Defaults to the final column name plus the transform suffix.
+- `transform` (String)
 
 
 
@@ -4881,21 +6022,22 @@ Required:
 
 Required:
 
-- `auth` (Attributes) Authentication method for SQL Server (see [below for nested schema](#nestedatt--source--sqlserver--auth))
-- `database` (String)
-- `host` (String)
-- `replication_type` (Attributes) SQL Server replication method (see [below for nested schema](#nestedatt--source--sqlserver--replication_type))
+- `auth` (Attributes) Authentication method and its credentials (see [below for nested schema](#nestedatt--source--sqlserver--auth))
+- `database` (String) Name of the database to connect to
+- `host` (String) SQL Server instance hostname or IP address ("myserver.database.windows.net" or "192.168.0.10")
+- `replication_type` (Attributes) Replication type: CDC for ongoing replication or Snapshot for one-time load (see [below for nested schema](#nestedatt--source--sqlserver--replication_type))
 
 Optional:
 
 - `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog))
-- `keyless_table_strategy` (Attributes) How to replicate tables without a primary key (see [below for nested schema](#nestedatt--source--sqlserver--keyless_table_strategy))
-- `max_pool_size` (Number)
-- `parallel_snapshots_enabled` (Boolean)
-- `port` (Number)
-- `snapshot_isolation` (String) Snapshot isolation behavior during snapshot reads
-- `ssl_mode` (Attributes) SSL encryption mode for the connection to SQL Server (see [below for nested schema](#nestedatt--source--sqlserver--ssl_mode))
-- `system_columns` (Attributes) Optional metadata columns to append to every row (e.g. `_sm_synced_at`) (see [below for nested schema](#nestedatt--source--sqlserver--system_columns))
+- `keyless_table_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--keyless_table_strategy))
+- `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for default)
+- `parallel_snapshots_enabled` (Boolean) Use parallel snapshots for initial data synchronization
+- `port` (Number) Port number for the SQL Server instance
+- `snapshot_isolation` (String)
+- `ssl_mode` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--ssl_mode))
+- `system_columns` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--system_columns))
+- `tunnel` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--tunnel))
 
 <a id="nestedatt--source--sqlserver--auth"></a>
 ### Nested Schema for `source.sqlserver.auth`
@@ -4990,6 +6132,9 @@ Optional:
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--columns))
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--iceberg_partition_spec))
+- `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--on_mongo_type_conflict))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--source_option))
+- `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--target_option))
 
 <a id="nestedatt--source--sqlserver--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.sqlserver.catalog.schemas.tables.columns`
@@ -5070,6 +6215,95 @@ Optional:
 
 
 
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--on_mongo_type_conflict"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.on_mongo_type_conflict`
+
+Optional:
+
+- `coerce` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--on_mongo_type_conflict--coerce))
+- `widentostring` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--on_mongo_type_conflict--widentostring))
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--on_mongo_type_conflict--coerce"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.on_mongo_type_conflict.coerce`
+
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--source_option"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.source_option`
+
+Optional:
+
+- `file` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--source_option--file))
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--source_option--file"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.source_option.file`
+
+Optional:
+
+- `primary_keys` (List of String) Primary key columns for this table. Rows are deduplicated by these keys, keeping the latest file. Leave empty to append.
+
+
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--target_option"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.target_option`
+
+Optional:
+
+- `clickhouse` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--target_option--clickhouse))
+- `file_sink` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--target_option--file_sink))
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--target_option--clickhouse"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.target_option.clickhouse`
+
+Optional:
+
+- `order_by` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--target_option--clickhouse--order_by))
+- `partitioning` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--target_option--clickhouse--partitioning))
+- `sharding_key` (String) Sharding expression for this table. Defaults to a hash of its primary key, or rand() for a keyless table. Under Fivetran naming, use target column names
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--target_option--clickhouse--order_by"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.target_option.clickhouse.order_by`
+
+Optional:
+
+- `entries` (List of String) ORDER BY entries such as ["country", "created_at", "id"]. Replaces the default primary key ordering. Values must be immutable per row. Under Fivetran naming, use target column names.
+
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--target_option--clickhouse--partitioning"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.target_option.clickhouse.partitioning`
+
+Optional:
+
+- `expression` (String) PARTITION BY expression such as toYYYYMM(created_at). Values must be immutable per row, or updates and deletes leave stale rows in old partitions. Under Fivetran naming, use target column names.
+
+
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--target_option--file_sink"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.target_option.file_sink`
+
+Required:
+
+- `fields` (Attributes List) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--target_option--file_sink--fields))
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--target_option--file_sink--fields"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.target_option.file_sink.fields`
+
+Required:
+
+- `source_column` (String) Source column used to create this partition.
+
+Optional:
+
+- `name` (String) Optional folder key. Defaults to the final column name plus the transform suffix.
+- `transform` (String)
+
+
+
+
 
 
 
@@ -5135,6 +6369,180 @@ Optional:
 
 <a id="nestedatt--source--sqlserver--system_columns--synced_at"></a>
 ### Nested Schema for `source.sqlserver.system_columns.synced_at`
+
+
+
+<a id="nestedatt--source--sqlserver--tunnel"></a>
+### Nested Schema for `source.sqlserver.tunnel`
+
+Optional:
+
+- `ssh` (Attributes) Tunnel through an SSH bastion host (see [below for nested schema](#nestedatt--source--sqlserver--tunnel--ssh))
+
+<a id="nestedatt--source--sqlserver--tunnel--ssh"></a>
+### Nested Schema for `source.sqlserver.tunnel.ssh`
+
+Required:
+
+- `auth` (Attributes) How to authenticate against the bastion (see [below for nested schema](#nestedatt--source--sqlserver--tunnel--ssh--auth))
+- `bastion_host` (String) Hostname or IP of the SSH bastion server
+- `user` (String) SSH username on the bastion server
+
+Optional:
+
+- `bastion_alternates` (List of String) Fallback bastion hostnames, tried in order if the primary is unreachable
+- `bastion_port` (Number) SSH port on the bastion server
+
+<a id="nestedatt--source--sqlserver--tunnel--ssh--auth"></a>
+### Nested Schema for `source.sqlserver.tunnel.ssh.auth`
+
+Optional:
+
+- `bring_your_own_key` (Attributes) Paste your own private key (see [below for nested schema](#nestedatt--source--sqlserver--tunnel--ssh--auth--bring_your_own_key))
+- `generated_key` (Attributes) Supermetal generates the keypair; you install the public key on the bastion (see [below for nested schema](#nestedatt--source--sqlserver--tunnel--ssh--auth--generated_key))
+
+<a id="nestedatt--source--sqlserver--tunnel--ssh--auth--bring_your_own_key"></a>
+### Nested Schema for `source.sqlserver.tunnel.ssh.auth.bring_your_own_key`
+
+Required:
+
+- `private_key` (String, Sensitive) OpenSSH-encoded private key
+
+
+<a id="nestedatt--source--sqlserver--tunnel--ssh--auth--generated_key"></a>
+### Nested Schema for `source.sqlserver.tunnel.ssh.auth.generated_key`
+
+Required:
+
+- `private_key` (String, Sensitive) Private key (managed by Supermetal)
+- `public_key` (String) Public key — add this line to ~/.ssh/authorized_keys on your bastion
+
+
+
+
+
+
+
+<a id="nestedatt--buffer"></a>
+### Nested Schema for `buffer`
+
+Optional:
+
+- `object_store` (Attributes) Object store backend (S3, GCS, Azure Blob Storage, or local filesystem) (see [below for nested schema](#nestedatt--buffer--object_store))
+
+<a id="nestedatt--buffer--object_store"></a>
+### Nested Schema for `buffer.object_store`
+
+Required:
+
+- `url` (String) URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path", "gdrive:///optional/root", "dropbox:///optional/root", "sftp://host:22/optional/root"
+
+Optional:
+
+- `allow_http` (Boolean) Allow HTTP connections (default: false, HTTPS only)
+- `allow_invalid_certificates` (Boolean) Allow invalid/self-signed certificates (default: false)
+- `max_concurrent_parts` (Number) Max concurrent part uploads per file. Set to 1 for cross-region or to prevent part upload failures and timeouts due to limited bandwidth.
+- `max_concurrent_requests` (Number) Max concurrent requests to the object store. 0 means no limit.
+- `options` (Attributes Map) Configuration options (key-value pairs)
+
+S3: [{"name": "region", "value": "us-east-1"}, {"name": "access_key_id", "value": "AKIA..."}, {"name": "secret_access_key", "value": "..."}]
+
+Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "value": "..."} or {"name": "sas_token", "value": "sp=..."}]
+
+GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
+
+GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
+
+Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
+
+Google Drive and Dropbox refresh token: [{"name": "auth_type", "value": "refresh_token"}, {"name": "refresh_token", "value": "..."}, {"name": "client_id", "value": "..."}, {"name": "client_secret", "value": "..."}]
+
+SFTP key authentication: [{"name": "user", "value": "alice"}, {"name": "private_key", "value": "-----BEGIN OPENSSH PRIVATE KEY-----..."}, {"name": "server_public_key", "value": "ssh-ed25519 AAAA..."}] (see [below for nested schema](#nestedatt--buffer--object_store--options))
+- `root_certificate_pem` (String, Sensitive) PEM-encoded root certificate(s) for TLS verification
+
+<a id="nestedatt--buffer--object_store--options"></a>
+### Nested Schema for `buffer.object_store.options`
+
+Required:
+
+- `value` (String, Sensitive) Option value
+
+
+
+
+<a id="nestedatt--identifier_naming"></a>
+### Nested Schema for `identifier_naming`
+
+Optional:
+
+- `fivetrannaming` (Attributes) (see [below for nested schema](#nestedatt--identifier_naming--fivetrannaming))
+- `sourcenaming` (Attributes) (see [below for nested schema](#nestedatt--identifier_naming--sourcenaming))
+
+<a id="nestedatt--identifier_naming--fivetrannaming"></a>
+### Nested Schema for `identifier_naming.fivetrannaming`
+
+Optional:
+
+- `column_conflict` (String)
+- `schema_prefix` (String) Prefix prepended to schema names (e.g. "prod" produces "prod_myschema")
+- `table_conflict` (String)
+
+
+<a id="nestedatt--identifier_naming--sourcenaming"></a>
+### Nested Schema for `identifier_naming.sourcenaming`
+
+
+
+<a id="nestedatt--limits"></a>
+### Nested Schema for `limits`
+
+Optional:
+
+- `cdc` (Attributes) (see [below for nested schema](#nestedatt--limits--cdc))
+- `snapshot` (Attributes) (see [below for nested schema](#nestedatt--limits--snapshot))
+
+<a id="nestedatt--limits--cdc"></a>
+### Nested Schema for `limits.cdc`
+
+Optional:
+
+- `flush_interval_ms` (Number) Determines how frequently batched changes are flushed to the target (https://docs.supermetal.io/docs/faq/#sync-frequency)
+- `max_buffer_rows` (Number) Number of rows to collect per batch, relevant for poll based CDC replication, defaults to 1024
+
+
+<a id="nestedatt--limits--snapshot"></a>
+### Nested Schema for `limits.snapshot`
+
+Optional:
+
+- `max_buffer_rows` (Number) Number of rows to collect per batch, defaults to 1024
+
+
+
+<a id="nestedatt--schedule"></a>
+### Nested Schema for `schedule`
+
+Optional:
+
+- `cron` (Attributes) (see [below for nested schema](#nestedatt--schedule--cron))
+- `rate` (Attributes) (see [below for nested schema](#nestedatt--schedule--rate))
+
+<a id="nestedatt--schedule--cron"></a>
+### Nested Schema for `schedule.cron`
+
+Required:
+
+- `expression` (String)
+- `timezone` (String)
+
+
+<a id="nestedatt--schedule--rate"></a>
+### Nested Schema for `schedule.rate`
+
+Optional:
+
+- `unit` (String)
+- `value` (Number)
 
 ## Import
 

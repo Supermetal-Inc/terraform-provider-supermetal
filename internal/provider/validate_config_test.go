@@ -259,3 +259,51 @@ resource "supermetal_connector" "test" {
 		},
 	})
 }
+
+func TestValidateConfig_dynamicCatalogMapKeys(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{{
+			PlanOnly:           true,
+			ExpectNonEmptyPlan: true,
+			Config: `
+provider "supermetal" { endpoint = "http://localhost:3000" }
+
+resource "terraform_data" "tables" {
+  input = ["orders", "customers"]
+}
+
+resource "supermetal_connector" "test" {
+  id = "dynamic-map-keys"
+  source = {
+    postgres = {
+      host     = "localhost"
+      port     = 5432
+      database = "db"
+      user     = "u"
+      password = "p"
+      ssl_mode = "Disable"
+      replication_type = { snapshot = {} }
+      catalog = {
+        name           = "db"
+        default_action = "Exclude"
+        schemas = {
+          public = {
+            tables = {
+              for table_name in terraform_data.tables.output : table_name => {}
+            }
+          }
+        }
+      }
+    }
+  }
+  sink = {
+    duckdb = {
+      target_database = "main"
+      connection = { quack = { url = "http://localhost:9494" } }
+    }
+  }
+}`,
+		}},
+	})
+}

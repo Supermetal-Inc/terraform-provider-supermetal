@@ -63,4 +63,7 @@ variable "snowflake_password" { default = "testpass" }
 variable "snowflake_private_key" { default = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg=\n-----END PRIVATE KEY-----" }
 variable "snowflake_key_password" { default = "keypass" }
 variable "ssh_private_key" { default = "-----BEGIN OPENSSH PRIVATE KEY-----\nb3Blbg==\n-----END OPENSSH PRIVATE KEY-----" }
+variable "bigquery_service_account_key" { default = "{\"type\":\"service_account\",\"project_id\":\"test\"}" }
+variable "postgres_tables" { default = ["orders", "order_items"] }
+variable "db2_password" { default = "testpass" }
 `

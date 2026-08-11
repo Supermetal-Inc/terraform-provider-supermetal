@@ -34,18 +34,60 @@ func (e ConnectorBigqueryQueryPriority) Valid() bool {
 	}
 }
 
+// Defines values for ConnectorBufferFileCompression.
+const (
+	ConnectorBufferFileCompressionBrotli    ConnectorBufferFileCompression = "Brotli"
+	ConnectorBufferFileCompressionBzip2     ConnectorBufferFileCompression = "Bzip2"
+	ConnectorBufferFileCompressionDeflate   ConnectorBufferFileCompression = "Deflate"
+	ConnectorBufferFileCompressionDeflate64 ConnectorBufferFileCompression = "Deflate64"
+	ConnectorBufferFileCompressionGzip      ConnectorBufferFileCompression = "Gzip"
+	ConnectorBufferFileCompressionLzma      ConnectorBufferFileCompression = "Lzma"
+	ConnectorBufferFileCompressionNone      ConnectorBufferFileCompression = "None"
+	ConnectorBufferFileCompressionXz        ConnectorBufferFileCompression = "Xz"
+	ConnectorBufferFileCompressionZlib      ConnectorBufferFileCompression = "Zlib"
+	ConnectorBufferFileCompressionZstd      ConnectorBufferFileCompression = "Zstd"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorBufferFileCompression enum.
+func (e ConnectorBufferFileCompression) Valid() bool {
+	switch e {
+	case ConnectorBufferFileCompressionBrotli:
+		return true
+	case ConnectorBufferFileCompressionBzip2:
+		return true
+	case ConnectorBufferFileCompressionDeflate:
+		return true
+	case ConnectorBufferFileCompressionDeflate64:
+		return true
+	case ConnectorBufferFileCompressionGzip:
+		return true
+	case ConnectorBufferFileCompressionLzma:
+		return true
+	case ConnectorBufferFileCompressionNone:
+		return true
+	case ConnectorBufferFileCompressionXz:
+		return true
+	case ConnectorBufferFileCompressionZlib:
+		return true
+	case ConnectorBufferFileCompressionZstd:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectorCatalogAction.
 const (
-	Exclude ConnectorCatalogAction = "Exclude"
-	Include ConnectorCatalogAction = "Include"
+	ConnectorCatalogActionExclude ConnectorCatalogAction = "Exclude"
+	ConnectorCatalogActionInclude ConnectorCatalogAction = "Include"
 )
 
 // Valid indicates whether the value is a known member of the ConnectorCatalogAction enum.
 func (e ConnectorCatalogAction) Valid() bool {
 	switch e {
-	case Exclude:
+	case ConnectorCatalogActionExclude:
 		return true
-	case Include:
+	case ConnectorCatalogActionInclude:
 		return true
 	default:
 		return false
@@ -67,6 +109,78 @@ func (e ConnectorClickhouseClickhouseEngine) Valid() bool {
 	case ConnectorClickhouseClickhouseEngineMergeTree:
 		return true
 	case ConnectorClickhouseClickhouseEngineNull:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorClickhouseCompressionPolicy.
+const (
+	ServerDefault ConnectorClickhouseCompressionPolicy = "ServerDefault"
+	TypeBasedV1   ConnectorClickhouseCompressionPolicy = "TypeBasedV1"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorClickhouseCompressionPolicy enum.
+func (e ConnectorClickhouseCompressionPolicy) Valid() bool {
+	switch e {
+	case ServerDefault:
+		return true
+	case TypeBasedV1:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorClickhouseCompressionTypeFamily.
+const (
+	ConnectorClickhouseCompressionTypeFamilyBoolean     ConnectorClickhouseCompressionTypeFamily = "Boolean"
+	ConnectorClickhouseCompressionTypeFamilyByteInteger ConnectorClickhouseCompressionTypeFamily = "ByteInteger"
+	ConnectorClickhouseCompressionTypeFamilyComplex     ConnectorClickhouseCompressionTypeFamily = "Complex"
+	ConnectorClickhouseCompressionTypeFamilyDecimal     ConnectorClickhouseCompressionTypeFamily = "Decimal"
+	ConnectorClickhouseCompressionTypeFamilyEnum        ConnectorClickhouseCompressionTypeFamily = "Enum"
+	ConnectorClickhouseCompressionTypeFamilyFloat       ConnectorClickhouseCompressionTypeFamily = "Float"
+	ConnectorClickhouseCompressionTypeFamilyInteger     ConnectorClickhouseCompressionTypeFamily = "Integer"
+	ConnectorClickhouseCompressionTypeFamilyIp          ConnectorClickhouseCompressionTypeFamily = "Ip"
+	ConnectorClickhouseCompressionTypeFamilyJson        ConnectorClickhouseCompressionTypeFamily = "Json"
+	ConnectorClickhouseCompressionTypeFamilyString      ConnectorClickhouseCompressionTypeFamily = "String"
+	ConnectorClickhouseCompressionTypeFamilyTemporal    ConnectorClickhouseCompressionTypeFamily = "Temporal"
+	ConnectorClickhouseCompressionTypeFamilyUnspecified ConnectorClickhouseCompressionTypeFamily = "Unspecified"
+	ConnectorClickhouseCompressionTypeFamilyUuid        ConnectorClickhouseCompressionTypeFamily = "Uuid"
+	ConnectorClickhouseCompressionTypeFamilyWideInteger ConnectorClickhouseCompressionTypeFamily = "WideInteger"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorClickhouseCompressionTypeFamily enum.
+func (e ConnectorClickhouseCompressionTypeFamily) Valid() bool {
+	switch e {
+	case ConnectorClickhouseCompressionTypeFamilyBoolean:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyByteInteger:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyComplex:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyDecimal:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyEnum:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyFloat:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyInteger:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyIp:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyJson:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyString:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyTemporal:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyUnspecified:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyUuid:
+		return true
+	case ConnectorClickhouseCompressionTypeFamilyWideInteger:
 		return true
 	default:
 		return false
@@ -115,18 +229,120 @@ func (e ConnectorDorisDorisTableModel) Valid() bool {
 	}
 }
 
+// Defines values for ConnectorFileFilePartitionTransform.
+const (
+	ConnectorFileFilePartitionTransformDay      ConnectorFileFilePartitionTransform = "Day"
+	ConnectorFileFilePartitionTransformHour     ConnectorFileFilePartitionTransform = "Hour"
+	ConnectorFileFilePartitionTransformIdentity ConnectorFileFilePartitionTransform = "Identity"
+	ConnectorFileFilePartitionTransformMonth    ConnectorFileFilePartitionTransform = "Month"
+	ConnectorFileFilePartitionTransformYear     ConnectorFileFilePartitionTransform = "Year"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorFileFilePartitionTransform enum.
+func (e ConnectorFileFilePartitionTransform) Valid() bool {
+	switch e {
+	case ConnectorFileFilePartitionTransformDay:
+		return true
+	case ConnectorFileFilePartitionTransformHour:
+		return true
+	case ConnectorFileFilePartitionTransformIdentity:
+		return true
+	case ConnectorFileFilePartitionTransformMonth:
+		return true
+	case ConnectorFileFilePartitionTransformYear:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorFileJsonNullFields.
+const (
+	ConnectorFileJsonNullFieldsInclude ConnectorFileJsonNullFields = "Include"
+	ConnectorFileJsonNullFieldsOmit    ConnectorFileJsonNullFields = "Omit"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorFileJsonNullFields enum.
+func (e ConnectorFileJsonNullFields) Valid() bool {
+	switch e {
+	case ConnectorFileJsonNullFieldsInclude:
+		return true
+	case ConnectorFileJsonNullFieldsOmit:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorFileJsonOutputFormat.
+const (
+	Array  ConnectorFileJsonOutputFormat = "Array"
+	Ndjson ConnectorFileJsonOutputFormat = "Ndjson"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorFileJsonOutputFormat enum.
+func (e ConnectorFileJsonOutputFormat) Valid() bool {
+	switch e {
+	case Array:
+		return true
+	case Ndjson:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectorFileOnFileError.
 const (
-	Fail ConnectorFileOnFileError = "Fail"
-	Skip ConnectorFileOnFileError = "Skip"
+	ConnectorFileOnFileErrorFail ConnectorFileOnFileError = "Fail"
+	ConnectorFileOnFileErrorSkip ConnectorFileOnFileError = "Skip"
 )
 
 // Valid indicates whether the value is a known member of the ConnectorFileOnFileError enum.
 func (e ConnectorFileOnFileError) Valid() bool {
 	switch e {
-	case Fail:
+	case ConnectorFileOnFileErrorFail:
 		return true
-	case Skip:
+	case ConnectorFileOnFileErrorSkip:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorFileParquetStatistics.
+const (
+	ConnectorFileParquetStatisticsChunk ConnectorFileParquetStatistics = "Chunk"
+	ConnectorFileParquetStatisticsNone  ConnectorFileParquetStatistics = "None"
+	ConnectorFileParquetStatisticsPage  ConnectorFileParquetStatistics = "Page"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorFileParquetStatistics enum.
+func (e ConnectorFileParquetStatistics) Valid() bool {
+	switch e {
+	case ConnectorFileParquetStatisticsChunk:
+		return true
+	case ConnectorFileParquetStatisticsNone:
+		return true
+	case ConnectorFileParquetStatisticsPage:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorFileParquetVersion.
+const (
+	ConnectorFileParquetVersionV1 ConnectorFileParquetVersion = "V1"
+	ConnectorFileParquetVersionV2 ConnectorFileParquetVersion = "V2"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorFileParquetVersion enum.
+func (e ConnectorFileParquetVersion) Valid() bool {
+	switch e {
+	case ConnectorFileParquetVersionV1:
+		return true
+	case ConnectorFileParquetVersionV2:
 		return true
 	default:
 		return false
@@ -232,6 +448,42 @@ func (e ConnectorIcebergSpecVersion) Valid() bool {
 	case ConnectorIcebergSpecVersionV2:
 		return true
 	case ConnectorIcebergSpecVersionV3:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorIdentifierFivetranColumnConflict.
+const (
+	ConnectorIdentifierFivetranColumnConflictFail      ConnectorIdentifierFivetranColumnConflict = "Fail"
+	ConnectorIdentifierFivetranColumnConflictKeepFirst ConnectorIdentifierFivetranColumnConflict = "KeepFirst"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorIdentifierFivetranColumnConflict enum.
+func (e ConnectorIdentifierFivetranColumnConflict) Valid() bool {
+	switch e {
+	case ConnectorIdentifierFivetranColumnConflictFail:
+		return true
+	case ConnectorIdentifierFivetranColumnConflictKeepFirst:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorIdentifierFivetranTableConflict.
+const (
+	ConnectorIdentifierFivetranTableConflictFail  ConnectorIdentifierFivetranTableConflict = "Fail"
+	ConnectorIdentifierFivetranTableConflictMerge ConnectorIdentifierFivetranTableConflict = "Merge"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorIdentifierFivetranTableConflict enum.
+func (e ConnectorIdentifierFivetranTableConflict) Valid() bool {
+	switch e {
+	case ConnectorIdentifierFivetranTableConflictFail:
+		return true
+	case ConnectorIdentifierFivetranTableConflictMerge:
 		return true
 	default:
 		return false
@@ -610,21 +862,66 @@ func (e ConnectorPostgresSslMode) Valid() bool {
 	}
 }
 
+// Defines values for ConnectorPostgresToastMode.
+const (
+	Placeholder         ConnectorPostgresToastMode = "Placeholder"
+	ReplicaIdentityFull ConnectorPostgresToastMode = "ReplicaIdentityFull"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorPostgresToastMode enum.
+func (e ConnectorPostgresToastMode) Valid() bool {
+	switch e {
+	case Placeholder:
+		return true
+	case ReplicaIdentityFull:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorRedshiftSslMode.
+const (
+	ConnectorRedshiftSslModeDisable    ConnectorRedshiftSslMode = "Disable"
+	ConnectorRedshiftSslModePrefer     ConnectorRedshiftSslMode = "Prefer"
+	ConnectorRedshiftSslModeRequire    ConnectorRedshiftSslMode = "Require"
+	ConnectorRedshiftSslModeVerifyCa   ConnectorRedshiftSslMode = "VerifyCa"
+	ConnectorRedshiftSslModeVerifyFull ConnectorRedshiftSslMode = "VerifyFull"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorRedshiftSslMode enum.
+func (e ConnectorRedshiftSslMode) Valid() bool {
+	switch e {
+	case ConnectorRedshiftSslModeDisable:
+		return true
+	case ConnectorRedshiftSslModePrefer:
+		return true
+	case ConnectorRedshiftSslModeRequire:
+		return true
+	case ConnectorRedshiftSslModeVerifyCa:
+		return true
+	case ConnectorRedshiftSslModeVerifyFull:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectorScheduleTimePeriodUnit.
 const (
-	Day    ConnectorScheduleTimePeriodUnit = "Day"
-	Hour   ConnectorScheduleTimePeriodUnit = "Hour"
-	Minute ConnectorScheduleTimePeriodUnit = "Minute"
+	ConnectorScheduleTimePeriodUnitDay    ConnectorScheduleTimePeriodUnit = "Day"
+	ConnectorScheduleTimePeriodUnitHour   ConnectorScheduleTimePeriodUnit = "Hour"
+	ConnectorScheduleTimePeriodUnitMinute ConnectorScheduleTimePeriodUnit = "Minute"
 )
 
 // Valid indicates whether the value is a known member of the ConnectorScheduleTimePeriodUnit enum.
 func (e ConnectorScheduleTimePeriodUnit) Valid() bool {
 	switch e {
-	case Day:
+	case ConnectorScheduleTimePeriodUnitDay:
 		return true
-	case Hour:
+	case ConnectorScheduleTimePeriodUnitHour:
 		return true
-	case Minute:
+	case ConnectorScheduleTimePeriodUnitMinute:
 		return true
 	default:
 		return false
@@ -700,6 +997,33 @@ func (e ConnectorStatusComponent) Valid() bool {
 	case Source:
 		return true
 	case Target:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorTaskTaskState.
+const (
+	Cancelled ConnectorTaskTaskState = "Cancelled"
+	Done      ConnectorTaskTaskState = "Done"
+	Failed    ConnectorTaskTaskState = "Failed"
+	Pending   ConnectorTaskTaskState = "Pending"
+	Running   ConnectorTaskTaskState = "Running"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorTaskTaskState enum.
+func (e ConnectorTaskTaskState) Valid() bool {
+	switch e {
+	case Cancelled:
+		return true
+	case Done:
+		return true
+	case Failed:
+		return true
+	case Pending:
+		return true
+	case Running:
 		return true
 	default:
 		return false
@@ -833,9 +1157,9 @@ type ConnectorBufferBuffer struct {
 	union json.RawMessage
 }
 
-// ConnectorBufferBuffer0 Object store backend (S3, Azure Blob Storage, or local filesystem)
+// ConnectorBufferBuffer0 Object store backend (S3, GCS, Azure Blob Storage, or local filesystem)
 type ConnectorBufferBuffer0 struct {
-	// ObjectStore Object store backend (S3, Azure Blob Storage, or local filesystem)
+	// ObjectStore Object store backend (S3, GCS, Azure Blob Storage, or local filesystem)
 	ObjectStore ConnectorBufferObjectStore `json:"object_store"`
 }
 
@@ -871,6 +1195,9 @@ type ConnectorBufferCsvFormat struct {
 	// Terminator Line ending (e.g., "\n" or "\r\n")
 	Terminator *string `json:"terminator,omitempty"`
 }
+
+// ConnectorBufferFileCompression defines model for ConnectorBufferFileCompression.
+type ConnectorBufferFileCompression string
 
 // ConnectorBufferFormatDetails Format-specific parsing options
 type ConnectorBufferFormatDetails struct {
@@ -926,13 +1253,21 @@ type ConnectorBufferObjectStore struct {
 	//
 	// Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "value": "..."} or {"name": "sas_token", "value": "sp=..."}]
 	//
-	// GCS: [{"name": "service_account_key", "value": "{...JSON...}"}]
+	// GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
+	//
+	// GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
+	//
+	// Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
+	//
+	// Google Drive and Dropbox refresh token: [{"name": "auth_type", "value": "refresh_token"}, {"name": "refresh_token", "value": "..."}, {"name": "client_id", "value": "..."}, {"name": "client_secret", "value": "..."}]
+	//
+	// SFTP key authentication: [{"name": "user", "value": "alice"}, {"name": "private_key", "value": "-----BEGIN OPENSSH PRIVATE KEY-----..."}, {"name": "server_public_key", "value": "ssh-ed25519 AAAA..."}]
 	Options *[]ConnectorBufferOption `json:"options,omitempty"`
 
 	// RootCertificatePem PEM-encoded root certificate(s) for TLS verification
 	RootCertificatePem *string `json:"root_certificate_pem,omitempty"`
 
-	// Url URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path"
+	// Url URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path", "gdrive:///optional/root", "dropbox:///optional/root", "sftp://host:22/optional/root"
 	Url string `json:"url"`
 }
 
@@ -966,6 +1301,9 @@ type ConnectorCatalogCatalog_DefaultAction struct {
 	union json.RawMessage
 }
 
+// ConnectorCatalogCoerce Keep the majority type and null the values that don't fit
+type ConnectorCatalogCoerce = map[string]interface{}
+
 // ConnectorCatalogColumn defines model for ConnectorCatalogColumn.
 type ConnectorCatalogColumn struct {
 	Action     *ConnectorCatalogColumn_Action `json:"action,omitempty"`
@@ -981,6 +1319,29 @@ type ConnectorCatalogColumn_Action struct {
 	union json.RawMessage
 }
 
+// ConnectorCatalogFileSourceTableOption defines model for ConnectorCatalogFileSourceTableOption.
+type ConnectorCatalogFileSourceTableOption struct {
+	// PrimaryKeys Primary key columns for this table. Rows are deduplicated by these keys, keeping the latest file. Leave empty to append.
+	PrimaryKeys *[]string `json:"primary_keys,omitempty"`
+}
+
+// ConnectorCatalogOnTypeConflict How typed-string inference resolves a value that doesn't fit its field's inferred type. Defaults to Coerce, preserving the majority type and nulling the values that don't fit.
+type ConnectorCatalogOnTypeConflict struct {
+	union json.RawMessage
+}
+
+// ConnectorCatalogOnTypeConflict0 defines model for .
+type ConnectorCatalogOnTypeConflict0 struct {
+	// Coerce Keep the majority type and null the values that don't fit
+	Coerce ConnectorCatalogCoerce `json:"Coerce"`
+}
+
+// ConnectorCatalogOnTypeConflict1 defines model for .
+type ConnectorCatalogOnTypeConflict1 struct {
+	// WidenToString Widen the column to a string so the values that don't fit are preserved instead of nulled
+	WidenToString ConnectorCatalogWidenToString `json:"WidenToString"`
+}
+
 // ConnectorCatalogSchema defines model for ConnectorCatalogSchema.
 type ConnectorCatalogSchema struct {
 	Action *ConnectorCatalogSchema_Action `json:"action,omitempty"`
@@ -993,18 +1354,50 @@ type ConnectorCatalogSchema_Action struct {
 	union json.RawMessage
 }
 
+// ConnectorCatalogSourceTableOption defines model for ConnectorCatalogSourceTableOption.
+type ConnectorCatalogSourceTableOption struct {
+	union json.RawMessage
+}
+
+// ConnectorCatalogSourceTableOption0 defines model for .
+type ConnectorCatalogSourceTableOption0 struct {
+	File ConnectorCatalogFileSourceTableOption `json:"file"`
+}
+
 // ConnectorCatalogTable defines model for ConnectorCatalogTable.
 type ConnectorCatalogTable struct {
-	Action               *ConnectorCatalogTable_Action  `json:"action,omitempty"`
-	Columns              *[]ConnectorCatalogColumn      `json:"columns,omitempty"`
-	IcebergPartitionSpec *ConnectorIcebergPartitionSpec `json:"iceberg_partition_spec,omitempty"`
-	Name                 string                         `json:"name"`
+	Action               *ConnectorCatalogTable_Action      `json:"action,omitempty"`
+	Columns              *[]ConnectorCatalogColumn          `json:"columns,omitempty"`
+	IcebergPartitionSpec *ConnectorIcebergPartitionSpec     `json:"iceberg_partition_spec,omitempty"`
+	Name                 string                             `json:"name"`
+	OnMongoTypeConflict  *ConnectorCatalogOnTypeConflict    `json:"on_mongo_type_conflict,omitempty"`
+	SourceOption         *ConnectorCatalogSourceTableOption `json:"source_option,omitempty"`
+	TargetOption         *ConnectorCatalogTargetTableOption `json:"target_option,omitempty"`
 }
 
 // ConnectorCatalogTable_Action defines model for ConnectorCatalogTable.Action.
 type ConnectorCatalogTable_Action struct {
 	union json.RawMessage
 }
+
+// ConnectorCatalogTargetTableOption defines model for ConnectorCatalogTargetTableOption.
+type ConnectorCatalogTargetTableOption struct {
+	union json.RawMessage
+}
+
+// ConnectorCatalogTargetTableOption0 defines model for .
+type ConnectorCatalogTargetTableOption0 struct {
+	Clickhouse ConnectorClickhouseTableOption `json:"clickhouse"`
+}
+
+// ConnectorCatalogTargetTableOption1 defines model for .
+type ConnectorCatalogTargetTableOption1 struct {
+	// FileSink Ordered Hive-style partition fields for one FileSink table.
+	FileSink ConnectorFileFilePartitionSpec `json:"file_sink"`
+}
+
+// ConnectorCatalogWidenToString Widen the column to a string so the values that don't fit are preserved instead of nulled
+type ConnectorCatalogWidenToString = map[string]interface{}
 
 // ConnectorClickhouseClickhouse ClickHouse server connection details
 type ConnectorClickhouseClickhouse struct {
@@ -1030,13 +1423,27 @@ type ConnectorClickhouseClickhouse struct {
 	User *string `json:"user,omitempty"`
 }
 
+// ConnectorClickhouseClickhouseCluster Replicate and shard tables across a self managed ClickHouse cluster
+type ConnectorClickhouseClickhouseCluster struct {
+	// CreateDistributedTable Create and manage a Distributed table under the target name. Disable to write directly to the suffixed replicated table on the connected shard
+	CreateDistributedTable *bool `json:"create_distributed_table,omitempty"`
+
+	// LocalTableSuffix Suffix for the replicated tables on each shard. Defaults to _local
+	LocalTableSuffix *string `json:"local_table_suffix,omitempty"`
+
+	// Name Cluster name from the server's remote_servers configuration
+	Name string `json:"name"`
+}
+
 // ConnectorClickhouseClickhouseEngine ClickHouse table engine
 type ConnectorClickhouseClickhouseEngine string
 
 // ConnectorClickhouseClickhouseSink Configuration for a ClickHouse data sink
 type ConnectorClickhouseClickhouseSink struct {
 	// AsyncInserts Enable asynchronous inserts for higher throughput
-	AsyncInserts *bool `json:"async_inserts,omitempty"`
+	AsyncInserts *bool                                 `json:"async_inserts,omitempty"`
+	Cluster      *ConnectorClickhouseClickhouseCluster `json:"cluster,omitempty"`
+	Compression  *ConnectorClickhouseCompressionConfig `json:"compression,omitempty"`
 
 	// Connection Connection details for the target ClickHouse server
 	Connection ConnectorClickhouseClickhouse `json:"connection"`
@@ -1070,6 +1477,36 @@ type ConnectorClickhouseClickhouseSink_Engine struct {
 	union json.RawMessage
 }
 
+// ConnectorClickhouseCompressionConfig defines model for ConnectorClickhouseCompressionConfig.
+type ConnectorClickhouseCompressionConfig struct {
+	// Overrides Codec overrides by type family, applied even with the server default policy
+	Overrides *[]ConnectorClickhouseCompressionOverride    `json:"overrides,omitempty"`
+	Policy    *ConnectorClickhouseCompressionConfig_Policy `json:"policy,omitempty"`
+}
+
+// ConnectorClickhouseCompressionConfig_Policy defines model for ConnectorClickhouseCompressionConfig.Policy.
+type ConnectorClickhouseCompressionConfig_Policy struct {
+	union json.RawMessage
+}
+
+// ConnectorClickhouseCompressionOverride defines model for ConnectorClickhouseCompressionOverride.
+type ConnectorClickhouseCompressionOverride struct {
+	// Codec Codec list such as "DoubleDelta, ZSTD(1)". Use "Default" for the server default
+	Codec      string                                             `json:"codec"`
+	TypeFamily *ConnectorClickhouseCompressionOverride_TypeFamily `json:"type_family,omitempty"`
+}
+
+// ConnectorClickhouseCompressionOverride_TypeFamily defines model for ConnectorClickhouseCompressionOverride.TypeFamily.
+type ConnectorClickhouseCompressionOverride_TypeFamily struct {
+	union json.RawMessage
+}
+
+// ConnectorClickhouseCompressionPolicy Column compression codecs
+type ConnectorClickhouseCompressionPolicy string
+
+// ConnectorClickhouseCompressionTypeFamily ClickHouse type groups for compression overrides. Nullable and LowCardinality use their inner type's family.
+type ConnectorClickhouseCompressionTypeFamily string
+
 // ConnectorClickhouseCustomPrefix Prepend a custom string before the table name
 type ConnectorClickhouseCustomPrefix struct {
 	Value string `json:"value"`
@@ -1078,6 +1515,18 @@ type ConnectorClickhouseCustomPrefix struct {
 // ConnectorClickhouseCustomSuffix Append a custom string after the table name
 type ConnectorClickhouseCustomSuffix struct {
 	Value string `json:"value"`
+}
+
+// ConnectorClickhouseOrderBy defines model for ConnectorClickhouseOrderBy.
+type ConnectorClickhouseOrderBy struct {
+	// Entries ORDER BY entries such as ["country", "created_at", "id"]. Replaces the default primary key ordering. Values must be immutable per row. Under Fivetran naming, use target column names.
+	Entries *[]string `json:"entries,omitempty"`
+}
+
+// ConnectorClickhousePartitioning defines model for ConnectorClickhousePartitioning.
+type ConnectorClickhousePartitioning struct {
+	// Expression PARTITION BY expression such as toYYYYMM(created_at). Values must be immutable per row, or updates and deletes leave stale rows in old partitions. Under Fivetran naming, use target column names.
+	Expression *string `json:"expression,omitempty"`
 }
 
 // ConnectorClickhouseTableNameModifier Modifier for target table names.
@@ -1095,6 +1544,15 @@ type ConnectorClickhouseTableNameModifier0 struct {
 type ConnectorClickhouseTableNameModifier1 struct {
 	// Prefix Custom prefix prepended to table name (e.g. "raw_")
 	Prefix ConnectorClickhouseCustomPrefix `json:"prefix"`
+}
+
+// ConnectorClickhouseTableOption defines model for ConnectorClickhouseTableOption.
+type ConnectorClickhouseTableOption struct {
+	OrderBy      *ConnectorClickhouseOrderBy      `json:"order_by,omitempty"`
+	Partitioning *ConnectorClickhousePartitioning `json:"partitioning,omitempty"`
+
+	// ShardingKey Sharding expression for this table. Defaults to a hash of its primary key, or rand() for a keyless table. Under Fivetran naming, use target column names
+	ShardingKey *string `json:"sharding_key,omitempty"`
 }
 
 // ConnectorConnector Connector configuration
@@ -1418,6 +1876,55 @@ type ConnectorFileAutoTableMapping struct {
 	Suffix *string `json:"suffix,omitempty"`
 }
 
+// ConnectorFileAvroOutput Avro Object Container File output settings.
+type ConnectorFileAvroOutput struct {
+	Compression *ConnectorBufferFileCompression `json:"compression,omitempty"`
+}
+
+// ConnectorFileCsvOutput CSV output options.
+type ConnectorFileCsvOutput struct {
+	Compression *ConnectorBufferFileCompression `json:"compression,omitempty"`
+
+	// DateFormat Date format pattern such as %Y-%m-%d. If omitted, values look like 2026-03-16.
+	DateFormat *string `json:"date_format,omitempty"`
+
+	// DatetimeFormat Date-time format pattern such as %Y-%m-%d %H:%M:%S. If omitted, values look like 2026-03-16T11:33:20.123.
+	DatetimeFormat *string `json:"datetime_format,omitempty"`
+
+	// Delimiter Field delimiter. Must contain exactly one byte. If omitted, uses a comma.
+	Delimiter *string `json:"delimiter,omitempty"`
+
+	// DoubleQuote Escape quote characters by writing them twice.
+	DoubleQuote *bool `json:"double_quote,omitempty"`
+
+	// Encoding Character encoding for output files, such as UTF-8 or windows-1252. Empty uses UTF-8.
+	Encoding *string `json:"encoding,omitempty"`
+
+	// Escape Escape character used when double quoting is disabled. Must contain exactly one byte. If omitted, uses a backslash.
+	Escape *string `json:"escape,omitempty"`
+
+	// HasHeader Write column names as the first row.
+	HasHeader *bool `json:"has_header,omitempty"`
+
+	// NullValue Text written for null values. If omitted, writes an empty field.
+	NullValue *string `json:"null_value,omitempty"`
+
+	// Quote Quote character. Must contain exactly one byte. If omitted, uses a double quote.
+	Quote *string `json:"quote,omitempty"`
+
+	// Terminator Line terminator. Use LF, CRLF, or a single-byte character. Empty uses LF.
+	Terminator *string `json:"terminator,omitempty"`
+
+	// TimeFormat Time format pattern such as %H:%M:%S. If omitted, values look like 11:33:20.123.
+	TimeFormat *string `json:"time_format,omitempty"`
+
+	// TimestampFormat Timestamp format pattern such as %Y-%m-%dT%H:%M:%S. If omitted, values look like 2026-03-16T11:33:20.123456789.
+	TimestampFormat *string `json:"timestamp_format,omitempty"`
+
+	// TimestampTzFormat Timestamp-with-time-zone format pattern such as %Y-%m-%dT%H:%M:%S%:z. If omitted, UTC values look like 2026-03-16T11:33:20.123456789Z.
+	TimestampTzFormat *string `json:"timestamp_tz_format,omitempty"`
+}
+
 // ConnectorFileDeleteAfterProcessing Delete source file after successful processing
 type ConnectorFileDeleteAfterProcessing = map[string]interface{}
 
@@ -1451,10 +1958,79 @@ type ConnectorFileFileDiscovery0 struct {
 	Poll ConnectorFilePoll `json:"poll"`
 }
 
+// ConnectorFileFilePartitionField One ordered Hive-style FileSink partition field.
+type ConnectorFileFilePartitionField struct {
+	// Name Optional folder key. Defaults to the final column name plus the transform suffix.
+	Name *string `json:"name,omitempty"`
+
+	// SourceColumn Source column used to create this partition.
+	SourceColumn string                                     `json:"source_column"`
+	Transform    *ConnectorFileFilePartitionField_Transform `json:"transform,omitempty"`
+}
+
+// ConnectorFileFilePartitionField_Transform defines model for ConnectorFileFilePartitionField.Transform.
+type ConnectorFileFilePartitionField_Transform struct {
+	union json.RawMessage
+}
+
+// ConnectorFileFilePartitionSpec Ordered Hive-style partition fields for one FileSink table.
+type ConnectorFileFilePartitionSpec struct {
+	Fields []ConnectorFileFilePartitionField `json:"fields"`
+}
+
+// ConnectorFileFilePartitionTransform Transform used to derive a Hive partition value from a source column.
+type ConnectorFileFilePartitionTransform string
+
+// ConnectorFileFileSink Writes snapshot and CDC rows as files in object storage like S3/ABS/GCS etc.
+type ConnectorFileFileSink struct {
+	// ObjectStore Object store used for output files.
+	ObjectStore  ConnectorBufferObjectStore         `json:"object_store"`
+	OutputFormat *ConnectorFileFileSinkOutputFormat `json:"output_format,omitempty"`
+
+	// PathTemplate Path template used for output files. Supported variables are {connector_id}, {database}, {schema}, {table}, {year}, {month}, {day}, and {date}. Date variables use UTC and are evaluated for each output file. If omitted, files use {connector_id}/{database}/{schema}/{table}/dt={date}. Omit {connector_id} only when sharing an output namespace across connectors is intentional.
+	PathTemplate *string `json:"path_template,omitempty"`
+
+	// TargetFileSizeMb Target approximate uncompressed input size in MiB. Compression does not affect splitting. Files split after an input batch or completed CDC transaction, so a large batch or transaction may exceed this value.
+	TargetFileSizeMb *int32 `json:"target_file_size_mb,omitempty"`
+}
+
+// ConnectorFileFileSinkOutputFormat FileSink output format and format-specific settings.
+type ConnectorFileFileSinkOutputFormat struct {
+	union json.RawMessage
+}
+
+// ConnectorFileFileSinkOutputFormat0 defines model for .
+type ConnectorFileFileSinkOutputFormat0 struct {
+	// Parquet Parquet output settings.
+	Parquet ConnectorFileParquetOutput `json:"parquet"`
+}
+
+// ConnectorFileFileSinkOutputFormat1 defines model for .
+type ConnectorFileFileSinkOutputFormat1 struct {
+	// Csv CSV output options.
+	Csv ConnectorFileCsvOutput `json:"csv"`
+}
+
+// ConnectorFileFileSinkOutputFormat2 defines model for .
+type ConnectorFileFileSinkOutputFormat2 struct {
+	// Json JSON output options.
+	Json ConnectorFileJsonOutput `json:"json"`
+}
+
+// ConnectorFileFileSinkOutputFormat3 defines model for .
+type ConnectorFileFileSinkOutputFormat3 struct {
+	// Avro Avro Object Container File output settings.
+	Avro ConnectorFileAvroOutput `json:"avro"`
+}
+
 // ConnectorFileFileSource Ingest files from object stores (S3, GCS, Azure Blob) or filesystems (local, SFTP)
 type ConnectorFileFileSource struct {
-	Discovery     *ConnectorFileFileDiscovery `json:"discovery,omitempty"`
-	ErrorHandling *ConnectorFileErrorHandling `json:"error_handling,omitempty"`
+	Catalog *ConnectorCatalogCatalog `json:"catalog,omitempty"`
+
+	// DisableZeroCopy Load files through the connector instead of having the destination read them directly from the bucket. Direct reads are faster but share the bucket credentials with the destination.
+	DisableZeroCopy *bool                       `json:"disable_zero_copy,omitempty"`
+	Discovery       *ConnectorFileFileDiscovery `json:"discovery,omitempty"`
+	ErrorHandling   *ConnectorFileErrorHandling `json:"error_handling,omitempty"`
 
 	// ExcludePatterns Glob patterns for excluding files (["**/_temporary/**", "**/.staging/**"])
 	ExcludePatterns *[]string                     `json:"exclude_patterns,omitempty"`
@@ -1473,6 +2049,35 @@ type ConnectorFileFileSource struct {
 	TableMapping  *ConnectorFileTableMapping       `json:"table_mapping,omitempty"`
 }
 
+// ConnectorFileJsonNullFields JSON null field behavior.
+type ConnectorFileJsonNullFields string
+
+// ConnectorFileJsonOutput JSON output options.
+type ConnectorFileJsonOutput struct {
+	Compression *ConnectorBufferFileCompression `json:"compression,omitempty"`
+
+	// Flatten Recursively flatten nested object fields. Arrays and maps remain nested.
+	Flatten *bool `json:"flatten,omitempty"`
+
+	// FlattenSeparator Separator placed between nested field names when flattening. If omitted, uses double underscores.
+	FlattenSeparator *string                             `json:"flatten_separator,omitempty"`
+	Format           *ConnectorFileJsonOutput_Format     `json:"format,omitempty"`
+	NullFields       *ConnectorFileJsonOutput_NullFields `json:"null_fields,omitempty"`
+}
+
+// ConnectorFileJsonOutput_Format defines model for ConnectorFileJsonOutput.Format.
+type ConnectorFileJsonOutput_Format struct {
+	union json.RawMessage
+}
+
+// ConnectorFileJsonOutput_NullFields defines model for ConnectorFileJsonOutput.NullFields.
+type ConnectorFileJsonOutput_NullFields struct {
+	union json.RawMessage
+}
+
+// ConnectorFileJsonOutputFormat JSON file layout.
+type ConnectorFileJsonOutputFormat string
+
 // ConnectorFileMoveAfterProcessing Move source file to another path after successful processing
 type ConnectorFileMoveAfterProcessing struct {
 	// Destination Destination path ("s3://bucket/processed/")
@@ -1481,6 +2086,41 @@ type ConnectorFileMoveAfterProcessing struct {
 
 // ConnectorFileOnFileError Behavior when a file fails to process
 type ConnectorFileOnFileError string
+
+// ConnectorFileParquetOutput Parquet output settings.
+type ConnectorFileParquetOutput struct {
+	Compression *ConnectorBufferFileCompression `json:"compression,omitempty"`
+
+	// CompressionLevel Compression level. A value of 0 uses the codec default.
+	CompressionLevel *int32 `json:"compression_level,omitempty"`
+
+	// DataPageSizeBytes Target uncompressed data page size in bytes. If omitted, uses the Parquet writer default of 1,048,576 bytes.
+	DataPageSizeBytes *int64 `json:"data_page_size_bytes,omitempty"`
+
+	// DictionaryEnabled Enable dictionary encoding for supported columns. If omitted, dictionary encoding is enabled.
+	DictionaryEnabled *bool `json:"dictionary_enabled,omitempty"`
+
+	// MaxRowGroupRows Maximum rows in each row group. If omitted, uses the Parquet writer default of 1,048,576 rows.
+	MaxRowGroupRows *int64                                 `json:"max_row_group_rows,omitempty"`
+	Statistics      *ConnectorFileParquetOutput_Statistics `json:"statistics,omitempty"`
+	Version         *ConnectorFileParquetOutput_Version    `json:"version,omitempty"`
+}
+
+// ConnectorFileParquetOutput_Statistics defines model for ConnectorFileParquetOutput.Statistics.
+type ConnectorFileParquetOutput_Statistics struct {
+	union json.RawMessage
+}
+
+// ConnectorFileParquetOutput_Version defines model for ConnectorFileParquetOutput.Version.
+type ConnectorFileParquetOutput_Version struct {
+	union json.RawMessage
+}
+
+// ConnectorFileParquetStatistics Parquet statistics written for each column.
+type ConnectorFileParquetStatistics string
+
+// ConnectorFileParquetVersion Parquet file format version.
+type ConnectorFileParquetVersion string
 
 // ConnectorFilePoll Periodic listing of the source location to discover new and modified files
 type ConnectorFilePoll struct {
@@ -1769,8 +2409,6 @@ type ConnectorIcebergIcebergSink_SpecVersion struct {
 type ConnectorIcebergIdentityTransform = map[string]interface{}
 
 // ConnectorIcebergMergeOnRead Row-level deletes using equality delete files
-//
-//	Append-only writes with background compaction for deduplication
 type ConnectorIcebergMergeOnRead struct {
 	DeleteMode  *ConnectorIcebergMergeOnRead_DeleteMode `json:"delete_mode,omitempty"`
 	HistoryMode *ConnectorMigrationHistoryMode          `json:"history_mode,omitempty"`
@@ -2119,11 +2757,30 @@ type ConnectorIcebergWriteMode1 struct {
 // ConnectorIcebergYearTransform Year of a date or timestamp
 type ConnectorIcebergYearTransform = map[string]interface{}
 
+// ConnectorIdentifierFivetranColumnConflict Action when source columns resolve to the same destination name
+type ConnectorIdentifierFivetranColumnConflict string
+
 // ConnectorIdentifierFivetranNaming Apply Fivetran naming rules to destination schemas, tables, and columns
 type ConnectorIdentifierFivetranNaming struct {
+	ColumnConflict *ConnectorIdentifierFivetranNaming_ColumnConflict `json:"column_conflict,omitempty"`
+
 	// SchemaPrefix Prefix prepended to schema names (e.g. "prod" produces "prod_myschema")
-	SchemaPrefix *string `json:"schema_prefix,omitempty"`
+	SchemaPrefix  *string                                          `json:"schema_prefix,omitempty"`
+	TableConflict *ConnectorIdentifierFivetranNaming_TableConflict `json:"table_conflict,omitempty"`
 }
+
+// ConnectorIdentifierFivetranNaming_ColumnConflict defines model for ConnectorIdentifierFivetranNaming.ColumnConflict.
+type ConnectorIdentifierFivetranNaming_ColumnConflict struct {
+	union json.RawMessage
+}
+
+// ConnectorIdentifierFivetranNaming_TableConflict defines model for ConnectorIdentifierFivetranNaming.TableConflict.
+type ConnectorIdentifierFivetranNaming_TableConflict struct {
+	union json.RawMessage
+}
+
+// ConnectorIdentifierFivetranTableConflict Action when source tables resolve to the same destination name
+type ConnectorIdentifierFivetranTableConflict string
 
 // ConnectorIdentifierIdentifierNaming Identifier naming strategy for target tables and columns
 type ConnectorIdentifierIdentifierNaming struct {
@@ -2858,8 +3515,9 @@ type ConnectorMongoSchemaMode struct {
 	InferTypedStrings *bool `json:"infer_typed_strings,omitempty"`
 
 	// MajorityTypeThreshold Use the dominant type per field when it covers at least this fraction of values (e.g. 0.95). Mismatches become null. 0 disables.
-	MajorityTypeThreshold *float32                    `json:"majority_type_threshold,omitempty"`
-	ObjectStore           *ConnectorBufferObjectStore `json:"object_store,omitempty"`
+	MajorityTypeThreshold *float32                        `json:"majority_type_threshold,omitempty"`
+	ObjectStore           *ConnectorBufferObjectStore     `json:"object_store,omitempty"`
+	OnTypeConflict        *ConnectorCatalogOnTypeConflict `json:"on_type_conflict,omitempty"`
 }
 
 // ConnectorMongoSchemalessMode Schemaless mode stores documents as-is in a fixed two-column schema (_id, document)
@@ -3071,7 +3729,13 @@ type ConnectorPostgresLogicalReplication struct {
 	RetryWindowSeconds *int64 `json:"retry_window_seconds,omitempty"`
 
 	// SkipSnapshots Skip the initial snapshot/backfill and start streaming changes from the replication slot's consistent point. Use when existing data does not need to be replicated.
-	SkipSnapshots *bool `json:"skip_snapshots,omitempty"`
+	SkipSnapshots *bool                                          `json:"skip_snapshots,omitempty"`
+	ToastMode     *ConnectorPostgresLogicalReplication_ToastMode `json:"toast_mode,omitempty"`
+}
+
+// ConnectorPostgresLogicalReplication_ToastMode defines model for ConnectorPostgresLogicalReplication.ToastMode.
+type ConnectorPostgresLogicalReplication_ToastMode struct {
+	union json.RawMessage
 }
 
 // ConnectorPostgresPostgres PostgreSQL database connection details
@@ -3183,6 +3847,104 @@ type ConnectorPostgresSnapshot = map[string]interface{}
 // ConnectorPostgresSslMode SSL connection mode for the PostgreSQL server
 type ConnectorPostgresSslMode string
 
+// ConnectorPostgresToastMode defines model for ConnectorPostgresToastMode.
+type ConnectorPostgresToastMode string
+
+// ConnectorRedshiftAuth Authentication method for connecting to the Redshift cluster
+type ConnectorRedshiftAuth struct {
+	union json.RawMessage
+}
+
+// ConnectorRedshiftAuth0 Password-based authentication
+type ConnectorRedshiftAuth0 struct {
+	// Password Password-based authentication
+	Password ConnectorRedshiftPassword `json:"password"`
+}
+
+// ConnectorRedshiftAuth1 IAM authentication with temporary database credentials
+type ConnectorRedshiftAuth1 struct {
+	// IamCredentials IAM authentication with temporary database credentials
+	IamCredentials ConnectorRedshiftIamCredentials `json:"iam_credentials"`
+}
+
+// ConnectorRedshiftIamCredentials IAM authentication. The connector's AWS identity requests a temporary database password with redshift:GetClusterCredentials, so no database password is stored.
+type ConnectorRedshiftIamCredentials struct {
+	// AccessKeyId AWS access key ID. Leave unset to use the instance role or environment credentials.
+	AccessKeyId *string `json:"access_key_id,omitempty"`
+
+	// AutoCreate Create the database user if it does not exist. Requires the redshift:CreateClusterUser permission.
+	AutoCreate *bool `json:"auto_create,omitempty"`
+
+	// ClusterIdentifier Cluster identifier. Leave unset to derive it from the endpoint hostname.
+	ClusterIdentifier *string `json:"cluster_identifier,omitempty"`
+
+	// Region AWS region of the cluster. Leave unset to derive it from the endpoint hostname.
+	Region *string `json:"region,omitempty"`
+
+	// SecretAccessKey AWS secret access key
+	SecretAccessKey *string `json:"secret_access_key,omitempty"`
+
+	// SessionToken AWS session token for temporary credentials
+	SessionToken *string `json:"session_token,omitempty"`
+}
+
+// ConnectorRedshiftPassword Password-based authentication credentials
+type ConnectorRedshiftPassword struct {
+	// Password Password for database authentication
+	Password string `json:"password"`
+}
+
+// ConnectorRedshiftRedshift Amazon Redshift connection details
+type ConnectorRedshiftRedshift struct {
+	// Auth Authentication method and its credentials
+	Auth ConnectorRedshiftAuth `json:"auth"`
+
+	// Database Name of the database to connect to
+	Database string `json:"database"`
+
+	// Host Cluster endpoint hostname ("mycluster.abc123xyz.us-east-1.redshift.amazonaws.com")
+	Host string `json:"host"`
+
+	// MaxPoolSize Maximum number of connections in the connection pool (0 for a default matched to the cluster's query concurrency)
+	MaxPoolSize *int64 `json:"max_pool_size,omitempty"`
+
+	// Port Port number for the Redshift cluster
+	Port    *int32                             `json:"port,omitempty"`
+	SslMode *ConnectorRedshiftRedshift_SslMode `json:"ssl_mode,omitempty"`
+
+	// SslRootCert SSL root certificate content for server verification
+	SslRootCert *string                 `json:"ssl_root_cert,omitempty"`
+	Tunnel      *ConnectorSshTunnelType `json:"tunnel,omitempty"`
+
+	// User Username for database authentication
+	User string `json:"user"`
+}
+
+// ConnectorRedshiftRedshift_SslMode defines model for ConnectorRedshiftRedshift.SslMode.
+type ConnectorRedshiftRedshift_SslMode struct {
+	union json.RawMessage
+}
+
+// ConnectorRedshiftRedshiftSink Amazon Redshift destination
+type ConnectorRedshiftRedshiftSink struct {
+	// Connection Connection details for the target Redshift cluster
+	Connection        ConnectorRedshiftRedshift            `json:"connection"`
+	HistoryMode       *ConnectorMigrationHistoryMode       `json:"history_mode,omitempty"`
+	MigrationStrategy *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
+
+	// SortDistKeys Set the distribution key and sort key from the primary key when creating tables. Changing table layout later requires a table rewrite. Tables created ahead of time keep their own layout.
+	SortDistKeys *bool `json:"sort_dist_keys,omitempty"`
+
+	// TargetSchema Target schema name within the database
+	TargetSchema *string `json:"target_schema,omitempty"`
+
+	// UseTransactions Enable transactional DML (disabled by default)
+	UseTransactions *bool `json:"use_transactions,omitempty"`
+}
+
+// ConnectorRedshiftSslMode SSL connection mode for the Redshift cluster
+type ConnectorRedshiftSslMode string
+
 // ConnectorScheduleCron defines model for ConnectorScheduleCron.
 type ConnectorScheduleCron struct {
 	Expression string `json:"expression"`
@@ -3293,6 +4055,18 @@ type ConnectorSink10 struct {
 type ConnectorSink11 struct {
 	// BigQuery BigQuery destination
 	BigQuery ConnectorBigqueryBigQuerySink `json:"big_query"`
+}
+
+// ConnectorSink12 defines model for .
+type ConnectorSink12 struct {
+	// FileSink Writes snapshot and CDC rows as files in object storage like S3/ABS/GCS etc.
+	FileSink ConnectorFileFileSink `json:"file_sink"`
+}
+
+// ConnectorSink13 defines model for .
+type ConnectorSink13 struct {
+	// Redshift Amazon Redshift destination
+	Redshift ConnectorRedshiftRedshiftSink `json:"redshift"`
 }
 
 // ConnectorSnowflakeAuth Authentication method for connecting to Snowflake
@@ -3491,6 +4265,7 @@ type ConnectorSqlServerSqlServer struct {
 	// Port Port number for the SQL Server instance
 	Port    *int32                     `json:"port,omitempty"`
 	SslMode *ConnectorSqlServerSslMode `json:"ssl_mode,omitempty"`
+	Tunnel  *ConnectorSshTunnelType    `json:"tunnel,omitempty"`
 }
 
 // ConnectorSqlServerSqlServerReplicationType SQL Server replication method
@@ -3617,10 +4392,7 @@ type ConnectorSshSshTunnel struct {
 	User string `json:"user"`
 }
 
-// ConnectorSshTunnelType Optional network transport. Leave unset for direct TCP; pick a
-//
-//	variant to tunnel the connection. Today only SSH bastion is supported;
-//	additional transports (e.g. PrivateLink) can be added as new variants.
+// ConnectorSshTunnelType Optional network transport. Leave unset for direct TCP; pick a variant to tunnel the connection. Today only SSH bastion is supported; additional transports (e.g. PrivateLink) can be added as new variants.
 type ConnectorSshTunnelType struct {
 	union json.RawMessage
 }
@@ -3787,6 +4559,77 @@ type ConnectorStatusStatus4 struct {
 type ConnectorStatusStatus5 struct {
 	Retry ConnectorStatusRetry `json:"retry"`
 }
+
+// ConnectorStatusStatus6 defines model for .
+type ConnectorStatusStatus6 struct {
+	// Warning The connector is running, but an operation needs attention.
+	Warning ConnectorStatusWarning `json:"warning"`
+}
+
+// ConnectorStatusWarning The connector is running, but an operation needs attention.
+type ConnectorStatusWarning struct {
+	// Reason What needs attention
+	Reason *string `json:"reason,omitempty"`
+}
+
+// ConnectorTaskRequest Task request
+type ConnectorTaskRequest struct {
+	union json.RawMessage
+}
+
+// ConnectorTaskRequest0 defines model for .
+type ConnectorTaskRequest0 struct {
+	// Snapshot A copy of one table taken at a single point in time
+	Snapshot ConnectorTaskSnapshot `json:"Snapshot"`
+}
+
+// ConnectorTaskSnapshot A copy of one table taken at a single point in time
+type ConnectorTaskSnapshot struct {
+	// Database Database name
+	Database *string `json:"database,omitempty"`
+
+	// ForceParallel Copy the table in parallel even when parallel snapshots are not enabled for the connector
+	ForceParallel *bool `json:"force_parallel,omitempty"`
+
+	// Name Table name
+	Name string `json:"name"`
+
+	// Schema Schema name
+	Schema string `json:"schema"`
+
+	// Truncate After the copy, supported targets mark rows the copy did not refresh as deleted. Other targets run a plain copy.
+	Truncate *bool `json:"truncate,omitempty"`
+}
+
+// ConnectorTaskTask Work requested for a connector
+type ConnectorTaskTask struct {
+	// Attempt Number of attempts so far
+	Attempt *int64 `json:"attempt,omitempty"`
+
+	// CreatedAt UTC timestamp when the task was submitted
+	CreatedAt string `json:"created_at"`
+
+	// Id Stable task identifier
+	Id string `json:"id"`
+
+	// NextAttemptAt When the task becomes eligible to run again. Not set when the task is not waiting.
+	NextAttemptAt *string `json:"next_attempt_at,omitempty"`
+
+	// Reason The most recent error. Cleared when the task succeeds.
+	Reason *string `json:"reason,omitempty"`
+
+	// Spec The requested work
+	Spec  ConnectorTaskRequest     `json:"spec"`
+	State *ConnectorTaskTask_State `json:"state,omitempty"`
+}
+
+// ConnectorTaskTask_State defines model for ConnectorTaskTask.State.
+type ConnectorTaskTask_State struct {
+	union json.RawMessage
+}
+
+// ConnectorTaskTaskState Task lifecycle state
+type ConnectorTaskTaskState string
 
 // ConnectorValidateAuthentication defines model for ConnectorValidateAuthentication.
 type ConnectorValidateAuthentication = map[string]interface{}
@@ -4223,6 +5066,9 @@ type PatchConnectorApplicationMergePatchPlusJSONRequestBody = PatchConnectorAppl
 // CreateConnectorJSONRequestBody defines body for CreateConnector for application/json ContentType.
 type CreateConnectorJSONRequestBody = ConnectorConnector
 
+// CreateTaskJSONRequestBody defines body for CreateTask for application/json ContentType.
+type CreateTaskJSONRequestBody = ConnectorTaskRequest
+
 // DebugConnectorJSONRequestBody defines body for DebugConnector for application/json ContentType.
 type DebugConnectorJSONRequestBody = ConnectorConnector
 
@@ -4565,6 +5411,68 @@ func (t *ConnectorCatalogColumn_Action) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsConnectorCatalogOnTypeConflict0 returns the union data inside the ConnectorCatalogOnTypeConflict as a ConnectorCatalogOnTypeConflict0
+func (t ConnectorCatalogOnTypeConflict) AsConnectorCatalogOnTypeConflict0() (ConnectorCatalogOnTypeConflict0, error) {
+	var body ConnectorCatalogOnTypeConflict0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorCatalogOnTypeConflict0 overwrites any union data inside the ConnectorCatalogOnTypeConflict as the provided ConnectorCatalogOnTypeConflict0
+func (t *ConnectorCatalogOnTypeConflict) FromConnectorCatalogOnTypeConflict0(v ConnectorCatalogOnTypeConflict0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorCatalogOnTypeConflict0 performs a merge with any union data inside the ConnectorCatalogOnTypeConflict, using the provided ConnectorCatalogOnTypeConflict0
+func (t *ConnectorCatalogOnTypeConflict) MergeConnectorCatalogOnTypeConflict0(v ConnectorCatalogOnTypeConflict0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConnectorCatalogOnTypeConflict1 returns the union data inside the ConnectorCatalogOnTypeConflict as a ConnectorCatalogOnTypeConflict1
+func (t ConnectorCatalogOnTypeConflict) AsConnectorCatalogOnTypeConflict1() (ConnectorCatalogOnTypeConflict1, error) {
+	var body ConnectorCatalogOnTypeConflict1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorCatalogOnTypeConflict1 overwrites any union data inside the ConnectorCatalogOnTypeConflict as the provided ConnectorCatalogOnTypeConflict1
+func (t *ConnectorCatalogOnTypeConflict) FromConnectorCatalogOnTypeConflict1(v ConnectorCatalogOnTypeConflict1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorCatalogOnTypeConflict1 performs a merge with any union data inside the ConnectorCatalogOnTypeConflict, using the provided ConnectorCatalogOnTypeConflict1
+func (t *ConnectorCatalogOnTypeConflict) MergeConnectorCatalogOnTypeConflict1(v ConnectorCatalogOnTypeConflict1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorCatalogOnTypeConflict) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorCatalogOnTypeConflict) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsConnectorCatalogAction returns the union data inside the ConnectorCatalogSchema_Action as a ConnectorCatalogAction
 func (t ConnectorCatalogSchema_Action) AsConnectorCatalogAction() (ConnectorCatalogAction, error) {
 	var body ConnectorCatalogAction
@@ -4597,6 +5505,42 @@ func (t ConnectorCatalogSchema_Action) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ConnectorCatalogSchema_Action) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorCatalogSourceTableOption0 returns the union data inside the ConnectorCatalogSourceTableOption as a ConnectorCatalogSourceTableOption0
+func (t ConnectorCatalogSourceTableOption) AsConnectorCatalogSourceTableOption0() (ConnectorCatalogSourceTableOption0, error) {
+	var body ConnectorCatalogSourceTableOption0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorCatalogSourceTableOption0 overwrites any union data inside the ConnectorCatalogSourceTableOption as the provided ConnectorCatalogSourceTableOption0
+func (t *ConnectorCatalogSourceTableOption) FromConnectorCatalogSourceTableOption0(v ConnectorCatalogSourceTableOption0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorCatalogSourceTableOption0 performs a merge with any union data inside the ConnectorCatalogSourceTableOption, using the provided ConnectorCatalogSourceTableOption0
+func (t *ConnectorCatalogSourceTableOption) MergeConnectorCatalogSourceTableOption0(v ConnectorCatalogSourceTableOption0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorCatalogSourceTableOption) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorCatalogSourceTableOption) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -4637,6 +5581,68 @@ func (t *ConnectorCatalogTable_Action) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsConnectorCatalogTargetTableOption0 returns the union data inside the ConnectorCatalogTargetTableOption as a ConnectorCatalogTargetTableOption0
+func (t ConnectorCatalogTargetTableOption) AsConnectorCatalogTargetTableOption0() (ConnectorCatalogTargetTableOption0, error) {
+	var body ConnectorCatalogTargetTableOption0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorCatalogTargetTableOption0 overwrites any union data inside the ConnectorCatalogTargetTableOption as the provided ConnectorCatalogTargetTableOption0
+func (t *ConnectorCatalogTargetTableOption) FromConnectorCatalogTargetTableOption0(v ConnectorCatalogTargetTableOption0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorCatalogTargetTableOption0 performs a merge with any union data inside the ConnectorCatalogTargetTableOption, using the provided ConnectorCatalogTargetTableOption0
+func (t *ConnectorCatalogTargetTableOption) MergeConnectorCatalogTargetTableOption0(v ConnectorCatalogTargetTableOption0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConnectorCatalogTargetTableOption1 returns the union data inside the ConnectorCatalogTargetTableOption as a ConnectorCatalogTargetTableOption1
+func (t ConnectorCatalogTargetTableOption) AsConnectorCatalogTargetTableOption1() (ConnectorCatalogTargetTableOption1, error) {
+	var body ConnectorCatalogTargetTableOption1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorCatalogTargetTableOption1 overwrites any union data inside the ConnectorCatalogTargetTableOption as the provided ConnectorCatalogTargetTableOption1
+func (t *ConnectorCatalogTargetTableOption) FromConnectorCatalogTargetTableOption1(v ConnectorCatalogTargetTableOption1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorCatalogTargetTableOption1 performs a merge with any union data inside the ConnectorCatalogTargetTableOption, using the provided ConnectorCatalogTargetTableOption1
+func (t *ConnectorCatalogTargetTableOption) MergeConnectorCatalogTargetTableOption1(v ConnectorCatalogTargetTableOption1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorCatalogTargetTableOption) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorCatalogTargetTableOption) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsConnectorClickhouseClickhouseEngine returns the union data inside the ConnectorClickhouseClickhouseSink_Engine as a ConnectorClickhouseClickhouseEngine
 func (t ConnectorClickhouseClickhouseSink_Engine) AsConnectorClickhouseClickhouseEngine() (ConnectorClickhouseClickhouseEngine, error) {
 	var body ConnectorClickhouseClickhouseEngine
@@ -4669,6 +5675,78 @@ func (t ConnectorClickhouseClickhouseSink_Engine) MarshalJSON() ([]byte, error) 
 }
 
 func (t *ConnectorClickhouseClickhouseSink_Engine) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorClickhouseCompressionPolicy returns the union data inside the ConnectorClickhouseCompressionConfig_Policy as a ConnectorClickhouseCompressionPolicy
+func (t ConnectorClickhouseCompressionConfig_Policy) AsConnectorClickhouseCompressionPolicy() (ConnectorClickhouseCompressionPolicy, error) {
+	var body ConnectorClickhouseCompressionPolicy
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorClickhouseCompressionPolicy overwrites any union data inside the ConnectorClickhouseCompressionConfig_Policy as the provided ConnectorClickhouseCompressionPolicy
+func (t *ConnectorClickhouseCompressionConfig_Policy) FromConnectorClickhouseCompressionPolicy(v ConnectorClickhouseCompressionPolicy) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorClickhouseCompressionPolicy performs a merge with any union data inside the ConnectorClickhouseCompressionConfig_Policy, using the provided ConnectorClickhouseCompressionPolicy
+func (t *ConnectorClickhouseCompressionConfig_Policy) MergeConnectorClickhouseCompressionPolicy(v ConnectorClickhouseCompressionPolicy) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorClickhouseCompressionConfig_Policy) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorClickhouseCompressionConfig_Policy) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorClickhouseCompressionTypeFamily returns the union data inside the ConnectorClickhouseCompressionOverride_TypeFamily as a ConnectorClickhouseCompressionTypeFamily
+func (t ConnectorClickhouseCompressionOverride_TypeFamily) AsConnectorClickhouseCompressionTypeFamily() (ConnectorClickhouseCompressionTypeFamily, error) {
+	var body ConnectorClickhouseCompressionTypeFamily
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorClickhouseCompressionTypeFamily overwrites any union data inside the ConnectorClickhouseCompressionOverride_TypeFamily as the provided ConnectorClickhouseCompressionTypeFamily
+func (t *ConnectorClickhouseCompressionOverride_TypeFamily) FromConnectorClickhouseCompressionTypeFamily(v ConnectorClickhouseCompressionTypeFamily) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorClickhouseCompressionTypeFamily performs a merge with any union data inside the ConnectorClickhouseCompressionOverride_TypeFamily, using the provided ConnectorClickhouseCompressionTypeFamily
+func (t *ConnectorClickhouseCompressionOverride_TypeFamily) MergeConnectorClickhouseCompressionTypeFamily(v ConnectorClickhouseCompressionTypeFamily) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorClickhouseCompressionOverride_TypeFamily) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorClickhouseCompressionOverride_TypeFamily) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -5123,6 +6201,300 @@ func (t ConnectorFileFileDiscovery) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ConnectorFileFileDiscovery) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorFileFilePartitionTransform returns the union data inside the ConnectorFileFilePartitionField_Transform as a ConnectorFileFilePartitionTransform
+func (t ConnectorFileFilePartitionField_Transform) AsConnectorFileFilePartitionTransform() (ConnectorFileFilePartitionTransform, error) {
+	var body ConnectorFileFilePartitionTransform
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorFileFilePartitionTransform overwrites any union data inside the ConnectorFileFilePartitionField_Transform as the provided ConnectorFileFilePartitionTransform
+func (t *ConnectorFileFilePartitionField_Transform) FromConnectorFileFilePartitionTransform(v ConnectorFileFilePartitionTransform) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorFileFilePartitionTransform performs a merge with any union data inside the ConnectorFileFilePartitionField_Transform, using the provided ConnectorFileFilePartitionTransform
+func (t *ConnectorFileFilePartitionField_Transform) MergeConnectorFileFilePartitionTransform(v ConnectorFileFilePartitionTransform) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorFileFilePartitionField_Transform) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorFileFilePartitionField_Transform) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorFileFileSinkOutputFormat0 returns the union data inside the ConnectorFileFileSinkOutputFormat as a ConnectorFileFileSinkOutputFormat0
+func (t ConnectorFileFileSinkOutputFormat) AsConnectorFileFileSinkOutputFormat0() (ConnectorFileFileSinkOutputFormat0, error) {
+	var body ConnectorFileFileSinkOutputFormat0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorFileFileSinkOutputFormat0 overwrites any union data inside the ConnectorFileFileSinkOutputFormat as the provided ConnectorFileFileSinkOutputFormat0
+func (t *ConnectorFileFileSinkOutputFormat) FromConnectorFileFileSinkOutputFormat0(v ConnectorFileFileSinkOutputFormat0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorFileFileSinkOutputFormat0 performs a merge with any union data inside the ConnectorFileFileSinkOutputFormat, using the provided ConnectorFileFileSinkOutputFormat0
+func (t *ConnectorFileFileSinkOutputFormat) MergeConnectorFileFileSinkOutputFormat0(v ConnectorFileFileSinkOutputFormat0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConnectorFileFileSinkOutputFormat1 returns the union data inside the ConnectorFileFileSinkOutputFormat as a ConnectorFileFileSinkOutputFormat1
+func (t ConnectorFileFileSinkOutputFormat) AsConnectorFileFileSinkOutputFormat1() (ConnectorFileFileSinkOutputFormat1, error) {
+	var body ConnectorFileFileSinkOutputFormat1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorFileFileSinkOutputFormat1 overwrites any union data inside the ConnectorFileFileSinkOutputFormat as the provided ConnectorFileFileSinkOutputFormat1
+func (t *ConnectorFileFileSinkOutputFormat) FromConnectorFileFileSinkOutputFormat1(v ConnectorFileFileSinkOutputFormat1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorFileFileSinkOutputFormat1 performs a merge with any union data inside the ConnectorFileFileSinkOutputFormat, using the provided ConnectorFileFileSinkOutputFormat1
+func (t *ConnectorFileFileSinkOutputFormat) MergeConnectorFileFileSinkOutputFormat1(v ConnectorFileFileSinkOutputFormat1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConnectorFileFileSinkOutputFormat2 returns the union data inside the ConnectorFileFileSinkOutputFormat as a ConnectorFileFileSinkOutputFormat2
+func (t ConnectorFileFileSinkOutputFormat) AsConnectorFileFileSinkOutputFormat2() (ConnectorFileFileSinkOutputFormat2, error) {
+	var body ConnectorFileFileSinkOutputFormat2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorFileFileSinkOutputFormat2 overwrites any union data inside the ConnectorFileFileSinkOutputFormat as the provided ConnectorFileFileSinkOutputFormat2
+func (t *ConnectorFileFileSinkOutputFormat) FromConnectorFileFileSinkOutputFormat2(v ConnectorFileFileSinkOutputFormat2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorFileFileSinkOutputFormat2 performs a merge with any union data inside the ConnectorFileFileSinkOutputFormat, using the provided ConnectorFileFileSinkOutputFormat2
+func (t *ConnectorFileFileSinkOutputFormat) MergeConnectorFileFileSinkOutputFormat2(v ConnectorFileFileSinkOutputFormat2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConnectorFileFileSinkOutputFormat3 returns the union data inside the ConnectorFileFileSinkOutputFormat as a ConnectorFileFileSinkOutputFormat3
+func (t ConnectorFileFileSinkOutputFormat) AsConnectorFileFileSinkOutputFormat3() (ConnectorFileFileSinkOutputFormat3, error) {
+	var body ConnectorFileFileSinkOutputFormat3
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorFileFileSinkOutputFormat3 overwrites any union data inside the ConnectorFileFileSinkOutputFormat as the provided ConnectorFileFileSinkOutputFormat3
+func (t *ConnectorFileFileSinkOutputFormat) FromConnectorFileFileSinkOutputFormat3(v ConnectorFileFileSinkOutputFormat3) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorFileFileSinkOutputFormat3 performs a merge with any union data inside the ConnectorFileFileSinkOutputFormat, using the provided ConnectorFileFileSinkOutputFormat3
+func (t *ConnectorFileFileSinkOutputFormat) MergeConnectorFileFileSinkOutputFormat3(v ConnectorFileFileSinkOutputFormat3) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorFileFileSinkOutputFormat) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorFileFileSinkOutputFormat) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorFileJsonOutputFormat returns the union data inside the ConnectorFileJsonOutput_Format as a ConnectorFileJsonOutputFormat
+func (t ConnectorFileJsonOutput_Format) AsConnectorFileJsonOutputFormat() (ConnectorFileJsonOutputFormat, error) {
+	var body ConnectorFileJsonOutputFormat
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorFileJsonOutputFormat overwrites any union data inside the ConnectorFileJsonOutput_Format as the provided ConnectorFileJsonOutputFormat
+func (t *ConnectorFileJsonOutput_Format) FromConnectorFileJsonOutputFormat(v ConnectorFileJsonOutputFormat) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorFileJsonOutputFormat performs a merge with any union data inside the ConnectorFileJsonOutput_Format, using the provided ConnectorFileJsonOutputFormat
+func (t *ConnectorFileJsonOutput_Format) MergeConnectorFileJsonOutputFormat(v ConnectorFileJsonOutputFormat) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorFileJsonOutput_Format) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorFileJsonOutput_Format) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorFileJsonNullFields returns the union data inside the ConnectorFileJsonOutput_NullFields as a ConnectorFileJsonNullFields
+func (t ConnectorFileJsonOutput_NullFields) AsConnectorFileJsonNullFields() (ConnectorFileJsonNullFields, error) {
+	var body ConnectorFileJsonNullFields
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorFileJsonNullFields overwrites any union data inside the ConnectorFileJsonOutput_NullFields as the provided ConnectorFileJsonNullFields
+func (t *ConnectorFileJsonOutput_NullFields) FromConnectorFileJsonNullFields(v ConnectorFileJsonNullFields) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorFileJsonNullFields performs a merge with any union data inside the ConnectorFileJsonOutput_NullFields, using the provided ConnectorFileJsonNullFields
+func (t *ConnectorFileJsonOutput_NullFields) MergeConnectorFileJsonNullFields(v ConnectorFileJsonNullFields) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorFileJsonOutput_NullFields) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorFileJsonOutput_NullFields) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorFileParquetStatistics returns the union data inside the ConnectorFileParquetOutput_Statistics as a ConnectorFileParquetStatistics
+func (t ConnectorFileParquetOutput_Statistics) AsConnectorFileParquetStatistics() (ConnectorFileParquetStatistics, error) {
+	var body ConnectorFileParquetStatistics
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorFileParquetStatistics overwrites any union data inside the ConnectorFileParquetOutput_Statistics as the provided ConnectorFileParquetStatistics
+func (t *ConnectorFileParquetOutput_Statistics) FromConnectorFileParquetStatistics(v ConnectorFileParquetStatistics) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorFileParquetStatistics performs a merge with any union data inside the ConnectorFileParquetOutput_Statistics, using the provided ConnectorFileParquetStatistics
+func (t *ConnectorFileParquetOutput_Statistics) MergeConnectorFileParquetStatistics(v ConnectorFileParquetStatistics) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorFileParquetOutput_Statistics) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorFileParquetOutput_Statistics) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorFileParquetVersion returns the union data inside the ConnectorFileParquetOutput_Version as a ConnectorFileParquetVersion
+func (t ConnectorFileParquetOutput_Version) AsConnectorFileParquetVersion() (ConnectorFileParquetVersion, error) {
+	var body ConnectorFileParquetVersion
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorFileParquetVersion overwrites any union data inside the ConnectorFileParquetOutput_Version as the provided ConnectorFileParquetVersion
+func (t *ConnectorFileParquetOutput_Version) FromConnectorFileParquetVersion(v ConnectorFileParquetVersion) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorFileParquetVersion performs a merge with any union data inside the ConnectorFileParquetOutput_Version, using the provided ConnectorFileParquetVersion
+func (t *ConnectorFileParquetOutput_Version) MergeConnectorFileParquetVersion(v ConnectorFileParquetVersion) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorFileParquetOutput_Version) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorFileParquetOutput_Version) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -6127,6 +7499,78 @@ func (t ConnectorIcebergWriteMode) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ConnectorIcebergWriteMode) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorIdentifierFivetranColumnConflict returns the union data inside the ConnectorIdentifierFivetranNaming_ColumnConflict as a ConnectorIdentifierFivetranColumnConflict
+func (t ConnectorIdentifierFivetranNaming_ColumnConflict) AsConnectorIdentifierFivetranColumnConflict() (ConnectorIdentifierFivetranColumnConflict, error) {
+	var body ConnectorIdentifierFivetranColumnConflict
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorIdentifierFivetranColumnConflict overwrites any union data inside the ConnectorIdentifierFivetranNaming_ColumnConflict as the provided ConnectorIdentifierFivetranColumnConflict
+func (t *ConnectorIdentifierFivetranNaming_ColumnConflict) FromConnectorIdentifierFivetranColumnConflict(v ConnectorIdentifierFivetranColumnConflict) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorIdentifierFivetranColumnConflict performs a merge with any union data inside the ConnectorIdentifierFivetranNaming_ColumnConflict, using the provided ConnectorIdentifierFivetranColumnConflict
+func (t *ConnectorIdentifierFivetranNaming_ColumnConflict) MergeConnectorIdentifierFivetranColumnConflict(v ConnectorIdentifierFivetranColumnConflict) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorIdentifierFivetranNaming_ColumnConflict) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorIdentifierFivetranNaming_ColumnConflict) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorIdentifierFivetranTableConflict returns the union data inside the ConnectorIdentifierFivetranNaming_TableConflict as a ConnectorIdentifierFivetranTableConflict
+func (t ConnectorIdentifierFivetranNaming_TableConflict) AsConnectorIdentifierFivetranTableConflict() (ConnectorIdentifierFivetranTableConflict, error) {
+	var body ConnectorIdentifierFivetranTableConflict
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorIdentifierFivetranTableConflict overwrites any union data inside the ConnectorIdentifierFivetranNaming_TableConflict as the provided ConnectorIdentifierFivetranTableConflict
+func (t *ConnectorIdentifierFivetranNaming_TableConflict) FromConnectorIdentifierFivetranTableConflict(v ConnectorIdentifierFivetranTableConflict) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorIdentifierFivetranTableConflict performs a merge with any union data inside the ConnectorIdentifierFivetranNaming_TableConflict, using the provided ConnectorIdentifierFivetranTableConflict
+func (t *ConnectorIdentifierFivetranNaming_TableConflict) MergeConnectorIdentifierFivetranTableConflict(v ConnectorIdentifierFivetranTableConflict) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorIdentifierFivetranNaming_TableConflict) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorIdentifierFivetranNaming_TableConflict) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -7379,6 +8823,42 @@ func (t *ConnectorPostgresDeleteTracking) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsConnectorPostgresToastMode returns the union data inside the ConnectorPostgresLogicalReplication_ToastMode as a ConnectorPostgresToastMode
+func (t ConnectorPostgresLogicalReplication_ToastMode) AsConnectorPostgresToastMode() (ConnectorPostgresToastMode, error) {
+	var body ConnectorPostgresToastMode
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorPostgresToastMode overwrites any union data inside the ConnectorPostgresLogicalReplication_ToastMode as the provided ConnectorPostgresToastMode
+func (t *ConnectorPostgresLogicalReplication_ToastMode) FromConnectorPostgresToastMode(v ConnectorPostgresToastMode) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorPostgresToastMode performs a merge with any union data inside the ConnectorPostgresLogicalReplication_ToastMode, using the provided ConnectorPostgresToastMode
+func (t *ConnectorPostgresLogicalReplication_ToastMode) MergeConnectorPostgresToastMode(v ConnectorPostgresToastMode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorPostgresLogicalReplication_ToastMode) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorPostgresLogicalReplication_ToastMode) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsConnectorPostgresSslMode returns the union data inside the ConnectorPostgresPostgres_SslMode as a ConnectorPostgresSslMode
 func (t ConnectorPostgresPostgres_SslMode) AsConnectorPostgresSslMode() (ConnectorPostgresSslMode, error) {
 	var body ConnectorPostgresSslMode
@@ -7499,6 +8979,104 @@ func (t ConnectorPostgresPostgresReplicationType) MarshalJSON() ([]byte, error) 
 }
 
 func (t *ConnectorPostgresPostgresReplicationType) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorRedshiftAuth0 returns the union data inside the ConnectorRedshiftAuth as a ConnectorRedshiftAuth0
+func (t ConnectorRedshiftAuth) AsConnectorRedshiftAuth0() (ConnectorRedshiftAuth0, error) {
+	var body ConnectorRedshiftAuth0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorRedshiftAuth0 overwrites any union data inside the ConnectorRedshiftAuth as the provided ConnectorRedshiftAuth0
+func (t *ConnectorRedshiftAuth) FromConnectorRedshiftAuth0(v ConnectorRedshiftAuth0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorRedshiftAuth0 performs a merge with any union data inside the ConnectorRedshiftAuth, using the provided ConnectorRedshiftAuth0
+func (t *ConnectorRedshiftAuth) MergeConnectorRedshiftAuth0(v ConnectorRedshiftAuth0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConnectorRedshiftAuth1 returns the union data inside the ConnectorRedshiftAuth as a ConnectorRedshiftAuth1
+func (t ConnectorRedshiftAuth) AsConnectorRedshiftAuth1() (ConnectorRedshiftAuth1, error) {
+	var body ConnectorRedshiftAuth1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorRedshiftAuth1 overwrites any union data inside the ConnectorRedshiftAuth as the provided ConnectorRedshiftAuth1
+func (t *ConnectorRedshiftAuth) FromConnectorRedshiftAuth1(v ConnectorRedshiftAuth1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorRedshiftAuth1 performs a merge with any union data inside the ConnectorRedshiftAuth, using the provided ConnectorRedshiftAuth1
+func (t *ConnectorRedshiftAuth) MergeConnectorRedshiftAuth1(v ConnectorRedshiftAuth1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorRedshiftAuth) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorRedshiftAuth) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorRedshiftSslMode returns the union data inside the ConnectorRedshiftRedshift_SslMode as a ConnectorRedshiftSslMode
+func (t ConnectorRedshiftRedshift_SslMode) AsConnectorRedshiftSslMode() (ConnectorRedshiftSslMode, error) {
+	var body ConnectorRedshiftSslMode
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorRedshiftSslMode overwrites any union data inside the ConnectorRedshiftRedshift_SslMode as the provided ConnectorRedshiftSslMode
+func (t *ConnectorRedshiftRedshift_SslMode) FromConnectorRedshiftSslMode(v ConnectorRedshiftSslMode) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorRedshiftSslMode performs a merge with any union data inside the ConnectorRedshiftRedshift_SslMode, using the provided ConnectorRedshiftSslMode
+func (t *ConnectorRedshiftRedshift_SslMode) MergeConnectorRedshiftSslMode(v ConnectorRedshiftSslMode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorRedshiftRedshift_SslMode) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorRedshiftRedshift_SslMode) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -7903,6 +9481,58 @@ func (t *ConnectorSink) FromConnectorSink11(v ConnectorSink11) error {
 
 // MergeConnectorSink11 performs a merge with any union data inside the ConnectorSink, using the provided ConnectorSink11
 func (t *ConnectorSink) MergeConnectorSink11(v ConnectorSink11) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConnectorSink12 returns the union data inside the ConnectorSink as a ConnectorSink12
+func (t ConnectorSink) AsConnectorSink12() (ConnectorSink12, error) {
+	var body ConnectorSink12
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorSink12 overwrites any union data inside the ConnectorSink as the provided ConnectorSink12
+func (t *ConnectorSink) FromConnectorSink12(v ConnectorSink12) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorSink12 performs a merge with any union data inside the ConnectorSink, using the provided ConnectorSink12
+func (t *ConnectorSink) MergeConnectorSink12(v ConnectorSink12) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConnectorSink13 returns the union data inside the ConnectorSink as a ConnectorSink13
+func (t ConnectorSink) AsConnectorSink13() (ConnectorSink13, error) {
+	var body ConnectorSink13
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorSink13 overwrites any union data inside the ConnectorSink as the provided ConnectorSink13
+func (t *ConnectorSink) FromConnectorSink13(v ConnectorSink13) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorSink13 performs a merge with any union data inside the ConnectorSink, using the provided ConnectorSink13
+func (t *ConnectorSink) MergeConnectorSink13(v ConnectorSink13) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -8933,12 +10563,110 @@ func (t *ConnectorStatusStatus) MergeConnectorStatusStatus5(v ConnectorStatusSta
 	return err
 }
 
+// AsConnectorStatusStatus6 returns the union data inside the ConnectorStatusStatus as a ConnectorStatusStatus6
+func (t ConnectorStatusStatus) AsConnectorStatusStatus6() (ConnectorStatusStatus6, error) {
+	var body ConnectorStatusStatus6
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorStatusStatus6 overwrites any union data inside the ConnectorStatusStatus as the provided ConnectorStatusStatus6
+func (t *ConnectorStatusStatus) FromConnectorStatusStatus6(v ConnectorStatusStatus6) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorStatusStatus6 performs a merge with any union data inside the ConnectorStatusStatus, using the provided ConnectorStatusStatus6
+func (t *ConnectorStatusStatus) MergeConnectorStatusStatus6(v ConnectorStatusStatus6) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t ConnectorStatusStatus) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
 func (t *ConnectorStatusStatus) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorTaskRequest0 returns the union data inside the ConnectorTaskRequest as a ConnectorTaskRequest0
+func (t ConnectorTaskRequest) AsConnectorTaskRequest0() (ConnectorTaskRequest0, error) {
+	var body ConnectorTaskRequest0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorTaskRequest0 overwrites any union data inside the ConnectorTaskRequest as the provided ConnectorTaskRequest0
+func (t *ConnectorTaskRequest) FromConnectorTaskRequest0(v ConnectorTaskRequest0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorTaskRequest0 performs a merge with any union data inside the ConnectorTaskRequest, using the provided ConnectorTaskRequest0
+func (t *ConnectorTaskRequest) MergeConnectorTaskRequest0(v ConnectorTaskRequest0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorTaskRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorTaskRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorTaskTaskState returns the union data inside the ConnectorTaskTask_State as a ConnectorTaskTaskState
+func (t ConnectorTaskTask_State) AsConnectorTaskTaskState() (ConnectorTaskTaskState, error) {
+	var body ConnectorTaskTaskState
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorTaskTaskState overwrites any union data inside the ConnectorTaskTask_State as the provided ConnectorTaskTaskState
+func (t *ConnectorTaskTask_State) FromConnectorTaskTaskState(v ConnectorTaskTaskState) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorTaskTaskState performs a merge with any union data inside the ConnectorTaskTask_State, using the provided ConnectorTaskTaskState
+func (t *ConnectorTaskTask_State) MergeConnectorTaskTaskState(v ConnectorTaskTaskState) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorTaskTask_State) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorTaskTask_State) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -9744,7 +11472,7 @@ type ClientInterface interface {
 
 	// CreateConnectorWithBody Create or update a connector with a specified ID
 	//
-	// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. When clone_from is provided, secret fields (passwords, certificates) are copied from the source connector.
+	// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. Secret fields omitted from an update are preserved from the stored connector; an explicit null clears an optional secret. When clone_from is provided, omitted secrets are copied from the source connector.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -9753,12 +11481,58 @@ type ClientInterface interface {
 
 	// CreateConnector Create or update a connector with a specified ID
 	//
-	// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. When clone_from is provided, secret fields (passwords, certificates) are copied from the source connector.
+	// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. Secret fields omitted from an update are preserved from the stored connector; an explicit null clears an optional secret. When clone_from is provided, omitted secrets are copied from the source connector.
 	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /api/v1/connectors/{connector_id} (the `CreateConnector` operationId).
 	CreateConnector(ctx context.Context, connectorId string, params *CreateConnectorParams, body CreateConnectorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListTasks List tasks
+	//
+	// List the connector's recent tasks, newest first.
+	//
+	// Corresponds with GET /api/v1/connectors/{connector_id}/tasks (the `ListTasks` operationId).
+	ListTasks(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateTaskWithBody Create a task
+	//
+	// Create a task for the connector. If an identical task is already pending or running, the existing task is returned with the same 202 response.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /api/v1/connectors/{connector_id}/tasks (the `CreateTask` operationId).
+	CreateTaskWithBody(ctx context.Context, connectorId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateTask Create a task
+	//
+	// Create a task for the connector. If an identical task is already pending or running, the existing task is returned with the same 202 response.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /api/v1/connectors/{connector_id}/tasks (the `CreateTask` operationId).
+	CreateTask(ctx context.Context, connectorId string, body CreateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTask Get a task
+	//
+	// Get one task owned by the connector.
+	//
+	// Corresponds with GET /api/v1/connectors/{connector_id}/tasks/{task_id} (the `GetTask` operationId).
+	GetTask(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CancelTask Cancel a task
+	//
+	// Cancel a pending task.
+	//
+	// Corresponds with POST /api/v1/connectors/{connector_id}/tasks/{task_id}/cancel (the `CancelTask` operationId).
+	CancelTask(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RetryTask Retry a task now
+	//
+	// Make a pending task eligible to start now instead of waiting for its scheduled retry.
+	//
+	// Corresponds with POST /api/v1/connectors/{connector_id}/tasks/{task_id}/retry (the `RetryTask` operationId).
+	RetryTask(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DebugConnectorWithBody Debug connector configuration
 	//
@@ -10052,7 +11826,7 @@ func (c *Client) PatchConnectorWithApplicationMergePatchPlusJSONBody(ctx context
 
 // CreateConnectorWithBody Create or update a connector with a specified ID
 //
-// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. When clone_from is provided, secret fields (passwords, certificates) are copied from the source connector.
+// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. Secret fields omitted from an update are preserved from the stored connector; an explicit null clears an optional secret. When clone_from is provided, omitted secrets are copied from the source connector.
 //
 // Takes any type of body and a specified content type.
 //
@@ -10071,13 +11845,119 @@ func (c *Client) CreateConnectorWithBody(ctx context.Context, connectorId string
 
 // CreateConnector Create or update a connector with a specified ID
 //
-// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. When clone_from is provided, secret fields (passwords, certificates) are copied from the source connector.
+// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. Secret fields omitted from an update are preserved from the stored connector; an explicit null clears an optional secret. When clone_from is provided, omitted secrets are copied from the source connector.
 //
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /api/v1/connectors/{connector_id} (the `CreateConnector` operationId).
 func (c *Client) CreateConnector(ctx context.Context, connectorId string, params *CreateConnectorParams, body CreateConnectorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateConnectorRequest(c.Server, connectorId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListTasks List tasks
+//
+// List the connector's recent tasks, newest first.
+//
+// Corresponds with GET /api/v1/connectors/{connector_id}/tasks (the `ListTasks` operationId).
+func (c *Client) ListTasks(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListTasksRequest(c.Server, connectorId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateTaskWithBody Create a task
+//
+// Create a task for the connector. If an identical task is already pending or running, the existing task is returned with the same 202 response.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /api/v1/connectors/{connector_id}/tasks (the `CreateTask` operationId).
+func (c *Client) CreateTaskWithBody(ctx context.Context, connectorId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateTaskRequestWithBody(c.Server, connectorId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateTask Create a task
+//
+// Create a task for the connector. If an identical task is already pending or running, the existing task is returned with the same 202 response.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /api/v1/connectors/{connector_id}/tasks (the `CreateTask` operationId).
+func (c *Client) CreateTask(ctx context.Context, connectorId string, body CreateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateTaskRequest(c.Server, connectorId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetTask Get a task
+//
+// Get one task owned by the connector.
+//
+// Corresponds with GET /api/v1/connectors/{connector_id}/tasks/{task_id} (the `GetTask` operationId).
+func (c *Client) GetTask(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTaskRequest(c.Server, connectorId, taskId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CancelTask Cancel a task
+//
+// Cancel a pending task.
+//
+// Corresponds with POST /api/v1/connectors/{connector_id}/tasks/{task_id}/cancel (the `CancelTask` operationId).
+func (c *Client) CancelTask(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelTaskRequest(c.Server, connectorId, taskId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RetryTask Retry a task now
+//
+// Make a pending task eligible to start now instead of waiting for its scheduled retry.
+//
+// Corresponds with POST /api/v1/connectors/{connector_id}/tasks/{task_id}/retry (the `RetryTask` operationId).
+func (c *Client) RetryTask(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRetryTaskRequest(c.Server, connectorId, taskId)
 	if err != nil {
 		return nil, err
 	}
@@ -10644,6 +12524,210 @@ func NewCreateConnectorRequestWithBody(server string, connectorId string, params
 	return req, nil
 }
 
+// NewListTasksRequest constructs an http.Request for the ListTasks method
+func NewListTasksRequest(server string, connectorId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "connector_id", connectorId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/connectors/%s/tasks", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateTaskRequest calls the generic CreateTask builder with application/json body
+func NewCreateTaskRequest(server string, connectorId string, body CreateTaskJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateTaskRequestWithBody(server, connectorId, "application/json", bodyReader)
+}
+
+// NewCreateTaskRequestWithBody constructs an http.Request for the CreateTask method, with any body, and a specified content type
+func NewCreateTaskRequestWithBody(server string, connectorId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "connector_id", connectorId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/connectors/%s/tasks", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetTaskRequest constructs an http.Request for the GetTask method
+func NewGetTaskRequest(server string, connectorId string, taskId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "connector_id", connectorId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "task_id", taskId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/connectors/%s/tasks/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCancelTaskRequest constructs an http.Request for the CancelTask method
+func NewCancelTaskRequest(server string, connectorId string, taskId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "connector_id", connectorId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "task_id", taskId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/connectors/%s/tasks/%s/cancel", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewRetryTaskRequest constructs an http.Request for the RetryTask method
+func NewRetryTaskRequest(server string, connectorId string, taskId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "connector_id", connectorId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "task_id", taskId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/connectors/%s/tasks/%s/retry", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewDebugConnectorRequest calls the generic DebugConnector builder with application/json body
 func NewDebugConnectorRequest(server string, body DebugConnectorJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -11084,7 +13168,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateConnectorWithBodyWithResponse Create or update a connector with a specified ID
 	//
-	// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. When clone_from is provided, secret fields (passwords, certificates) are copied from the source connector.
+	// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. Secret fields omitted from an update are preserved from the stored connector; an explicit null clears an optional secret. When clone_from is provided, omitted secrets are copied from the source connector.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -11093,12 +13177,66 @@ type ClientWithResponsesInterface interface {
 
 	// CreateConnectorWithResponse Create or update a connector with a specified ID
 	//
-	// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. When clone_from is provided, secret fields (passwords, certificates) are copied from the source connector.
+	// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. Secret fields omitted from an update are preserved from the stored connector; an explicit null clears an optional secret. When clone_from is provided, omitted secrets are copied from the source connector.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /api/v1/connectors/{connector_id} (the `CreateConnector` operationId).
 	CreateConnectorWithResponse(ctx context.Context, connectorId string, params *CreateConnectorParams, body CreateConnectorJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateConnectorResponse, error)
+
+	// ListTasksWithResponse List tasks
+	//
+	// List the connector's recent tasks, newest first.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /api/v1/connectors/{connector_id}/tasks (the `ListTasks` operationId).
+	ListTasksWithResponse(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*ListTasksResponse, error)
+
+	// CreateTaskWithBodyWithResponse Create a task
+	//
+	// Create a task for the connector. If an identical task is already pending or running, the existing task is returned with the same 202 response.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /api/v1/connectors/{connector_id}/tasks (the `CreateTask` operationId).
+	CreateTaskWithBodyWithResponse(ctx context.Context, connectorId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTaskResponse, error)
+
+	// CreateTaskWithResponse Create a task
+	//
+	// Create a task for the connector. If an identical task is already pending or running, the existing task is returned with the same 202 response.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /api/v1/connectors/{connector_id}/tasks (the `CreateTask` operationId).
+	CreateTaskWithResponse(ctx context.Context, connectorId string, body CreateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTaskResponse, error)
+
+	// GetTaskWithResponse Get a task
+	//
+	// Get one task owned by the connector.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /api/v1/connectors/{connector_id}/tasks/{task_id} (the `GetTask` operationId).
+	GetTaskWithResponse(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*GetTaskResponse, error)
+
+	// CancelTaskWithResponse Cancel a task
+	//
+	// Cancel a pending task.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /api/v1/connectors/{connector_id}/tasks/{task_id}/cancel (the `CancelTask` operationId).
+	CancelTaskWithResponse(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*CancelTaskResponse, error)
+
+	// RetryTaskWithResponse Retry a task now
+	//
+	// Make a pending task eligible to start now instead of waiting for its scheduled retry.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /api/v1/connectors/{connector_id}/tasks/{task_id}/retry (the `RetryTask` operationId).
+	RetryTaskWithResponse(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*RetryTaskResponse, error)
 
 	// DebugConnectorWithBodyWithResponse Debug connector configuration
 	//
@@ -11499,6 +13637,211 @@ func (r CreateConnectorResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r CreateConnectorResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListTasksResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *[]ConnectorTaskTask
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListTasksResponse) GetJSON200() *[]ConnectorTaskTask {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r ListTasksResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListTasksResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListTasksResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListTasksResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateTaskResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON202 the response for an HTTP 202 `application/json` response
+	JSON202 *ConnectorTaskTask
+}
+
+// GetJSON202 returns the response for an HTTP 202 `application/json` response
+func (r CreateTaskResponse) GetJSON202() *ConnectorTaskTask {
+	return r.JSON202
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateTaskResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateTaskResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateTaskResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateTaskResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetTaskResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ConnectorTaskTask
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetTaskResponse) GetJSON200() *ConnectorTaskTask {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r GetTaskResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTaskResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTaskResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetTaskResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CancelTaskResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ConnectorTaskTask
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CancelTaskResponse) GetJSON200() *ConnectorTaskTask {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r CancelTaskResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CancelTaskResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CancelTaskResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CancelTaskResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RetryTaskResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ConnectorTaskTask
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r RetryTaskResponse) GetJSON200() *ConnectorTaskTask {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r RetryTaskResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RetryTaskResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RetryTaskResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RetryTaskResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -11918,7 +14261,7 @@ func (c *ClientWithResponses) PatchConnectorWithApplicationMergePatchPlusJSONBod
 
 // CreateConnectorWithBodyWithResponse Create or update a connector with a specified ID
 //
-// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. When clone_from is provided, secret fields (passwords, certificates) are copied from the source connector.
+// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. Secret fields omitted from an update are preserved from the stored connector; an explicit null clears an optional secret. When clone_from is provided, omitted secrets are copied from the source connector.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -11933,7 +14276,7 @@ func (c *ClientWithResponses) CreateConnectorWithBodyWithResponse(ctx context.Co
 
 // CreateConnectorWithResponse Create or update a connector with a specified ID
 //
-// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. When clone_from is provided, secret fields (passwords, certificates) are copied from the source connector.
+// Create or update a connector. The connector_id in the URL path is authoritative and overrides any id in the request body. If a connector with this ID already exists, it will be replaced. Secret fields omitted from an update are preserved from the stored connector; an explicit null clears an optional secret. When clone_from is provided, omitted secrets are copied from the source connector.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -11944,6 +14287,96 @@ func (c *ClientWithResponses) CreateConnectorWithResponse(ctx context.Context, c
 		return nil, err
 	}
 	return ParseCreateConnectorResponse(rsp)
+}
+
+// ListTasksWithResponse List tasks
+//
+// List the connector's recent tasks, newest first.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /api/v1/connectors/{connector_id}/tasks (the `ListTasks` operationId).
+func (c *ClientWithResponses) ListTasksWithResponse(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*ListTasksResponse, error) {
+	rsp, err := c.ListTasks(ctx, connectorId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListTasksResponse(rsp)
+}
+
+// CreateTaskWithBodyWithResponse Create a task
+//
+// Create a task for the connector. If an identical task is already pending or running, the existing task is returned with the same 202 response.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /api/v1/connectors/{connector_id}/tasks (the `CreateTask` operationId).
+func (c *ClientWithResponses) CreateTaskWithBodyWithResponse(ctx context.Context, connectorId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTaskResponse, error) {
+	rsp, err := c.CreateTaskWithBody(ctx, connectorId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateTaskResponse(rsp)
+}
+
+// CreateTaskWithResponse Create a task
+//
+// Create a task for the connector. If an identical task is already pending or running, the existing task is returned with the same 202 response.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /api/v1/connectors/{connector_id}/tasks (the `CreateTask` operationId).
+func (c *ClientWithResponses) CreateTaskWithResponse(ctx context.Context, connectorId string, body CreateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTaskResponse, error) {
+	rsp, err := c.CreateTask(ctx, connectorId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateTaskResponse(rsp)
+}
+
+// GetTaskWithResponse Get a task
+//
+// Get one task owned by the connector.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /api/v1/connectors/{connector_id}/tasks/{task_id} (the `GetTask` operationId).
+func (c *ClientWithResponses) GetTaskWithResponse(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*GetTaskResponse, error) {
+	rsp, err := c.GetTask(ctx, connectorId, taskId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTaskResponse(rsp)
+}
+
+// CancelTaskWithResponse Cancel a task
+//
+// Cancel a pending task.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /api/v1/connectors/{connector_id}/tasks/{task_id}/cancel (the `CancelTask` operationId).
+func (c *ClientWithResponses) CancelTaskWithResponse(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*CancelTaskResponse, error) {
+	rsp, err := c.CancelTask(ctx, connectorId, taskId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCancelTaskResponse(rsp)
+}
+
+// RetryTaskWithResponse Retry a task now
+//
+// Make a pending task eligible to start now instead of waiting for its scheduled retry.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /api/v1/connectors/{connector_id}/tasks/{task_id}/retry (the `RetryTask` operationId).
+func (c *ClientWithResponses) RetryTaskWithResponse(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*RetryTaskResponse, error) {
+	rsp, err := c.RetryTask(ctx, connectorId, taskId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRetryTaskResponse(rsp)
 }
 
 // DebugConnectorWithBodyWithResponse Debug connector configuration
@@ -12279,6 +14712,136 @@ func ParseCreateConnectorResponse(rsp *http.Response) (*CreateConnectorResponse,
 	response := &CreateConnectorResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListTasksResponse parses an HTTP response from a ListTasksWithResponse call
+func ParseListTasksResponse(rsp *http.Response) (*ListTasksResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListTasksResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []ConnectorTaskTask
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateTaskResponse parses an HTTP response from a CreateTaskWithResponse call
+func ParseCreateTaskResponse(rsp *http.Response) (*CreateTaskResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateTaskResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest ConnectorTaskTask
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTaskResponse parses an HTTP response from a GetTaskWithResponse call
+func ParseGetTaskResponse(rsp *http.Response) (*GetTaskResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTaskResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConnectorTaskTask
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCancelTaskResponse parses an HTTP response from a CancelTaskWithResponse call
+func ParseCancelTaskResponse(rsp *http.Response) (*CancelTaskResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CancelTaskResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConnectorTaskTask
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRetryTaskResponse parses an HTTP response from a RetryTaskWithResponse call
+func ParseRetryTaskResponse(rsp *http.Response) (*RetryTaskResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RetryTaskResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConnectorTaskTask
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
