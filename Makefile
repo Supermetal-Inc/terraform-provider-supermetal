@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 .PHONY: build test testacc verify clean fmt-check
 
 # SUPERMETAL_AGENT_BINARY must be set to the path of the supermetal agent binary
@@ -30,7 +32,7 @@ verify: build fmt-check
 		echo "Error: SUPERMETAL_AGENT_BINARY must be set for full verification"; \
 		exit 1; \
 	fi
-	TF_ACC=1 go test ./internal/provider/... -v -timeout 10m -count=1 2>&1 | tee /tmp/verify-$$(date +%s).log
+	@set -o pipefail; TF_ACC=1 go test ./internal/provider/... -v -timeout 10m -count=1 2>&1 | tee /tmp/verify-$$(date +%s).log
 	@echo "All checks passed"
 
 clean:

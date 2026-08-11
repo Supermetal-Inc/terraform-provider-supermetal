@@ -9,9 +9,15 @@ import (
 	"github.com/supermetal-inc/terraform-provider-supermetal/internal/provider"
 )
 
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name supermetal
+// The documentation generator installs providers under the HashiCorp namespace
+// while exporting schemas. This override applies only to documentation builds.
+// Production binaries continue to advertise providerAddress.
+//go:generate sh -c "GOFLAGS='-ldflags=-X=main.providerAddress=registry.terraform.io/hashicorp/supermetal' go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@v0.25.0 generate --provider-name supermetal"
 
-var version = "dev"
+var (
+	version         = "dev"
+	providerAddress = "registry.terraform.io/supermetal-inc/supermetal"
+)
 
 func main() {
 	var debug bool
@@ -19,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/supermetal-inc/supermetal",
+		Address: providerAddress,
 		Debug:   debug,
 	}
 

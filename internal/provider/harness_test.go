@@ -196,17 +196,26 @@ func newTestHarness(t *testing.T) *testHarness {
 
 	ctx := context.Background()
 
-	postgresC, err := postgres.Run(ctx,
-		"postgres:16-alpine",
-		postgres.WithDatabase("testdb"),
-		postgres.WithUsername("testuser"),
-		postgres.WithPassword("testpass"),
-		postgres.BasicWaitStrategies(),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).
-				WithStartupTimeout(60*time.Second)),
-	)
+	var postgresC *postgres.PostgresContainer
+	var err error
+	for attempt := 1; attempt <= 3; attempt++ {
+		postgresC, err = postgres.Run(ctx,
+			"postgres:16-alpine",
+			postgres.WithDatabase("testdb"),
+			postgres.WithUsername("testuser"),
+			postgres.WithPassword("testpass"),
+			postgres.BasicWaitStrategies(),
+			testcontainers.WithWaitStrategy(
+				wait.ForLog("database system is ready to accept connections").
+					WithOccurrence(2).
+					WithStartupTimeout(60*time.Second)),
+		)
+		if err == nil || !strings.Contains(err.Error(), "address already in use") {
+			break
+		}
+		t.Logf("Postgres host-port allocation collided (attempt %d/3), retrying: %v", attempt, err)
+		time.Sleep(250 * time.Millisecond)
+	}
 	if err != nil {
 		t.Fatalf("Failed to start postgres container: %v", err)
 	}
