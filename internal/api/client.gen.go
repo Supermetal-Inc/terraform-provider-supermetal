@@ -1097,9 +1097,12 @@ type ConnectorBigqueryBigQuerySink struct {
 	Dataset string `json:"dataset"`
 
 	// DisableSchemaPrefix Do not prefix target table names with the source schema. By default, a source table `public.users` lands as `public_users`; with this enabled it lands as `users`. Only safe when source table names are unique across schemas.
-	DisableSchemaPrefix *bool                                `json:"disable_schema_prefix,omitempty"`
-	HistoryMode         *ConnectorMigrationHistoryMode       `json:"history_mode,omitempty"`
-	MigrationStrategy   *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
+	DisableSchemaPrefix *bool                          `json:"disable_schema_prefix,omitempty"`
+	HistoryMode         *ConnectorMigrationHistoryMode `json:"history_mode,omitempty"`
+
+	// MaxSnapshotConcurrency Maximum concurrent snapshot writes to BigQuery (0 = no limit). Lower this if BigQuery reports rate limits during large snapshots.
+	MaxSnapshotConcurrency *int32                               `json:"max_snapshot_concurrency,omitempty"`
+	MigrationStrategy      *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
 	// ProjectId GCP project identifier containing the target dataset, for example "my-project-123"
 	ProjectId     string                                       `json:"project_id"`

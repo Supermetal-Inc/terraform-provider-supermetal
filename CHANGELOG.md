@@ -1,3 +1,7 @@
+## v0.2.1
+
+- Add configurable BigQuery snapshot concurrency.
+
 ## v0.2.0
 
 Requires Supermetal agent v0.1.12 or newer.

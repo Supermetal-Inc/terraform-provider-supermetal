@@ -44,8 +44,9 @@ resource "supermetal_connector" "postgres_to_bigquery_via_gcs" {
 
   sink = {
     big_query = {
-      project_id = "analytics-project"
-      dataset    = "raw"
+      project_id               = "analytics-project"
+      dataset                  = "raw"
+      max_snapshot_concurrency = 4
 
       auth = {
         service_account_key = {

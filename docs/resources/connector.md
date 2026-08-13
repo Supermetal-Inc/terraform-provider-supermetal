@@ -174,8 +174,9 @@ resource "supermetal_connector" "postgres_to_bigquery_via_gcs" {
 
   sink = {
     big_query = {
-      project_id = "analytics-project"
-      dataset    = "raw"
+      project_id               = "analytics-project"
+      dataset                  = "raw"
+      max_snapshot_concurrency = 4
 
       auth = {
         service_account_key = {
@@ -680,6 +681,7 @@ Optional:
 
 - `disable_schema_prefix` (Boolean) Do not prefix target table names with the source schema. By default, a source table `public.users` lands as `public_users`; with this enabled it lands as `users`. Only safe when source table names are unique across schemas.
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--history_mode))
+- `max_snapshot_concurrency` (Number) Maximum concurrent snapshot writes to BigQuery (0 = no limit). Lower this if BigQuery reports rate limits during large snapshots.
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--migration_strategy))
 - `query_priority` (String)
 
