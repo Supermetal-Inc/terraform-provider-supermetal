@@ -57,6 +57,9 @@ variable "pg_user" { default = "testuser" }
 variable "pg_password" { default = "testpass" }
 variable "pg_ssl_root_cert" { default = "-----BEGIN CERTIFICATE-----\nMIIB=\n-----END CERTIFICATE-----" }
 variable "duckdb_url" { default = "http://localhost:9494" }
+variable "clickhouse_url" { default = "http://localhost:8123" }
+variable "clickhouse_user" { default = "default" }
+variable "clickhouse_password" { default = "testpass" }
 variable "snowflake_account" { default = "xy12345.us-east-1" }
 variable "snowflake_user" { default = "testuser" }
 variable "snowflake_password" { default = "testpass" }

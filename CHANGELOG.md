@@ -1,3 +1,7 @@
+## v0.2.2
+
+- Add configurable ClickHouse snapshot loading.
+
 ## v0.2.1
 
 - Add configurable BigQuery snapshot concurrency.

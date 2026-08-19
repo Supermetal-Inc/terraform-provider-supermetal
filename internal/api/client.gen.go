@@ -187,6 +187,27 @@ func (e ConnectorClickhouseCompressionTypeFamily) Valid() bool {
 	}
 }
 
+// Defines values for ConnectorClickhouseSnapshotLoadMode.
+const (
+	AtomicSwap ConnectorClickhouseSnapshotLoadMode = "AtomicSwap"
+	InPlace    ConnectorClickhouseSnapshotLoadMode = "InPlace"
+	Truncate   ConnectorClickhouseSnapshotLoadMode = "Truncate"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorClickhouseSnapshotLoadMode enum.
+func (e ConnectorClickhouseSnapshotLoadMode) Valid() bool {
+	switch e {
+	case AtomicSwap:
+		return true
+	case InPlace:
+		return true
+	case Truncate:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectorDorisDorisBinaryMode.
 const (
 	ConnectorDorisDorisBinaryModeBase64 ConnectorDorisDorisBinaryMode = "Base64"
@@ -1465,8 +1486,9 @@ type ConnectorClickhouseClickhouseSink struct {
 
 	// PreserveSourceNullability Preserve NOT NULL constraints from source schema.
 	// Default off, all non-PK columns are nullable to handle CDC edge cases with large object types.
-	PreserveSourceNullability *bool                                 `json:"preserve_source_nullability,omitempty"`
-	TableNameModifier         *ConnectorClickhouseTableNameModifier `json:"table_name_modifier,omitempty"`
+	PreserveSourceNullability *bool                                               `json:"preserve_source_nullability,omitempty"`
+	SnapshotLoadMode          *ConnectorClickhouseClickhouseSink_SnapshotLoadMode `json:"snapshot_load_mode,omitempty"`
+	TableNameModifier         *ConnectorClickhouseTableNameModifier               `json:"table_name_modifier,omitempty"`
 
 	// TargetDatabase Name of the database in ClickHouse where data will be written
 	TargetDatabase string `json:"target_database"`
@@ -1477,6 +1499,11 @@ type ConnectorClickhouseClickhouseSink struct {
 
 // ConnectorClickhouseClickhouseSink_Engine defines model for ConnectorClickhouseClickhouseSink.Engine.
 type ConnectorClickhouseClickhouseSink_Engine struct {
+	union json.RawMessage
+}
+
+// ConnectorClickhouseClickhouseSink_SnapshotLoadMode defines model for ConnectorClickhouseClickhouseSink.SnapshotLoadMode.
+type ConnectorClickhouseClickhouseSink_SnapshotLoadMode struct {
 	union json.RawMessage
 }
 
@@ -1531,6 +1558,9 @@ type ConnectorClickhousePartitioning struct {
 	// Expression PARTITION BY expression such as toYYYYMM(created_at). Values must be immutable per row, or updates and deletes leave stale rows in old partitions. Under Fivetran naming, use target column names.
 	Expression *string `json:"expression,omitempty"`
 }
+
+// ConnectorClickhouseSnapshotLoadMode How snapshot rows are loaded into existing ClickHouse tables
+type ConnectorClickhouseSnapshotLoadMode string
 
 // ConnectorClickhouseTableNameModifier Modifier for target table names.
 type ConnectorClickhouseTableNameModifier struct {
@@ -3948,16 +3978,21 @@ type ConnectorRedshiftRedshiftSink struct {
 // ConnectorRedshiftSslMode SSL connection mode for the Redshift cluster
 type ConnectorRedshiftSslMode string
 
-// ConnectorScheduleCron defines model for ConnectorScheduleCron.
+// ConnectorScheduleCron Run snapshots using a five field cron expression and timezone after the immediate first snapshot
 type ConnectorScheduleCron struct {
+	// Expression Five field cron expression with minute precision
 	Expression string `json:"expression"`
-	Timezone   string `json:"timezone"`
+
+	// Timezone IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+	Timezone string `json:"timezone"`
 }
 
-// ConnectorScheduleRate defines model for ConnectorScheduleRate.
+// ConnectorScheduleRate Run snapshots at a fixed interval after the immediate first snapshot
 type ConnectorScheduleRate struct {
-	Unit  *ConnectorScheduleRate_Unit `json:"unit,omitempty"`
-	Value *int32                      `json:"value,omitempty"`
+	Unit *ConnectorScheduleRate_Unit `json:"unit,omitempty"`
+
+	// Value Number of units between scheduled snapshots. The total interval cannot exceed 4294967295 minutes.
+	Value *int32 `json:"value,omitempty"`
 }
 
 // ConnectorScheduleRate_Unit defines model for ConnectorScheduleRate.Unit.
@@ -3965,22 +4000,24 @@ type ConnectorScheduleRate_Unit struct {
 	union json.RawMessage
 }
 
-// ConnectorScheduleSchedule defines model for ConnectorScheduleSchedule.
+// ConnectorScheduleSchedule Repeated snapshot schedule supported by PostgreSQL snapshot, SQL Server snapshot, and one pass file connectors
 type ConnectorScheduleSchedule struct {
 	union json.RawMessage
 }
 
-// ConnectorScheduleSchedule0 defines model for .
+// ConnectorScheduleSchedule0 Fixed interval schedule
 type ConnectorScheduleSchedule0 struct {
+	// Rate Fixed interval schedule
 	Rate ConnectorScheduleRate `json:"rate"`
 }
 
-// ConnectorScheduleSchedule1 defines model for .
+// ConnectorScheduleSchedule1 Cron schedule
 type ConnectorScheduleSchedule1 struct {
+	// Cron Cron schedule
 	Cron ConnectorScheduleCron `json:"cron"`
 }
 
-// ConnectorScheduleTimePeriodUnit defines model for ConnectorScheduleTimePeriodUnit.
+// ConnectorScheduleTimePeriodUnit Unit used by a rate schedule
 type ConnectorScheduleTimePeriodUnit string
 
 // ConnectorSink Sink connector types
@@ -5678,6 +5715,42 @@ func (t ConnectorClickhouseClickhouseSink_Engine) MarshalJSON() ([]byte, error) 
 }
 
 func (t *ConnectorClickhouseClickhouseSink_Engine) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorClickhouseSnapshotLoadMode returns the union data inside the ConnectorClickhouseClickhouseSink_SnapshotLoadMode as a ConnectorClickhouseSnapshotLoadMode
+func (t ConnectorClickhouseClickhouseSink_SnapshotLoadMode) AsConnectorClickhouseSnapshotLoadMode() (ConnectorClickhouseSnapshotLoadMode, error) {
+	var body ConnectorClickhouseSnapshotLoadMode
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorClickhouseSnapshotLoadMode overwrites any union data inside the ConnectorClickhouseClickhouseSink_SnapshotLoadMode as the provided ConnectorClickhouseSnapshotLoadMode
+func (t *ConnectorClickhouseClickhouseSink_SnapshotLoadMode) FromConnectorClickhouseSnapshotLoadMode(v ConnectorClickhouseSnapshotLoadMode) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorClickhouseSnapshotLoadMode performs a merge with any union data inside the ConnectorClickhouseClickhouseSink_SnapshotLoadMode, using the provided ConnectorClickhouseSnapshotLoadMode
+func (t *ConnectorClickhouseClickhouseSink_SnapshotLoadMode) MergeConnectorClickhouseSnapshotLoadMode(v ConnectorClickhouseSnapshotLoadMode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorClickhouseClickhouseSink_SnapshotLoadMode) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorClickhouseClickhouseSink_SnapshotLoadMode) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -11400,7 +11473,7 @@ type ClientInterface interface {
 
 	// SendConnectorCommandWithBody Send command to connector
 	//
-	// Send a control command (start, stop, pause, resume) to a specific connector
+	// Send a control command to a specific connector.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -11409,7 +11482,7 @@ type ClientInterface interface {
 
 	// SendConnectorCommand Send command to connector
 	//
-	// Send a control command (start, stop, pause, resume) to a specific connector
+	// Send a control command to a specific connector.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -11418,7 +11491,7 @@ type ClientInterface interface {
 
 	// GetConnectorHistory Get connector history
 	//
-	// Retrieve the configuration history for a specific connector.
+	// Retrieve status history for a connector in chronological order, oldest first. Entries with the same run_id belong to one connector run. UUIDv7 run_id values sort by time.
 	//
 	// Corresponds with GET /api/v1/connector/history/{connector_id} (the `GetConnectorHistory` operationId).
 	GetConnectorHistory(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11493,7 +11566,7 @@ type ClientInterface interface {
 
 	// ListTasks List tasks
 	//
-	// List the connector's recent tasks, newest first.
+	// List the connector's recent tasks, newest first. Snapshot state and errors are reported on these task records.
 	//
 	// Corresponds with GET /api/v1/connectors/{connector_id}/tasks (the `ListTasks` operationId).
 	ListTasks(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11518,7 +11591,7 @@ type ClientInterface interface {
 
 	// GetTask Get a task
 	//
-	// Get one task owned by the connector.
+	// Get one task owned by the connector, including snapshot state and errors.
 	//
 	// Corresponds with GET /api/v1/connectors/{connector_id}/tasks/{task_id} (the `GetTask` operationId).
 	GetTask(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11664,7 +11737,7 @@ func (c *Client) GetCatalog(ctx context.Context, params *GetCatalogParams, body 
 
 // SendConnectorCommandWithBody Send command to connector
 //
-// # Send a control command (start, stop, pause, resume) to a specific connector
+// Send a control command to a specific connector.
 //
 // Takes any type of body and a specified content type.
 //
@@ -11683,7 +11756,7 @@ func (c *Client) SendConnectorCommandWithBody(ctx context.Context, connectorId s
 
 // SendConnectorCommand Send command to connector
 //
-// # Send a control command (start, stop, pause, resume) to a specific connector
+// Send a control command to a specific connector.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -11702,7 +11775,7 @@ func (c *Client) SendConnectorCommand(ctx context.Context, connectorId string, b
 
 // GetConnectorHistory Get connector history
 //
-// Retrieve the configuration history for a specific connector.
+// Retrieve status history for a connector in chronological order, oldest first. Entries with the same run_id belong to one connector run. UUIDv7 run_id values sort by time.
 //
 // Corresponds with GET /api/v1/connector/history/{connector_id} (the `GetConnectorHistory` operationId).
 func (c *Client) GetConnectorHistory(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -11867,7 +11940,7 @@ func (c *Client) CreateConnector(ctx context.Context, connectorId string, params
 
 // ListTasks List tasks
 //
-// List the connector's recent tasks, newest first.
+// List the connector's recent tasks, newest first. Snapshot state and errors are reported on these task records.
 //
 // Corresponds with GET /api/v1/connectors/{connector_id}/tasks (the `ListTasks` operationId).
 func (c *Client) ListTasks(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -11922,7 +11995,7 @@ func (c *Client) CreateTask(ctx context.Context, connectorId string, body Create
 
 // GetTask Get a task
 //
-// Get one task owned by the connector.
+// Get one task owned by the connector, including snapshot state and errors.
 //
 // Corresponds with GET /api/v1/connectors/{connector_id}/tasks/{task_id} (the `GetTask` operationId).
 func (c *Client) GetTask(ctx context.Context, connectorId string, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -13090,7 +13163,7 @@ type ClientWithResponsesInterface interface {
 
 	// SendConnectorCommandWithBodyWithResponse Send command to connector
 	//
-	// Send a control command (start, stop, pause, resume) to a specific connector
+	// Send a control command to a specific connector.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13099,7 +13172,7 @@ type ClientWithResponsesInterface interface {
 
 	// SendConnectorCommandWithResponse Send command to connector
 	//
-	// Send a control command (start, stop, pause, resume) to a specific connector
+	// Send a control command to a specific connector.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -13108,7 +13181,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetConnectorHistoryWithResponse Get connector history
 	//
-	// Retrieve the configuration history for a specific connector.
+	// Retrieve status history for a connector in chronological order, oldest first. Entries with the same run_id belong to one connector run. UUIDv7 run_id values sort by time.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -13189,7 +13262,7 @@ type ClientWithResponsesInterface interface {
 
 	// ListTasksWithResponse List tasks
 	//
-	// List the connector's recent tasks, newest first.
+	// List the connector's recent tasks, newest first. Snapshot state and errors are reported on these task records.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -13216,7 +13289,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetTaskWithResponse Get a task
 	//
-	// Get one task owned by the connector.
+	// Get one task owned by the connector, including snapshot state and errors.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -14129,7 +14202,7 @@ func (c *ClientWithResponses) GetCatalogWithResponse(ctx context.Context, params
 
 // SendConnectorCommandWithBodyWithResponse Send command to connector
 //
-// # Send a control command (start, stop, pause, resume) to a specific connector
+// Send a control command to a specific connector.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14144,7 +14217,7 @@ func (c *ClientWithResponses) SendConnectorCommandWithBodyWithResponse(ctx conte
 
 // SendConnectorCommandWithResponse Send command to connector
 //
-// # Send a control command (start, stop, pause, resume) to a specific connector
+// Send a control command to a specific connector.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -14159,7 +14232,7 @@ func (c *ClientWithResponses) SendConnectorCommandWithResponse(ctx context.Conte
 
 // GetConnectorHistoryWithResponse Get connector history
 //
-// Retrieve the configuration history for a specific connector.
+// Retrieve status history for a connector in chronological order, oldest first. Entries with the same run_id belong to one connector run. UUIDv7 run_id values sort by time.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14294,7 +14367,7 @@ func (c *ClientWithResponses) CreateConnectorWithResponse(ctx context.Context, c
 
 // ListTasksWithResponse List tasks
 //
-// List the connector's recent tasks, newest first.
+// List the connector's recent tasks, newest first. Snapshot state and errors are reported on these task records.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -14339,7 +14412,7 @@ func (c *ClientWithResponses) CreateTaskWithResponse(ctx context.Context, connec
 
 // GetTaskWithResponse Get a task
 //
-// Get one task owned by the connector.
+// Get one task owned by the connector, including snapshot state and errors.
 //
 // Returns a wrapper object for the known response body format(s).
 //

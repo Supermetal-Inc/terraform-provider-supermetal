@@ -203,6 +203,56 @@ resource "supermetal_connector" "postgres_to_bigquery_via_gcs" {
 }
 ```
 
+### PostgreSQL to ClickHouse
+
+```terraform
+# Snapshot PostgreSQL into ClickHouse. Atomic swap loads each snapshot into a
+# replacement table and swaps it into place after the load completes.
+
+variable "clickhouse_url" {
+  type = string
+}
+
+variable "clickhouse_user" {
+  type = string
+}
+
+variable "clickhouse_password" {
+  type      = string
+  sensitive = true
+}
+
+resource "supermetal_connector" "postgres_to_clickhouse" {
+  id   = "orders-to-clickhouse"
+  name = "PostgreSQL to ClickHouse"
+
+  source = {
+    postgres = {
+      host     = var.pg_host
+      port     = 5432
+      database = var.pg_database
+      user     = var.pg_user
+      password = var.pg_password
+      ssl_mode = "Require"
+
+      replication_type = {
+        snapshot = {}
+      }
+    }
+  }
+
+  sink = {
+    clickhouse = {
+      http_url           = var.clickhouse_url
+      user               = var.clickhouse_user
+      password           = var.clickhouse_password
+      target_database    = "analytics"
+      snapshot_load_mode = "AtomicSwap"
+    }
+  }
+}
+```
+
 ### DB2 to DuckDB
 
 ```terraform
@@ -774,6 +824,7 @@ Optional:
 - `password` (String, Sensitive) Password for ClickHouse authentication
 - `preserve_source_nullability` (Boolean) Preserve NOT NULL constraints from source schema.
 Default off, all non-PK columns are nullable to handle CDC edge cases with large object types.
+- `snapshot_load_mode` (String)
 - `ssl_client_cert_pem` (String, Sensitive) Client's SSL certificate content in PEM format, if client certificate authentication is required
 - `ssl_client_key_pem` (String, Sensitive) Client's SSL private key content in PEM format (if separate from certificate)
 - `ssl_root_cert` (String, Sensitive) SSL root certificate content to verify the server's certificate
@@ -6526,16 +6577,16 @@ Optional:
 
 Optional:
 
-- `cron` (Attributes) (see [below for nested schema](#nestedatt--schedule--cron))
-- `rate` (Attributes) (see [below for nested schema](#nestedatt--schedule--rate))
+- `cron` (Attributes) Cron schedule (see [below for nested schema](#nestedatt--schedule--cron))
+- `rate` (Attributes) Fixed interval schedule (see [below for nested schema](#nestedatt--schedule--rate))
 
 <a id="nestedatt--schedule--cron"></a>
 ### Nested Schema for `schedule.cron`
 
 Required:
 
-- `expression` (String)
-- `timezone` (String)
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
 
 
 <a id="nestedatt--schedule--rate"></a>
@@ -6544,7 +6595,7 @@ Required:
 Optional:
 
 - `unit` (String)
-- `value` (Number)
+- `value` (Number) Number of units between scheduled snapshots. The total interval cannot exceed 4294967295 minutes.
 
 ## Import
 
