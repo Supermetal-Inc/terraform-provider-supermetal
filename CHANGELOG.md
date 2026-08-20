@@ -1,3 +1,7 @@
+## v0.2.3
+
+- Add configurable merge schedules.
+
 ## v0.2.2
 
 - Add configurable ClickHouse snapshot loading.

@@ -1,6 +1,11 @@
 # Snowflake sink with two authentication methods
 
-# Password authentication
+variable "gcs_service_account_key" {
+  type      = string
+  sensitive = true
+}
+
+# Password authentication with buffered CDC and scheduled merges
 resource "supermetal_connector" "snowflake_password" {
   id   = "to-snowflake-password"
   name = "Snowflake (password auth)"
@@ -14,7 +19,7 @@ resource "supermetal_connector" "snowflake_password" {
       password = var.pg_password
       ssl_mode = "Disable"
 
-      replication_type = { snapshot = {} }
+      replication_type = { logical_replication = {} }
     }
   }
 
@@ -29,6 +34,32 @@ resource "supermetal_connector" "snowflake_password" {
       auth = {
         password = {
           password = var.snowflake_password
+        }
+      }
+
+      merge_schedule = {
+        peak_window = {
+          starts_at = {
+            expression = "0 8 * * 1-5"
+            timezone   = "America/Los_Angeles"
+          }
+          ends_at = {
+            expression = "0 18 * * 1-5"
+            timezone   = "America/Los_Angeles"
+          }
+        }
+        peak_flush_interval_ms     = 60000
+        off_peak_flush_interval_ms = 21600000
+      }
+    }
+  }
+
+  buffer = {
+    object_store = {
+      url = "gs://supermetal-staging/snowflake"
+      options = {
+        service_account_key = {
+          value = var.gcs_service_account_key
         }
       }
     }

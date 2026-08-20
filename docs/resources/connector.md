@@ -53,7 +53,12 @@ resource "supermetal_connector" "quickstart" {
 ```terraform
 # Snowflake sink with two authentication methods
 
-# Password authentication
+variable "gcs_service_account_key" {
+  type      = string
+  sensitive = true
+}
+
+# Password authentication with buffered CDC and scheduled merges
 resource "supermetal_connector" "snowflake_password" {
   id   = "to-snowflake-password"
   name = "Snowflake (password auth)"
@@ -67,7 +72,7 @@ resource "supermetal_connector" "snowflake_password" {
       password = var.pg_password
       ssl_mode = "Disable"
 
-      replication_type = { snapshot = {} }
+      replication_type = { logical_replication = {} }
     }
   }
 
@@ -82,6 +87,32 @@ resource "supermetal_connector" "snowflake_password" {
       auth = {
         password = {
           password = var.snowflake_password
+        }
+      }
+
+      merge_schedule = {
+        peak_window = {
+          starts_at = {
+            expression = "0 8 * * 1-5"
+            timezone   = "America/Los_Angeles"
+          }
+          ends_at = {
+            expression = "0 18 * * 1-5"
+            timezone   = "America/Los_Angeles"
+          }
+        }
+        peak_flush_interval_ms     = 60000
+        off_peak_flush_interval_ms = 21600000
+      }
+    }
+  }
+
+  buffer = {
+    object_store = {
+      url = "gs://supermetal-staging/snowflake"
+      options = {
+        service_account_key = {
+          value = var.gcs_service_account_key
         }
       }
     }
@@ -732,6 +763,7 @@ Optional:
 - `disable_schema_prefix` (Boolean) Do not prefix target table names with the source schema. By default, a source table `public.users` lands as `public_users`; with this enabled it lands as `users`. Only safe when source table names are unique across schemas.
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--history_mode))
 - `max_snapshot_concurrency` (Number) Maximum concurrent snapshot writes to BigQuery (0 = no limit). Lower this if BigQuery reports rate limits during large snapshots.
+- `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--migration_strategy))
 - `query_priority` (String)
 
@@ -792,6 +824,43 @@ Optional:
 
 
 
+<a id="nestedatt--sink--big_query--merge_schedule"></a>
+### Nested Schema for `sink.big_query.merge_schedule`
+
+Optional:
+
+- `off_peak_flush_interval_ms` (Number) Merge interval outside the peak window, in milliseconds
+- `peak_flush_interval_ms` (Number) Merge interval during the peak window, in milliseconds
+- `peak_window` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--merge_schedule--peak_window))
+
+<a id="nestedatt--sink--big_query--merge_schedule--peak_window"></a>
+### Nested Schema for `sink.big_query.merge_schedule.peak_window`
+
+Required:
+
+- `ends_at` (Attributes) Schedule that ends the peak window (see [below for nested schema](#nestedatt--sink--big_query--merge_schedule--peak_window--ends_at))
+- `starts_at` (Attributes) Schedule that starts the peak window (see [below for nested schema](#nestedatt--sink--big_query--merge_schedule--peak_window--starts_at))
+
+<a id="nestedatt--sink--big_query--merge_schedule--peak_window--ends_at"></a>
+### Nested Schema for `sink.big_query.merge_schedule.peak_window.ends_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+<a id="nestedatt--sink--big_query--merge_schedule--peak_window--starts_at"></a>
+### Nested Schema for `sink.big_query.merge_schedule.peak_window.starts_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+
+
 <a id="nestedatt--sink--big_query--migration_strategy"></a>
 ### Nested Schema for `sink.big_query.migration_strategy`
 
@@ -819,6 +888,7 @@ Optional:
 - `engine` (String)
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--history_mode))
 - `max_snapshot_concurrency` (Number) Max concurrent snapshot loads to ClickHouse (0 = no limit). Lower this if ClickHouse runs out of memory during large snapshots.
+- `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--migration_strategy))
 - `non_nullable_columns` (Boolean) Create all columns as non-Nullable. NULLs from the source land as type defaults (0, '', epoch). Customize via `ALTER TABLE ... MODIFY COLUMN ... DEFAULT ...`.
 - `password` (String, Sensitive) Password for ClickHouse authentication
@@ -883,6 +953,43 @@ Optional:
 
 
 
+<a id="nestedatt--sink--clickhouse--merge_schedule"></a>
+### Nested Schema for `sink.clickhouse.merge_schedule`
+
+Optional:
+
+- `off_peak_flush_interval_ms` (Number) Merge interval outside the peak window, in milliseconds
+- `peak_flush_interval_ms` (Number) Merge interval during the peak window, in milliseconds
+- `peak_window` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--merge_schedule--peak_window))
+
+<a id="nestedatt--sink--clickhouse--merge_schedule--peak_window"></a>
+### Nested Schema for `sink.clickhouse.merge_schedule.peak_window`
+
+Required:
+
+- `ends_at` (Attributes) Schedule that ends the peak window (see [below for nested schema](#nestedatt--sink--clickhouse--merge_schedule--peak_window--ends_at))
+- `starts_at` (Attributes) Schedule that starts the peak window (see [below for nested schema](#nestedatt--sink--clickhouse--merge_schedule--peak_window--starts_at))
+
+<a id="nestedatt--sink--clickhouse--merge_schedule--peak_window--ends_at"></a>
+### Nested Schema for `sink.clickhouse.merge_schedule.peak_window.ends_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+<a id="nestedatt--sink--clickhouse--merge_schedule--peak_window--starts_at"></a>
+### Nested Schema for `sink.clickhouse.merge_schedule.peak_window.starts_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+
+
 <a id="nestedatt--sink--clickhouse--migration_strategy"></a>
 ### Nested Schema for `sink.clickhouse.migration_strategy`
 
@@ -931,6 +1038,7 @@ Required:
 Optional:
 
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--databricks--history_mode))
+- `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--databricks--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--databricks--migration_strategy))
 - `storage_credential` (String) Name of the Databricks storage credential for direct access to the object store buffer
 - `table_features` (Attributes) (see [below for nested schema](#nestedatt--sink--databricks--table_features))
@@ -985,6 +1093,43 @@ Optional:
 
 
 
+<a id="nestedatt--sink--databricks--merge_schedule"></a>
+### Nested Schema for `sink.databricks.merge_schedule`
+
+Optional:
+
+- `off_peak_flush_interval_ms` (Number) Merge interval outside the peak window, in milliseconds
+- `peak_flush_interval_ms` (Number) Merge interval during the peak window, in milliseconds
+- `peak_window` (Attributes) (see [below for nested schema](#nestedatt--sink--databricks--merge_schedule--peak_window))
+
+<a id="nestedatt--sink--databricks--merge_schedule--peak_window"></a>
+### Nested Schema for `sink.databricks.merge_schedule.peak_window`
+
+Required:
+
+- `ends_at` (Attributes) Schedule that ends the peak window (see [below for nested schema](#nestedatt--sink--databricks--merge_schedule--peak_window--ends_at))
+- `starts_at` (Attributes) Schedule that starts the peak window (see [below for nested schema](#nestedatt--sink--databricks--merge_schedule--peak_window--starts_at))
+
+<a id="nestedatt--sink--databricks--merge_schedule--peak_window--ends_at"></a>
+### Nested Schema for `sink.databricks.merge_schedule.peak_window.ends_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+<a id="nestedatt--sink--databricks--merge_schedule--peak_window--starts_at"></a>
+### Nested Schema for `sink.databricks.merge_schedule.peak_window.starts_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+
+
 <a id="nestedatt--sink--databricks--migration_strategy"></a>
 ### Nested Schema for `sink.databricks.migration_strategy`
 
@@ -1022,6 +1167,7 @@ Optional:
 - `fe_mysql_port` (Number) MySQL wire protocol port for SQL and metadata. Default 9030 matches Apache Doris and all Apache Doris tiers.
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--doris--history_mode))
 - `max_snapshot_concurrency` (Number) Max concurrent writes per connector. 0 leaves writes unbounded. Lower to 2 or 4 if Apache Doris backends hit memory pressure during large snapshots.
+- `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--doris--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--doris--migration_strategy))
 - `password` (String, Sensitive) Apache Doris password. Leave blank if the cluster has no authentication.
 - `preserve_source_nullability` (Boolean) Carry NOT NULL from source schema. When off, only key columns are NOT NULL and the rest stay nullable to tolerate CDC edge cases.
@@ -1045,6 +1191,43 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+
+
+
+<a id="nestedatt--sink--doris--merge_schedule"></a>
+### Nested Schema for `sink.doris.merge_schedule`
+
+Optional:
+
+- `off_peak_flush_interval_ms` (Number) Merge interval outside the peak window, in milliseconds
+- `peak_flush_interval_ms` (Number) Merge interval during the peak window, in milliseconds
+- `peak_window` (Attributes) (see [below for nested schema](#nestedatt--sink--doris--merge_schedule--peak_window))
+
+<a id="nestedatt--sink--doris--merge_schedule--peak_window"></a>
+### Nested Schema for `sink.doris.merge_schedule.peak_window`
+
+Required:
+
+- `ends_at` (Attributes) Schedule that ends the peak window (see [below for nested schema](#nestedatt--sink--doris--merge_schedule--peak_window--ends_at))
+- `starts_at` (Attributes) Schedule that starts the peak window (see [below for nested schema](#nestedatt--sink--doris--merge_schedule--peak_window--starts_at))
+
+<a id="nestedatt--sink--doris--merge_schedule--peak_window--ends_at"></a>
+### Nested Schema for `sink.doris.merge_schedule.peak_window.ends_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+<a id="nestedatt--sink--doris--merge_schedule--peak_window--starts_at"></a>
+### Nested Schema for `sink.doris.merge_schedule.peak_window.starts_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
 
 
 
@@ -1096,6 +1279,7 @@ Optional:
 - `enable_primary_keys` (Boolean) Create primary key constraints on target tables
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--duckdb--history_mode))
 - `max_snapshot_concurrency` (Number) Maximum number of tables to snapshot in parallel. 0 means no limit.
+- `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--duckdb--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--duckdb--migration_strategy))
 - `preserve_source_nullability` (Boolean) Preserve NOT NULL constraints from the source schema
 - `target_schema` (String) Override the target schema for all tables. When unset, each table keeps its source schema.
@@ -1207,6 +1391,43 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+
+
+
+<a id="nestedatt--sink--duckdb--merge_schedule"></a>
+### Nested Schema for `sink.duckdb.merge_schedule`
+
+Optional:
+
+- `off_peak_flush_interval_ms` (Number) Merge interval outside the peak window, in milliseconds
+- `peak_flush_interval_ms` (Number) Merge interval during the peak window, in milliseconds
+- `peak_window` (Attributes) (see [below for nested schema](#nestedatt--sink--duckdb--merge_schedule--peak_window))
+
+<a id="nestedatt--sink--duckdb--merge_schedule--peak_window"></a>
+### Nested Schema for `sink.duckdb.merge_schedule.peak_window`
+
+Required:
+
+- `ends_at` (Attributes) Schedule that ends the peak window (see [below for nested schema](#nestedatt--sink--duckdb--merge_schedule--peak_window--ends_at))
+- `starts_at` (Attributes) Schedule that starts the peak window (see [below for nested schema](#nestedatt--sink--duckdb--merge_schedule--peak_window--starts_at))
+
+<a id="nestedatt--sink--duckdb--merge_schedule--peak_window--ends_at"></a>
+### Nested Schema for `sink.duckdb.merge_schedule.peak_window.ends_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+<a id="nestedatt--sink--duckdb--merge_schedule--peak_window--starts_at"></a>
+### Nested Schema for `sink.duckdb.merge_schedule.peak_window.starts_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
 
 
 
@@ -2616,6 +2837,7 @@ Optional:
 - `enable_primary_keys` (Boolean) Create primary key constraints on target tables
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--motherduck--history_mode))
 - `max_snapshot_concurrency` (Number) Maximum number of tables to snapshot in parallel. 0 means no limit.
+- `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--motherduck--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--motherduck--migration_strategy))
 - `preserve_source_nullability` (Boolean) Preserve NOT NULL constraints from the source schema
 - `target_schema` (String) Override the target schema for all tables. When unset, each table keeps its source schema.
@@ -2730,6 +2952,43 @@ Optional:
 
 
 
+<a id="nestedatt--sink--motherduck--merge_schedule"></a>
+### Nested Schema for `sink.motherduck.merge_schedule`
+
+Optional:
+
+- `off_peak_flush_interval_ms` (Number) Merge interval outside the peak window, in milliseconds
+- `peak_flush_interval_ms` (Number) Merge interval during the peak window, in milliseconds
+- `peak_window` (Attributes) (see [below for nested schema](#nestedatt--sink--motherduck--merge_schedule--peak_window))
+
+<a id="nestedatt--sink--motherduck--merge_schedule--peak_window"></a>
+### Nested Schema for `sink.motherduck.merge_schedule.peak_window`
+
+Required:
+
+- `ends_at` (Attributes) Schedule that ends the peak window (see [below for nested schema](#nestedatt--sink--motherduck--merge_schedule--peak_window--ends_at))
+- `starts_at` (Attributes) Schedule that starts the peak window (see [below for nested schema](#nestedatt--sink--motherduck--merge_schedule--peak_window--starts_at))
+
+<a id="nestedatt--sink--motherduck--merge_schedule--peak_window--ends_at"></a>
+### Nested Schema for `sink.motherduck.merge_schedule.peak_window.ends_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+<a id="nestedatt--sink--motherduck--merge_schedule--peak_window--starts_at"></a>
+### Nested Schema for `sink.motherduck.merge_schedule.peak_window.starts_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+
+
 <a id="nestedatt--sink--motherduck--migration_strategy"></a>
 ### Nested Schema for `sink.motherduck.migration_strategy`
 
@@ -2753,6 +3012,7 @@ Required:
 Optional:
 
 - `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for default)
+- `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--postgres--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--postgres--migration_strategy))
 - `operation_lock_timeout_seconds` (Number) Enables fail-fast behavior for data operations (COPY, INSERT, MERGE) by setting a `lock_timeout`. This prevents operations from waiting indefinitely when tables are locked by either long running transactions, DDL or Maintenance operations. Disabled by default, operations wait indefinitely. Set to a non-zero value (e.g., '60') to let operations fail-fast. https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
 - `port` (Number) Port number for the PostgreSQL server
@@ -2762,6 +3022,43 @@ Optional:
 - `ssl_root_cert` (String, Sensitive) SSL root certificate content for server verification
 - `target_schema` (String) Target schema name within the database
 - `tunnel` (Attributes) (see [below for nested schema](#nestedatt--sink--postgres--tunnel))
+
+<a id="nestedatt--sink--postgres--merge_schedule"></a>
+### Nested Schema for `sink.postgres.merge_schedule`
+
+Optional:
+
+- `off_peak_flush_interval_ms` (Number) Merge interval outside the peak window, in milliseconds
+- `peak_flush_interval_ms` (Number) Merge interval during the peak window, in milliseconds
+- `peak_window` (Attributes) (see [below for nested schema](#nestedatt--sink--postgres--merge_schedule--peak_window))
+
+<a id="nestedatt--sink--postgres--merge_schedule--peak_window"></a>
+### Nested Schema for `sink.postgres.merge_schedule.peak_window`
+
+Required:
+
+- `ends_at` (Attributes) Schedule that ends the peak window (see [below for nested schema](#nestedatt--sink--postgres--merge_schedule--peak_window--ends_at))
+- `starts_at` (Attributes) Schedule that starts the peak window (see [below for nested schema](#nestedatt--sink--postgres--merge_schedule--peak_window--starts_at))
+
+<a id="nestedatt--sink--postgres--merge_schedule--peak_window--ends_at"></a>
+### Nested Schema for `sink.postgres.merge_schedule.peak_window.ends_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+<a id="nestedatt--sink--postgres--merge_schedule--peak_window--starts_at"></a>
+### Nested Schema for `sink.postgres.merge_schedule.peak_window.starts_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+
 
 <a id="nestedatt--sink--postgres--migration_strategy"></a>
 ### Nested Schema for `sink.postgres.migration_strategy`
@@ -2836,6 +3133,7 @@ Optional:
 
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--redshift--history_mode))
 - `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for a default matched to the cluster's query concurrency)
+- `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--redshift--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--redshift--migration_strategy))
 - `port` (Number) Port number for the Redshift cluster
 - `sort_dist_keys` (Boolean) Set the distribution key and sort key from the primary key when creating tables. Changing table layout later requires a table rewrite. Tables created ahead of time keep their own layout.
@@ -2888,6 +3186,43 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+
+
+
+<a id="nestedatt--sink--redshift--merge_schedule"></a>
+### Nested Schema for `sink.redshift.merge_schedule`
+
+Optional:
+
+- `off_peak_flush_interval_ms` (Number) Merge interval outside the peak window, in milliseconds
+- `peak_flush_interval_ms` (Number) Merge interval during the peak window, in milliseconds
+- `peak_window` (Attributes) (see [below for nested schema](#nestedatt--sink--redshift--merge_schedule--peak_window))
+
+<a id="nestedatt--sink--redshift--merge_schedule--peak_window"></a>
+### Nested Schema for `sink.redshift.merge_schedule.peak_window`
+
+Required:
+
+- `ends_at` (Attributes) Schedule that ends the peak window (see [below for nested schema](#nestedatt--sink--redshift--merge_schedule--peak_window--ends_at))
+- `starts_at` (Attributes) Schedule that starts the peak window (see [below for nested schema](#nestedatt--sink--redshift--merge_schedule--peak_window--starts_at))
+
+<a id="nestedatt--sink--redshift--merge_schedule--peak_window--ends_at"></a>
+### Nested Schema for `sink.redshift.merge_schedule.peak_window.ends_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+<a id="nestedatt--sink--redshift--merge_schedule--peak_window--starts_at"></a>
+### Nested Schema for `sink.redshift.merge_schedule.peak_window.starts_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
 
 
 
@@ -2964,6 +3299,7 @@ Required:
 Optional:
 
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--snowflake--history_mode))
+- `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--snowflake--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--snowflake--migration_strategy))
 - `role` (String) Snowflake role to use after establishing the connection
 - `target_schema` (String) Target schema name within the specified target database
@@ -3011,6 +3347,43 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+
+
+
+<a id="nestedatt--sink--snowflake--merge_schedule"></a>
+### Nested Schema for `sink.snowflake.merge_schedule`
+
+Optional:
+
+- `off_peak_flush_interval_ms` (Number) Merge interval outside the peak window, in milliseconds
+- `peak_flush_interval_ms` (Number) Merge interval during the peak window, in milliseconds
+- `peak_window` (Attributes) (see [below for nested schema](#nestedatt--sink--snowflake--merge_schedule--peak_window))
+
+<a id="nestedatt--sink--snowflake--merge_schedule--peak_window"></a>
+### Nested Schema for `sink.snowflake.merge_schedule.peak_window`
+
+Required:
+
+- `ends_at` (Attributes) Schedule that ends the peak window (see [below for nested schema](#nestedatt--sink--snowflake--merge_schedule--peak_window--ends_at))
+- `starts_at` (Attributes) Schedule that starts the peak window (see [below for nested schema](#nestedatt--sink--snowflake--merge_schedule--peak_window--starts_at))
+
+<a id="nestedatt--sink--snowflake--merge_schedule--peak_window--ends_at"></a>
+### Nested Schema for `sink.snowflake.merge_schedule.peak_window.ends_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
+
+<a id="nestedatt--sink--snowflake--merge_schedule--peak_window--starts_at"></a>
+### Nested Schema for `sink.snowflake.merge_schedule.peak_window.starts_at`
+
+Required:
+
+- `expression` (String) Five field cron expression with minute precision
+- `timezone` (String) IANA timezone name used to evaluate the cron expression. Use UTC for Coordinated Universal Time.
+
 
 
 

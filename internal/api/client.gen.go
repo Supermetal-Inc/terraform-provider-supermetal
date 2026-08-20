@@ -1123,6 +1123,7 @@ type ConnectorBigqueryBigQuerySink struct {
 
 	// MaxSnapshotConcurrency Maximum concurrent snapshot writes to BigQuery (0 = no limit). Lower this if BigQuery reports rate limits during large snapshots.
 	MaxSnapshotConcurrency *int32                               `json:"max_snapshot_concurrency,omitempty"`
+	MergeSchedule          *ConnectorMigrationMergeSchedule     `json:"merge_schedule,omitempty"`
 	MigrationStrategy      *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
 	// ProjectId GCP project identifier containing the target dataset, for example "my-project-123"
@@ -1479,6 +1480,7 @@ type ConnectorClickhouseClickhouseSink struct {
 
 	// MaxSnapshotConcurrency Max concurrent snapshot loads to ClickHouse (0 = no limit). Lower this if ClickHouse runs out of memory during large snapshots.
 	MaxSnapshotConcurrency *int32                               `json:"max_snapshot_concurrency,omitempty"`
+	MergeSchedule          *ConnectorMigrationMergeSchedule     `json:"merge_schedule,omitempty"`
 	MigrationStrategy      *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
 	// NonNullableColumns Create all columns as non-Nullable. NULLs from the source land as type defaults (0, '', epoch). Customize via `ALTER TABLE ... MODIFY COLUMN ... DEFAULT ...`.
@@ -1642,6 +1644,7 @@ type ConnectorDatabricksDatabricksSink struct {
 	// Auth Authentication method and its credentials for Databricks
 	Auth              ConnectorDatabricksAuth              `json:"auth"`
 	HistoryMode       *ConnectorMigrationHistoryMode       `json:"history_mode,omitempty"`
+	MergeSchedule     *ConnectorMigrationMergeSchedule     `json:"merge_schedule,omitempty"`
 	MigrationStrategy *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
 	// StorageCredential Name of the Databricks storage credential for direct access to the object store buffer
@@ -1804,6 +1807,7 @@ type ConnectorDorisDorisSink struct {
 
 	// MaxSnapshotConcurrency Max concurrent writes per connector. 0 leaves writes unbounded. Lower to 2 or 4 if Apache Doris backends hit memory pressure during large snapshots.
 	MaxSnapshotConcurrency *int32                               `json:"max_snapshot_concurrency,omitempty"`
+	MergeSchedule          *ConnectorMigrationMergeSchedule     `json:"merge_schedule,omitempty"`
 	MigrationStrategy      *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
 	// PreserveSourceNullability Carry NOT NULL from source schema. When off, only key columns are NOT NULL and the rest stay nullable to tolerate CDC edge cases.
@@ -1873,6 +1877,7 @@ type ConnectorDuckdbDuckDbSink struct {
 
 	// MaxSnapshotConcurrency Maximum number of tables to snapshot in parallel. 0 means no limit.
 	MaxSnapshotConcurrency *int32                               `json:"max_snapshot_concurrency,omitempty"`
+	MergeSchedule          *ConnectorMigrationMergeSchedule     `json:"merge_schedule,omitempty"`
 	MigrationStrategy      *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
 	// PreserveSourceNullability Preserve NOT NULL constraints from the source schema
@@ -3371,6 +3376,16 @@ type ConnectorMigrationKeylessTableStrategy1 struct {
 // ConnectorMigrationLsn Track the source database log position for each change (Postgres LSN, Oracle SCN, MySQL binlog position, MongoDB resume token, SQL Server change LSN)
 type ConnectorMigrationLsn = map[string]interface{}
 
+// ConnectorMigrationMergeSchedule Time based interval for releasing buffered realtime changes to a target
+type ConnectorMigrationMergeSchedule struct {
+	// OffPeakFlushIntervalMs Merge interval outside the peak window, in milliseconds
+	OffPeakFlushIntervalMs *int64 `json:"off_peak_flush_interval_ms,omitempty"`
+
+	// PeakFlushIntervalMs Merge interval during the peak window, in milliseconds
+	PeakFlushIntervalMs *int64                        `json:"peak_flush_interval_ms,omitempty"`
+	PeakWindow          *ConnectorMigrationPeakWindow `json:"peak_window,omitempty"`
+}
+
 // ConnectorMigrationMigrationOperation defines model for ConnectorMigrationMigrationOperation.
 type ConnectorMigrationMigrationOperation string
 
@@ -3429,6 +3444,15 @@ type ConnectorMigrationOp_Encoding struct {
 
 // ConnectorMigrationOpEncoding How to represent the operation type
 type ConnectorMigrationOpEncoding string
+
+// ConnectorMigrationPeakWindow Recurring window in which peak merge settings apply
+type ConnectorMigrationPeakWindow struct {
+	// EndsAt Schedule that ends the peak window
+	EndsAt ConnectorScheduleCron `json:"ends_at"`
+
+	// StartsAt Schedule that starts the peak window
+	StartsAt ConnectorScheduleCron `json:"starts_at"`
+}
 
 // ConnectorMigrationSyncedAt When the row was last written to the buffer
 type ConnectorMigrationSyncedAt = map[string]interface{}
@@ -3838,6 +3862,7 @@ type ConnectorPostgresPostgresReplicationType2 struct {
 type ConnectorPostgresPostgresSink struct {
 	// Connection Connection details for the target PostgreSQL database
 	Connection        ConnectorPostgresPostgres            `json:"connection"`
+	MergeSchedule     *ConnectorMigrationMergeSchedule     `json:"merge_schedule,omitempty"`
 	MigrationStrategy *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
 	// TargetSchema Target schema name within the database
@@ -3963,6 +3988,7 @@ type ConnectorRedshiftRedshiftSink struct {
 	// Connection Connection details for the target Redshift cluster
 	Connection        ConnectorRedshiftRedshift            `json:"connection"`
 	HistoryMode       *ConnectorMigrationHistoryMode       `json:"history_mode,omitempty"`
+	MergeSchedule     *ConnectorMigrationMergeSchedule     `json:"merge_schedule,omitempty"`
 	MigrationStrategy *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
 	// SortDistKeys Set the distribution key and sort key from the primary key when creating tables. Changing table layout later requires a table rewrite. Tables created ahead of time keep their own layout.
@@ -4164,6 +4190,7 @@ type ConnectorSnowflakeSnowflakeSink struct {
 	// Connection Connection details for the target Snowflake account
 	Connection        ConnectorSnowflakeSnowflake          `json:"connection"`
 	HistoryMode       *ConnectorMigrationHistoryMode       `json:"history_mode,omitempty"`
+	MergeSchedule     *ConnectorMigrationMergeSchedule     `json:"merge_schedule,omitempty"`
 	MigrationStrategy *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
 	// TargetDatabase Name of the target database within Snowflake where data will be written
