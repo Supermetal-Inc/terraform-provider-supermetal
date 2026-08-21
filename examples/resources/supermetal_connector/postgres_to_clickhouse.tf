@@ -39,7 +39,7 @@ resource "supermetal_connector" "postgres_to_clickhouse" {
       user               = var.clickhouse_user
       password           = var.clickhouse_password
       target_database    = "analytics"
-      snapshot_load_mode = "AtomicSwap"
+      snapshot_load_mode = "StagedRename"
     }
   }
 }

@@ -189,9 +189,10 @@ func (e ConnectorClickhouseCompressionTypeFamily) Valid() bool {
 
 // Defines values for ConnectorClickhouseSnapshotLoadMode.
 const (
-	AtomicSwap ConnectorClickhouseSnapshotLoadMode = "AtomicSwap"
-	InPlace    ConnectorClickhouseSnapshotLoadMode = "InPlace"
-	Truncate   ConnectorClickhouseSnapshotLoadMode = "Truncate"
+	AtomicSwap   ConnectorClickhouseSnapshotLoadMode = "AtomicSwap"
+	InPlace      ConnectorClickhouseSnapshotLoadMode = "InPlace"
+	StagedRename ConnectorClickhouseSnapshotLoadMode = "StagedRename"
+	Truncate     ConnectorClickhouseSnapshotLoadMode = "Truncate"
 )
 
 // Valid indicates whether the value is a known member of the ConnectorClickhouseSnapshotLoadMode enum.
@@ -200,6 +201,8 @@ func (e ConnectorClickhouseSnapshotLoadMode) Valid() bool {
 	case AtomicSwap:
 		return true
 	case InPlace:
+		return true
+	case StagedRename:
 		return true
 	case Truncate:
 		return true

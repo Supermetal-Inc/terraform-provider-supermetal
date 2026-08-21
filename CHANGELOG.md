@@ -1,3 +1,7 @@
+## v0.2.4
+
+- Add ClickHouse staged rename snapshot loading.
+
 ## v0.2.3
 
 - Add configurable merge schedules.
