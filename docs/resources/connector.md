@@ -821,6 +821,7 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+- `table_selection` (String)
 
 
 
@@ -887,7 +888,8 @@ Optional:
 - `disable_schema_prefix` (Boolean) Do not prefix target table names with the source schema. By default, a source table `public.users` lands as `public_users`; with this enabled it lands as `users`. Only safe when source table names are unique across schemas.
 - `engine` (String)
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--history_mode))
-- `max_snapshot_concurrency` (Number) Max concurrent snapshot loads to ClickHouse (0 = no limit). Lower this if ClickHouse runs out of memory during large snapshots.
+- `insert_deduplication` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--insert_deduplication))
+- `max_snapshot_concurrency` (Number) Max concurrent ClickHouse loads (0 = no limit). Lower this if ClickHouse runs out of memory.
 - `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--migration_strategy))
 - `non_nullable_columns` (Boolean) Create all columns as non-Nullable. NULLs from the source land as type defaults (0, '', epoch). Customize via `ALTER TABLE ... MODIFY COLUMN ... DEFAULT ...`.
@@ -950,6 +952,19 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+- `table_selection` (String)
+
+
+
+<a id="nestedatt--sink--clickhouse--insert_deduplication"></a>
+### Nested Schema for `sink.clickhouse.insert_deduplication`
+
+Optional:
+
+- `content_hash` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--insert_deduplication--content_hash))
+
+<a id="nestedatt--sink--clickhouse--insert_deduplication--content_hash"></a>
+### Nested Schema for `sink.clickhouse.insert_deduplication.content_hash`
 
 
 
@@ -1090,6 +1105,7 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+- `table_selection` (String)
 
 
 
@@ -1191,6 +1207,7 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+- `table_selection` (String)
 
 
 
@@ -1391,6 +1408,7 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+- `table_selection` (String)
 
 
 
@@ -1576,6 +1594,7 @@ Optional:
 - `parquet` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--parquet))
 - `spec_version` (String)
 - `storage_credentials` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--storage_credentials))
+- `truncate_history_table_if_exists` (String)
 - `truncate_table_if_exists` (Boolean) Truncate existing table data before snapshot load to prevent duplicates. Old data remains in previous Iceberg snapshots for time-travel recovery. The truncation snapshot stores `sm.truncated_from_snapshot` in its summary properties, queryable via `SELECT * FROM table$snapshots`.
 - `type_conversion` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--type_conversion))
 - `vended_credentials` (Boolean) Unused, reserved for future vended credentials support
@@ -1978,7 +1997,7 @@ Optional:
 Optional:
 
 - `append` (Attributes) Append-only writes (see [below for nested schema](#nestedatt--sink--iceberg--write_mode--append))
-- `merge_on_read` (Attributes) Row-level deletes using equality delete files (see [below for nested schema](#nestedatt--sink--iceberg--write_mode--merge_on_read))
+- `merge_on_read` (Attributes) Row-level deletes using equality or positional delete files (see [below for nested schema](#nestedatt--sink--iceberg--write_mode--merge_on_read))
 
 <a id="nestedatt--sink--iceberg--write_mode--append"></a>
 ### Nested Schema for `sink.iceberg.write_mode.append`
@@ -1991,12 +2010,10 @@ Optional:
 
 - `delete_mode` (String)
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--write_mode--merge_on_read--history_mode))
+- `index_backend` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend))
 - `use_positional_deletes_only` (Boolean) Emit positional deletes only (default: false). Set true for
- Snowflake/Databricks readers that reject equality deletes. Requires a
- primary key and requires `delete_mode = Hard`, since positional deletes
- reference physical row offsets and cannot tombstone a row in place for
- soft-delete semantics. V2 tables emit positional delete files, V3
- tables emit deletion vectors.
+ readers that reject equality deletes. Requires a primary key. V2 tables
+ emit positional delete files. V3 tables emit deletion vectors.
 
 <a id="nestedatt--sink--iceberg--write_mode--merge_on_read--history_mode"></a>
 ### Nested Schema for `sink.iceberg.write_mode.merge_on_read.history_mode`
@@ -2011,6 +2028,71 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+- `table_selection` (String)
+
+
+
+<a id="nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend"></a>
+### Nested Schema for `sink.iceberg.write_mode.merge_on_read.index_backend`
+
+Optional:
+
+- `slatedb` (Attributes) Store the index in object storage (see [below for nested schema](#nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend--slatedb))
+- `sqlite` (Attributes) Store the index on local disk (see [below for nested schema](#nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend--sqlite))
+
+<a id="nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend--slatedb"></a>
+### Nested Schema for `sink.iceberg.write_mode.merge_on_read.index_backend.slatedb`
+
+Optional:
+
+- `object_store` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend--slatedb--object_store))
+
+<a id="nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend--slatedb--object_store"></a>
+### Nested Schema for `sink.iceberg.write_mode.merge_on_read.index_backend.slatedb.object_store`
+
+Required:
+
+- `url` (String) URL: "s3://mybucket", "azure://mycontainer", "gs://mybucket", "file:///absolute/path", "gdrive:///optional/root", "dropbox:///optional/root", "sftp://host:22/optional/root"
+
+Optional:
+
+- `allow_http` (Boolean) Allow HTTP connections (default: false, HTTPS only)
+- `allow_invalid_certificates` (Boolean) Allow invalid/self-signed certificates (default: false)
+- `max_concurrent_parts` (Number) Max concurrent part uploads per file. Set to 1 for cross-region or to prevent part upload failures and timeouts due to limited bandwidth.
+- `max_concurrent_requests` (Number) Max concurrent requests to the object store. 0 means no limit.
+- `options` (Attributes Map) Configuration options (key-value pairs)
+
+S3: [{"name": "region", "value": "us-east-1"}, {"name": "access_key_id", "value": "AKIA..."}, {"name": "secret_access_key", "value": "..."}]
+
+Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "value": "..."} or {"name": "sas_token", "value": "sp=..."}]
+
+GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
+
+GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
+
+Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
+
+Google Drive and Dropbox refresh token: [{"name": "auth_type", "value": "refresh_token"}, {"name": "refresh_token", "value": "..."}, {"name": "client_id", "value": "..."}, {"name": "client_secret", "value": "..."}]
+
+SFTP key authentication: [{"name": "user", "value": "alice"}, {"name": "private_key", "value": "-----BEGIN OPENSSH PRIVATE KEY-----..."}, {"name": "server_public_key", "value": "ssh-ed25519 AAAA..."}] (see [below for nested schema](#nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend--slatedb--object_store--options))
+- `root_certificate_pem` (String, Sensitive) PEM-encoded root certificate(s) for TLS verification
+
+<a id="nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend--slatedb--object_store--options"></a>
+### Nested Schema for `sink.iceberg.write_mode.merge_on_read.index_backend.slatedb.object_store.options`
+
+Required:
+
+- `value` (String, Sensitive) Option value
+
+
+
+
+<a id="nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend--sqlite"></a>
+### Nested Schema for `sink.iceberg.write_mode.merge_on_read.index_backend.sqlite`
+
+Optional:
+
+- `tombstone` (Boolean) Invalidate removed files without scanning and deleting their primary key rows. Enabled by default and can make recovery faster for large indexes.
 
 
 
@@ -2490,6 +2572,7 @@ Required:
 
 Optional:
 
+- `data_types` (Attributes) (see [below for nested schema](#nestedatt--sink--kafka--format--supermetal--data_types))
 - `tombstones_on_delete` (Boolean) Whether a delete event is followed by a tombstone event
 
 <a id="nestedatt--sink--kafka--format--supermetal--format_config"></a>
@@ -2800,6 +2883,16 @@ Optional:
 
 
 
+<a id="nestedatt--sink--kafka--format--supermetal--data_types"></a>
+### Nested Schema for `sink.kafka.format.supermetal.data_types`
+
+Optional:
+
+- `binary_encoding` (String)
+- `decimal_encoding` (String)
+- `timestamp_encoding` (String)
+
+
 
 
 <a id="nestedatt--sink--kafka--topic_options"></a>
@@ -2949,6 +3042,7 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+- `table_selection` (String)
 
 
 
@@ -3186,6 +3280,7 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+- `table_selection` (String)
 
 
 
@@ -3347,6 +3442,7 @@ Optional:
 Optional:
 
 - `suffix` (String) Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
+- `table_selection` (String)
 
 
 
@@ -3789,6 +3885,7 @@ Required:
 
 Optional:
 
+- `data_types` (Attributes) (see [below for nested schema](#nestedatt--sink--webhook--format--supermetal--data_types))
 - `tombstones_on_delete` (Boolean) Whether a delete event is followed by a tombstone event
 
 <a id="nestedatt--sink--webhook--format--supermetal--format_config"></a>
@@ -4099,6 +4196,16 @@ Optional:
 
 
 
+<a id="nestedatt--sink--webhook--format--supermetal--data_types"></a>
+### Nested Schema for `sink.webhook.format.supermetal.data_types`
+
+Optional:
+
+- `binary_encoding` (String)
+- `decimal_encoding` (String)
+- `timestamp_encoding` (String)
+
+
 
 
 <a id="nestedatt--sink--webhook--auth"></a>
@@ -4195,6 +4302,7 @@ Optional:
 
 Optional:
 
+- `clickhouse` (Attributes) ClickHouse replication source (see [below for nested schema](#nestedatt--source--clickhouse))
 - `db2` (Attributes) Db2 replication source (see [below for nested schema](#nestedatt--source--db2))
 - `file_source` (Attributes) Ingest files from object stores (S3, GCS, Azure Blob) or filesystems (local, SFTP) (see [below for nested schema](#nestedatt--source--file_source))
 - `mongo` (Attributes) MongoDB replication source (see [below for nested schema](#nestedatt--source--mongo))
@@ -4202,6 +4310,292 @@ Optional:
 - `oracle` (Attributes) Oracle replication source (see [below for nested schema](#nestedatt--source--oracle))
 - `postgres` (Attributes) PostgreSQL replication source (see [below for nested schema](#nestedatt--source--postgres))
 - `sqlserver` (Attributes) SQL Server replication source (see [below for nested schema](#nestedatt--source--sqlserver))
+
+<a id="nestedatt--source--clickhouse"></a>
+### Nested Schema for `source.clickhouse`
+
+Required:
+
+- `http_url` (String) HTTP(S) URL of the ClickHouse server ("http://localhost:8123" or "https://<instance_id>.<region>.aws.clickhouse.cloud:8443")
+- `source_database` (String) Name of the database in ClickHouse to replicate from
+
+Optional:
+
+- `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog))
+- `include_system_columns` (Boolean) Include `_sm_version`, `_sm_deleted`, and `_sm_synced_at` columns managed by Supermetal in replicated tables
+- `max_concurrent_export_writers` (Number) Maximum concurrent export writers on one ClickHouse source server. Defaults to 16. More writers use more source memory. The measured supported ceiling is 32.
+- `max_concurrent_exports` (Number) Maximum number of ClickHouse tables exported at once. Each export reads a full table. Defaults to 2 based on measurements with ClickHouse 25.6 and 26.7 under a 12 GiB memory limit. Set to 0 to remove the concurrent export limit.
+- `password` (String, Sensitive) Password for ClickHouse authentication
+- `ssl_client_cert_pem` (String, Sensitive) Client's SSL certificate content in PEM format, if client certificate authentication is required
+- `ssl_client_key_pem` (String, Sensitive) Client's SSL private key content in PEM format (if separate from certificate)
+- `ssl_root_cert` (String, Sensitive) SSL root certificate content to verify the server's certificate
+- `ssl_verify` (Boolean) Verify the server's SSL certificate when using an HTTPS connection
+- `user` (String) Username for ClickHouse authentication
+
+<a id="nestedatt--source--clickhouse--catalog"></a>
+### Nested Schema for `source.clickhouse.catalog`
+
+Required:
+
+- `name` (String)
+- `schemas` (Attributes Map) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas))
+
+Optional:
+
+- `column_hashing` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--column_hashing))
+- `default_action` (String)
+- `unlisted_action` (String)
+
+<a id="nestedatt--source--clickhouse--catalog--schemas"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas`
+
+Required:
+
+- `tables` (Attributes Map) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables))
+
+Optional:
+
+- `action` (String)
+- `unlisted_action` (String)
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables`
+
+Optional:
+
+- `action` (String)
+- `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--columns))
+- `history_enabled` (Boolean) Include or exclude this table when history Table Selection is Catalog Opt In or Catalog Opt Out. Unset inherits the sink setting.
+- `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec))
+- `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--migration_strategy))
+- `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--on_mongo_type_conflict))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--source_option))
+- `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--target_option))
+- `unlisted_action` (String)
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--columns"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.columns`
+
+Optional:
+
+- `action` (String)
+- `hash` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--columns--hash))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--columns--source_option))
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--columns--hash"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.columns.hash`
+
+Optional:
+
+- `hmac_sha256` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--columns--hash--hmac_sha256))
+- `xxh3_128` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--columns--hash--xxh3_128))
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--columns--hash--hmac_sha256"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.columns.hash.hmac_sha256`
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--columns--hash--xxh3_128"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.columns.hash.xxh3_128`
+
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--columns--source_option"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.columns.source_option`
+
+Optional:
+
+- `mysql` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--columns--source_option--mysql))
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--columns--source_option--mysql"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.columns.source_option.mysql`
+
+Optional:
+
+- `tinyint1_mode` (String)
+
+
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.iceberg_partition_spec`
+
+Required:
+
+- `fields` (Attributes List) Partition fields, applied in order (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields))
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.iceberg_partition_spec.fields`
+
+Required:
+
+- `source_column` (String) Source column name
+- `transform` (Attributes) Transform applied to the source column (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform))
+
+Optional:
+
+- `name` (String) Partition column name in Iceberg. Defaults to {source_column}_{transform} (e.g. created_at_day)
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.iceberg_partition_spec.fields.transform`
+
+Optional:
+
+- `bucket` (Attributes) Hash into a fixed number of buckets (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--bucket))
+- `day` (Attributes) Day of a date or timestamp (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--day))
+- `hour` (Attributes) Hour of a timestamp (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--hour))
+- `identity` (Attributes) Source value, unchanged (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--identity))
+- `month` (Attributes) Month of a date or timestamp (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--month))
+- `truncate` (Attributes) Truncate to a fixed width (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--truncate))
+- `year` (Attributes) Year of a date or timestamp (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--year))
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--bucket"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.iceberg_partition_spec.fields.transform.bucket`
+
+Optional:
+
+- `num_buckets` (Number) Number of hash buckets
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--day"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.iceberg_partition_spec.fields.transform.day`
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--hour"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.iceberg_partition_spec.fields.transform.hour`
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--identity"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.iceberg_partition_spec.fields.transform.identity`
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--month"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.iceberg_partition_spec.fields.transform.month`
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--truncate"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.iceberg_partition_spec.fields.transform.truncate`
+
+Optional:
+
+- `width` (Number) Truncation width: characters for strings, bytes for binary, modulus for integers and decimals
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec--fields--transform--year"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.iceberg_partition_spec.fields.transform.year`
+
+
+
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--migration_strategy"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.migration_strategy`
+
+Optional:
+
+- `allowed` (List of String)
+- `disable_all` (Boolean)
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--on_mongo_type_conflict"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.on_mongo_type_conflict`
+
+Optional:
+
+- `coerce` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--on_mongo_type_conflict--coerce))
+- `widentostring` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--on_mongo_type_conflict--widentostring))
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--on_mongo_type_conflict--coerce"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.on_mongo_type_conflict.coerce`
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--source_option"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.source_option`
+
+Optional:
+
+- `file` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--source_option--file))
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--source_option--file"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.source_option.file`
+
+Optional:
+
+- `primary_keys` (List of String) Primary key columns for this table. Rows are deduplicated by these keys, keeping the latest file. Leave empty to append.
+
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--target_option"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.target_option`
+
+Optional:
+
+- `clickhouse` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--target_option--clickhouse))
+- `file_sink` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--target_option--file_sink))
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--target_option--clickhouse"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.target_option.clickhouse`
+
+Optional:
+
+- `order_by` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--target_option--clickhouse--order_by))
+- `partitioning` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--target_option--clickhouse--partitioning))
+- `sharding_key` (String) Sharding expression for this table. Defaults to a hash of its primary key, or rand() for a keyless table. Under Fivetran naming, use target column names
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--target_option--clickhouse--order_by"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.target_option.clickhouse.order_by`
+
+Optional:
+
+- `entries` (List of String) ORDER BY entries such as ["country", "created_at", "id"]. Replaces the default primary key ordering. Values must be immutable per row. Under Fivetran naming, use target column names.
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--target_option--clickhouse--partitioning"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.target_option.clickhouse.partitioning`
+
+Optional:
+
+- `expression` (String) PARTITION BY expression such as toYYYYMM(created_at). Values must be immutable per row, or updates and deletes leave stale rows in old partitions. Under Fivetran naming, use target column names.
+
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--target_option--file_sink"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.target_option.file_sink`
+
+Required:
+
+- `fields` (Attributes List) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--target_option--file_sink--fields))
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--target_option--file_sink--fields"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.target_option.file_sink.fields`
+
+Required:
+
+- `source_column` (String) Source column used to create this partition.
+
+Optional:
+
+- `name` (String) Optional folder key. Defaults to the final column name plus the transform suffix.
+- `transform` (String)
+
+
+
+
+
+
+<a id="nestedatt--source--clickhouse--catalog--column_hashing"></a>
+### Nested Schema for `source.clickhouse.catalog.column_hashing`
+
+Optional:
+
+- `shared_secret` (String, Sensitive) Shared secret for keyed hashes. Created automatically when left blank. Reuse the same secret to produce matching hashes across connectors.
+
+
+
 
 <a id="nestedatt--source--db2"></a>
 ### Nested Schema for `source.db2`
@@ -4251,7 +4645,9 @@ Required:
 
 Optional:
 
+- `column_hashing` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--column_hashing))
 - `default_action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--db2--catalog--schemas"></a>
 ### Nested Schema for `source.db2.catalog.schemas`
@@ -4263,6 +4659,7 @@ Required:
 Optional:
 
 - `action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--db2--catalog--schemas--tables"></a>
 ### Nested Schema for `source.db2.catalog.schemas.tables`
@@ -4271,10 +4668,13 @@ Optional:
 
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--columns))
+- `history_enabled` (Boolean) Include or exclude this table when history Table Selection is Catalog Opt In or Catalog Opt Out. Unset inherits the sink setting.
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--iceberg_partition_spec))
+- `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--on_mongo_type_conflict))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--target_option))
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--db2--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.db2.catalog.schemas.tables.columns`
@@ -4282,6 +4682,41 @@ Optional:
 Optional:
 
 - `action` (String)
+- `hash` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--columns--hash))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--columns--source_option))
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--columns--hash"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.columns.hash`
+
+Optional:
+
+- `hmac_sha256` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--columns--hash--hmac_sha256))
+- `xxh3_128` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--columns--hash--xxh3_128))
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--columns--hash--hmac_sha256"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.columns.hash.hmac_sha256`
+
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--columns--hash--xxh3_128"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.columns.hash.xxh3_128`
+
+
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--columns--source_option"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.columns.source_option`
+
+Optional:
+
+- `mysql` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--columns--source_option--mysql))
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--columns--source_option--mysql"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.columns.source_option.mysql`
+
+Optional:
+
+- `tinyint1_mode` (String)
+
+
 
 
 <a id="nestedatt--source--db2--catalog--schemas--tables--iceberg_partition_spec"></a>
@@ -4353,6 +4788,15 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--migration_strategy"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.migration_strategy`
+
+Optional:
+
+- `allowed` (List of String)
+- `disable_all` (Boolean)
 
 
 <a id="nestedatt--source--db2--catalog--schemas--tables--on_mongo_type_conflict"></a>
@@ -4444,6 +4888,14 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--db2--catalog--column_hashing"></a>
+### Nested Schema for `source.db2.catalog.column_hashing`
+
+Optional:
+
+- `shared_secret` (String, Sensitive) Shared secret for keyed hashes. Created automatically when left blank. Reuse the same secret to produce matching hashes across connectors.
 
 
 
@@ -4562,7 +5014,9 @@ Required:
 
 Optional:
 
+- `column_hashing` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--column_hashing))
 - `default_action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--file_source--catalog--schemas"></a>
 ### Nested Schema for `source.file_source.catalog.schemas`
@@ -4574,6 +5028,7 @@ Required:
 Optional:
 
 - `action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--file_source--catalog--schemas--tables"></a>
 ### Nested Schema for `source.file_source.catalog.schemas.tables`
@@ -4582,10 +5037,13 @@ Optional:
 
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--columns))
+- `history_enabled` (Boolean) Include or exclude this table when history Table Selection is Catalog Opt In or Catalog Opt Out. Unset inherits the sink setting.
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec))
+- `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--on_mongo_type_conflict))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--target_option))
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--file_source--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.file_source.catalog.schemas.tables.columns`
@@ -4593,6 +5051,41 @@ Optional:
 Optional:
 
 - `action` (String)
+- `hash` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--columns--hash))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--columns--source_option))
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--columns--hash"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.columns.hash`
+
+Optional:
+
+- `hmac_sha256` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--columns--hash--hmac_sha256))
+- `xxh3_128` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--columns--hash--xxh3_128))
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--columns--hash--hmac_sha256"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.columns.hash.hmac_sha256`
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--columns--hash--xxh3_128"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.columns.hash.xxh3_128`
+
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--columns--source_option"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.columns.source_option`
+
+Optional:
+
+- `mysql` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--columns--source_option--mysql))
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--columns--source_option--mysql"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.columns.source_option.mysql`
+
+Optional:
+
+- `tinyint1_mode` (String)
+
+
 
 
 <a id="nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec"></a>
@@ -4664,6 +5157,15 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--migration_strategy"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.migration_strategy`
+
+Optional:
+
+- `allowed` (List of String)
+- `disable_all` (Boolean)
 
 
 <a id="nestedatt--source--file_source--catalog--schemas--tables--on_mongo_type_conflict"></a>
@@ -4755,6 +5257,14 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--file_source--catalog--column_hashing"></a>
+### Nested Schema for `source.file_source.catalog.column_hashing`
+
+Optional:
+
+- `shared_secret` (String, Sensitive) Shared secret for keyed hashes. Created automatically when left blank. Reuse the same secret to produce matching hashes across connectors.
 
 
 
@@ -5132,7 +5642,9 @@ Required:
 
 Optional:
 
+- `column_hashing` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--column_hashing))
 - `default_action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--mongo--catalog--schemas"></a>
 ### Nested Schema for `source.mongo.catalog.schemas`
@@ -5144,6 +5656,7 @@ Required:
 Optional:
 
 - `action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--mongo--catalog--schemas--tables"></a>
 ### Nested Schema for `source.mongo.catalog.schemas.tables`
@@ -5152,10 +5665,13 @@ Optional:
 
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--columns))
+- `history_enabled` (Boolean) Include or exclude this table when history Table Selection is Catalog Opt In or Catalog Opt Out. Unset inherits the sink setting.
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--iceberg_partition_spec))
+- `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--on_mongo_type_conflict))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--target_option))
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--mongo--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.mongo.catalog.schemas.tables.columns`
@@ -5163,6 +5679,41 @@ Optional:
 Optional:
 
 - `action` (String)
+- `hash` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--columns--hash))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--columns--source_option))
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--columns--hash"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.columns.hash`
+
+Optional:
+
+- `hmac_sha256` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--columns--hash--hmac_sha256))
+- `xxh3_128` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--columns--hash--xxh3_128))
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--columns--hash--hmac_sha256"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.columns.hash.hmac_sha256`
+
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--columns--hash--xxh3_128"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.columns.hash.xxh3_128`
+
+
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--columns--source_option"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.columns.source_option`
+
+Optional:
+
+- `mysql` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--columns--source_option--mysql))
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--columns--source_option--mysql"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.columns.source_option.mysql`
+
+Optional:
+
+- `tinyint1_mode` (String)
+
+
 
 
 <a id="nestedatt--source--mongo--catalog--schemas--tables--iceberg_partition_spec"></a>
@@ -5234,6 +5785,15 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--migration_strategy"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.migration_strategy`
+
+Optional:
+
+- `allowed` (List of String)
+- `disable_all` (Boolean)
 
 
 <a id="nestedatt--source--mongo--catalog--schemas--tables--on_mongo_type_conflict"></a>
@@ -5327,6 +5887,14 @@ Optional:
 
 
 
+<a id="nestedatt--source--mongo--catalog--column_hashing"></a>
+### Nested Schema for `source.mongo.catalog.column_hashing`
+
+Optional:
+
+- `shared_secret` (String, Sensitive) Shared secret for keyed hashes. Created automatically when left blank. Reuse the same secret to produce matching hashes across connectors.
+
+
 
 <a id="nestedatt--source--mongo--ssl_mode"></a>
 ### Nested Schema for `source.mongo.ssl_mode`
@@ -5389,7 +5957,7 @@ Optional:
 
 - `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog))
 - `database` (String) Name of the database to connect to (if not specified, will discover all accessible databases)
-- `infer_tinyint1_as_boolean` (Boolean) Map MySQL `TINYINT(1)` columns to boolean on the target. Disable to keep them as integers when columns can hold values outside `{0, 1}`. `BIT(1)` is always mapped to boolean (MySQL constrains its storage).
+- `infer_tinyint1_as_boolean` (Boolean) Map signed MySQL `TINYINT(1)` columns to boolean on the target. Zero becomes false and every nonzero value becomes true. Disable to preserve the values as integers. `BIT(1)` is always mapped to boolean because MySQL constrains it to one bit.
 - `keyless_table_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--keyless_table_strategy))
 - `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for default)
 - `parallel_snapshots_enabled` (Boolean) Use parallel snapshots for initial data synchronization
@@ -5411,7 +5979,9 @@ Required:
 
 Optional:
 
+- `column_hashing` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--column_hashing))
 - `default_action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--mysql--catalog--schemas"></a>
 ### Nested Schema for `source.mysql.catalog.schemas`
@@ -5423,6 +5993,7 @@ Required:
 Optional:
 
 - `action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--mysql--catalog--schemas--tables"></a>
 ### Nested Schema for `source.mysql.catalog.schemas.tables`
@@ -5431,10 +6002,13 @@ Optional:
 
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--columns))
+- `history_enabled` (Boolean) Include or exclude this table when history Table Selection is Catalog Opt In or Catalog Opt Out. Unset inherits the sink setting.
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--iceberg_partition_spec))
+- `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--on_mongo_type_conflict))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--target_option))
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--mysql--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.mysql.catalog.schemas.tables.columns`
@@ -5442,6 +6016,41 @@ Optional:
 Optional:
 
 - `action` (String)
+- `hash` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--columns--hash))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--columns--source_option))
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--columns--hash"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.columns.hash`
+
+Optional:
+
+- `hmac_sha256` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--columns--hash--hmac_sha256))
+- `xxh3_128` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--columns--hash--xxh3_128))
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--columns--hash--hmac_sha256"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.columns.hash.hmac_sha256`
+
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--columns--hash--xxh3_128"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.columns.hash.xxh3_128`
+
+
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--columns--source_option"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.columns.source_option`
+
+Optional:
+
+- `mysql` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--columns--source_option--mysql))
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--columns--source_option--mysql"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.columns.source_option.mysql`
+
+Optional:
+
+- `tinyint1_mode` (String)
+
+
 
 
 <a id="nestedatt--source--mysql--catalog--schemas--tables--iceberg_partition_spec"></a>
@@ -5513,6 +6122,15 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--migration_strategy"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.migration_strategy`
+
+Optional:
+
+- `allowed` (List of String)
+- `disable_all` (Boolean)
 
 
 <a id="nestedatt--source--mysql--catalog--schemas--tables--on_mongo_type_conflict"></a>
@@ -5604,6 +6222,14 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--mysql--catalog--column_hashing"></a>
+### Nested Schema for `source.mysql.catalog.column_hashing`
+
+Optional:
+
+- `shared_secret` (String, Sensitive) Shared secret for keyed hashes. Created automatically when left blank. Reuse the same secret to produce matching hashes across connectors.
 
 
 
@@ -5784,7 +6410,9 @@ Required:
 
 Optional:
 
+- `column_hashing` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--column_hashing))
 - `default_action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--oracle--catalog--schemas"></a>
 ### Nested Schema for `source.oracle.catalog.schemas`
@@ -5796,6 +6424,7 @@ Required:
 Optional:
 
 - `action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--oracle--catalog--schemas--tables"></a>
 ### Nested Schema for `source.oracle.catalog.schemas.tables`
@@ -5804,10 +6433,13 @@ Optional:
 
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--columns))
+- `history_enabled` (Boolean) Include or exclude this table when history Table Selection is Catalog Opt In or Catalog Opt Out. Unset inherits the sink setting.
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--iceberg_partition_spec))
+- `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--on_mongo_type_conflict))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--target_option))
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--oracle--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.oracle.catalog.schemas.tables.columns`
@@ -5815,6 +6447,41 @@ Optional:
 Optional:
 
 - `action` (String)
+- `hash` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--columns--hash))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--columns--source_option))
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--columns--hash"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.columns.hash`
+
+Optional:
+
+- `hmac_sha256` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--columns--hash--hmac_sha256))
+- `xxh3_128` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--columns--hash--xxh3_128))
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--columns--hash--hmac_sha256"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.columns.hash.hmac_sha256`
+
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--columns--hash--xxh3_128"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.columns.hash.xxh3_128`
+
+
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--columns--source_option"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.columns.source_option`
+
+Optional:
+
+- `mysql` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--columns--source_option--mysql))
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--columns--source_option--mysql"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.columns.source_option.mysql`
+
+Optional:
+
+- `tinyint1_mode` (String)
+
+
 
 
 <a id="nestedatt--source--oracle--catalog--schemas--tables--iceberg_partition_spec"></a>
@@ -5886,6 +6553,15 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--migration_strategy"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.migration_strategy`
+
+Optional:
+
+- `allowed` (List of String)
+- `disable_all` (Boolean)
 
 
 <a id="nestedatt--source--oracle--catalog--schemas--tables--on_mongo_type_conflict"></a>
@@ -5979,6 +6655,14 @@ Optional:
 
 
 
+<a id="nestedatt--source--oracle--catalog--column_hashing"></a>
+### Nested Schema for `source.oracle.catalog.column_hashing`
+
+Optional:
+
+- `shared_secret` (String, Sensitive) Shared secret for keyed hashes. Created automatically when left blank. Reuse the same secret to produce matching hashes across connectors.
+
+
 
 <a id="nestedatt--source--oracle--keyless_table_strategy"></a>
 ### Nested Schema for `source.oracle.keyless_table_strategy`
@@ -6067,6 +6751,7 @@ Optional:
 Optional:
 
 - `publication_name` (String) Existing publication to subscribe to. Superusers can leave this empty to create one automatically.
+- `replica_identity_management` (String)
 - `retry_window_seconds` (Number) Maximum time window (in seconds) to retry transient connection errors before failing. Defaults to 300 seconds.
 - `skip_snapshots` (Boolean) Skip the initial snapshot/backfill and start streaming changes from the replication slot's consistent point. Use when existing data does not need to be replicated.
 - `toast_mode` (String)
@@ -6153,7 +6838,9 @@ Required:
 
 Optional:
 
+- `column_hashing` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--column_hashing))
 - `default_action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--postgres--catalog--schemas"></a>
 ### Nested Schema for `source.postgres.catalog.schemas`
@@ -6165,6 +6852,7 @@ Required:
 Optional:
 
 - `action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--postgres--catalog--schemas--tables"></a>
 ### Nested Schema for `source.postgres.catalog.schemas.tables`
@@ -6173,10 +6861,13 @@ Optional:
 
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--columns))
+- `history_enabled` (Boolean) Include or exclude this table when history Table Selection is Catalog Opt In or Catalog Opt Out. Unset inherits the sink setting.
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--iceberg_partition_spec))
+- `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--on_mongo_type_conflict))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--target_option))
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--postgres--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.postgres.catalog.schemas.tables.columns`
@@ -6184,6 +6875,41 @@ Optional:
 Optional:
 
 - `action` (String)
+- `hash` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--columns--hash))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--columns--source_option))
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--columns--hash"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.columns.hash`
+
+Optional:
+
+- `hmac_sha256` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--columns--hash--hmac_sha256))
+- `xxh3_128` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--columns--hash--xxh3_128))
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--columns--hash--hmac_sha256"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.columns.hash.hmac_sha256`
+
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--columns--hash--xxh3_128"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.columns.hash.xxh3_128`
+
+
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--columns--source_option"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.columns.source_option`
+
+Optional:
+
+- `mysql` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--columns--source_option--mysql))
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--columns--source_option--mysql"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.columns.source_option.mysql`
+
+Optional:
+
+- `tinyint1_mode` (String)
+
+
 
 
 <a id="nestedatt--source--postgres--catalog--schemas--tables--iceberg_partition_spec"></a>
@@ -6255,6 +6981,15 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--migration_strategy"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.migration_strategy`
+
+Optional:
+
+- `allowed` (List of String)
+- `disable_all` (Boolean)
 
 
 <a id="nestedatt--source--postgres--catalog--schemas--tables--on_mongo_type_conflict"></a>
@@ -6346,6 +7081,14 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--postgres--catalog--column_hashing"></a>
+### Nested Schema for `source.postgres.catalog.column_hashing`
+
+Optional:
+
+- `shared_secret` (String, Sensitive) Shared secret for keyed hashes. Created automatically when left blank. Reuse the same secret to produce matching hashes across connectors.
 
 
 
@@ -6455,6 +7198,7 @@ Required:
 
 Optional:
 
+- `application_intent` (String)
 - `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog))
 - `keyless_table_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--keyless_table_strategy))
 - `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for default)
@@ -6514,6 +7258,7 @@ Optional:
 
 Optional:
 
+- `cdc_management` (String)
 - `cdc_max_scans` (Number) Maximum number of scan cycles per polling interval for CDC
 - `cdc_max_trans` (Number) Maximum number of transactions to process in a single polling cycle for CDC
 - `cdc_poll_interval_secs` (Number) Polling interval in seconds to check for new CDC changes
@@ -6537,7 +7282,9 @@ Required:
 
 Optional:
 
+- `column_hashing` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--column_hashing))
 - `default_action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--sqlserver--catalog--schemas"></a>
 ### Nested Schema for `source.sqlserver.catalog.schemas`
@@ -6549,6 +7296,7 @@ Required:
 Optional:
 
 - `action` (String)
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--sqlserver--catalog--schemas--tables"></a>
 ### Nested Schema for `source.sqlserver.catalog.schemas.tables`
@@ -6557,10 +7305,13 @@ Optional:
 
 - `action` (String)
 - `columns` (Attributes Map) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--columns))
+- `history_enabled` (Boolean) Include or exclude this table when history Table Selection is Catalog Opt In or Catalog Opt Out. Unset inherits the sink setting.
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--iceberg_partition_spec))
+- `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--on_mongo_type_conflict))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--target_option))
+- `unlisted_action` (String)
 
 <a id="nestedatt--source--sqlserver--catalog--schemas--tables--columns"></a>
 ### Nested Schema for `source.sqlserver.catalog.schemas.tables.columns`
@@ -6568,6 +7319,41 @@ Optional:
 Optional:
 
 - `action` (String)
+- `hash` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--columns--hash))
+- `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--columns--source_option))
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--columns--hash"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.columns.hash`
+
+Optional:
+
+- `hmac_sha256` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--columns--hash--hmac_sha256))
+- `xxh3_128` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--columns--hash--xxh3_128))
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--columns--hash--hmac_sha256"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.columns.hash.hmac_sha256`
+
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--columns--hash--xxh3_128"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.columns.hash.xxh3_128`
+
+
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--columns--source_option"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.columns.source_option`
+
+Optional:
+
+- `mysql` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--columns--source_option--mysql))
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--columns--source_option--mysql"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.columns.source_option.mysql`
+
+Optional:
+
+- `tinyint1_mode` (String)
+
+
 
 
 <a id="nestedatt--source--sqlserver--catalog--schemas--tables--iceberg_partition_spec"></a>
@@ -6639,6 +7425,15 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--migration_strategy"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.migration_strategy`
+
+Optional:
+
+- `allowed` (List of String)
+- `disable_all` (Boolean)
 
 
 <a id="nestedatt--source--sqlserver--catalog--schemas--tables--on_mongo_type_conflict"></a>
@@ -6730,6 +7525,14 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--source--sqlserver--catalog--column_hashing"></a>
+### Nested Schema for `source.sqlserver.catalog.column_hashing`
+
+Optional:
+
+- `shared_secret` (String, Sensitive) Shared secret for keyed hashes. Created automatically when left blank. Reuse the same secret to produce matching hashes across connectors.
 
 
 

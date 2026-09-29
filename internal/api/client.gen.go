@@ -94,6 +94,24 @@ func (e ConnectorCatalogAction) Valid() bool {
 	}
 }
 
+// Defines values for ConnectorCatalogMySqlTinyInt1Mode.
+const (
+	ConnectorCatalogMySqlTinyInt1ModeBoolean ConnectorCatalogMySqlTinyInt1Mode = "Boolean"
+	ConnectorCatalogMySqlTinyInt1ModeInteger ConnectorCatalogMySqlTinyInt1Mode = "Integer"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorCatalogMySqlTinyInt1Mode enum.
+func (e ConnectorCatalogMySqlTinyInt1Mode) Valid() bool {
+	switch e {
+	case ConnectorCatalogMySqlTinyInt1ModeBoolean:
+		return true
+	case ConnectorCatalogMySqlTinyInt1ModeInteger:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectorClickhouseClickhouseEngine.
 const (
 	ConnectorClickhouseClickhouseEngineAuto      ConnectorClickhouseClickhouseEngine = "Auto"
@@ -391,6 +409,27 @@ func (e ConnectorIcebergDeleteMode) Valid() bool {
 	}
 }
 
+// Defines values for ConnectorIcebergHistoryTableTruncation.
+const (
+	ConnectorIcebergHistoryTableTruncationDisabled ConnectorIcebergHistoryTableTruncation = "Disabled"
+	ConnectorIcebergHistoryTableTruncationEnabled  ConnectorIcebergHistoryTableTruncation = "Enabled"
+	ConnectorIcebergHistoryTableTruncationInherit  ConnectorIcebergHistoryTableTruncation = "Inherit"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorIcebergHistoryTableTruncation enum.
+func (e ConnectorIcebergHistoryTableTruncation) Valid() bool {
+	switch e {
+	case ConnectorIcebergHistoryTableTruncationDisabled:
+		return true
+	case ConnectorIcebergHistoryTableTruncationEnabled:
+		return true
+	case ConnectorIcebergHistoryTableTruncationInherit:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectorIcebergMetadataCompression.
 const (
 	ConnectorIcebergMetadataCompressionGzip ConnectorIcebergMetadataCompression = "Gzip"
@@ -679,6 +718,75 @@ func (e ConnectorKafkaSecurityProtocol) Valid() bool {
 	}
 }
 
+// Defines values for ConnectorKafkaSupermetalBinaryEncoding.
+const (
+	ConnectorKafkaSupermetalBinaryEncodingBase64        ConnectorKafkaSupermetalBinaryEncoding = "Base64"
+	ConnectorKafkaSupermetalBinaryEncodingBase64UrlSafe ConnectorKafkaSupermetalBinaryEncoding = "Base64UrlSafe"
+	ConnectorKafkaSupermetalBinaryEncodingHex           ConnectorKafkaSupermetalBinaryEncoding = "Hex"
+	ConnectorKafkaSupermetalBinaryEncodingNative        ConnectorKafkaSupermetalBinaryEncoding = "Native"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorKafkaSupermetalBinaryEncoding enum.
+func (e ConnectorKafkaSupermetalBinaryEncoding) Valid() bool {
+	switch e {
+	case ConnectorKafkaSupermetalBinaryEncodingBase64:
+		return true
+	case ConnectorKafkaSupermetalBinaryEncodingBase64UrlSafe:
+		return true
+	case ConnectorKafkaSupermetalBinaryEncodingHex:
+		return true
+	case ConnectorKafkaSupermetalBinaryEncodingNative:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorKafkaSupermetalDecimalEncoding.
+const (
+	ConnectorKafkaSupermetalDecimalEncodingDouble ConnectorKafkaSupermetalDecimalEncoding = "Double"
+	ConnectorKafkaSupermetalDecimalEncodingNative ConnectorKafkaSupermetalDecimalEncoding = "Native"
+	ConnectorKafkaSupermetalDecimalEncodingString ConnectorKafkaSupermetalDecimalEncoding = "String"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorKafkaSupermetalDecimalEncoding enum.
+func (e ConnectorKafkaSupermetalDecimalEncoding) Valid() bool {
+	switch e {
+	case ConnectorKafkaSupermetalDecimalEncodingDouble:
+		return true
+	case ConnectorKafkaSupermetalDecimalEncodingNative:
+		return true
+	case ConnectorKafkaSupermetalDecimalEncodingString:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorKafkaSupermetalTimestampEncoding.
+const (
+	ConnectorKafkaSupermetalTimestampEncodingEpochMicroseconds ConnectorKafkaSupermetalTimestampEncoding = "EpochMicroseconds"
+	ConnectorKafkaSupermetalTimestampEncodingEpochMilliseconds ConnectorKafkaSupermetalTimestampEncoding = "EpochMilliseconds"
+	ConnectorKafkaSupermetalTimestampEncodingEpochNanoseconds  ConnectorKafkaSupermetalTimestampEncoding = "EpochNanoseconds"
+	ConnectorKafkaSupermetalTimestampEncodingNative            ConnectorKafkaSupermetalTimestampEncoding = "Native"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorKafkaSupermetalTimestampEncoding enum.
+func (e ConnectorKafkaSupermetalTimestampEncoding) Valid() bool {
+	switch e {
+	case ConnectorKafkaSupermetalTimestampEncodingEpochMicroseconds:
+		return true
+	case ConnectorKafkaSupermetalTimestampEncodingEpochMilliseconds:
+		return true
+	case ConnectorKafkaSupermetalTimestampEncodingEpochNanoseconds:
+		return true
+	case ConnectorKafkaSupermetalTimestampEncodingNative:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectorKafkaTimePrecisionMode.
 const (
 	ConnectorKafkaTimePrecisionModeAdaptive                 ConnectorKafkaTimePrecisionMode = "Adaptive"
@@ -748,6 +856,27 @@ func (e ConnectorMaterializeSslMode) Valid() bool {
 	case ConnectorMaterializeSslModeVerifyCa:
 		return true
 	case ConnectorMaterializeSslModeVerifyFull:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorMigrationHistoryTableSelection.
+const (
+	ConnectorMigrationHistoryTableSelectionAll           ConnectorMigrationHistoryTableSelection = "All"
+	ConnectorMigrationHistoryTableSelectionCatalogOptIn  ConnectorMigrationHistoryTableSelection = "CatalogOptIn"
+	ConnectorMigrationHistoryTableSelectionCatalogOptOut ConnectorMigrationHistoryTableSelection = "CatalogOptOut"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorMigrationHistoryTableSelection enum.
+func (e ConnectorMigrationHistoryTableSelection) Valid() bool {
+	switch e {
+	case ConnectorMigrationHistoryTableSelectionAll:
+		return true
+	case ConnectorMigrationHistoryTableSelectionCatalogOptIn:
+		return true
+	case ConnectorMigrationHistoryTableSelectionCatalogOptOut:
 		return true
 	default:
 		return false
@@ -859,6 +988,24 @@ func (e ConnectorOracleDict) Valid() bool {
 	}
 }
 
+// Defines values for ConnectorPostgresReplicaIdentityManagementMode.
+const (
+	ConnectorPostgresReplicaIdentityManagementModeAuto   ConnectorPostgresReplicaIdentityManagementMode = "Auto"
+	ConnectorPostgresReplicaIdentityManagementModeManual ConnectorPostgresReplicaIdentityManagementMode = "Manual"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorPostgresReplicaIdentityManagementMode enum.
+func (e ConnectorPostgresReplicaIdentityManagementMode) Valid() bool {
+	switch e {
+	case ConnectorPostgresReplicaIdentityManagementModeAuto:
+		return true
+	case ConnectorPostgresReplicaIdentityManagementModeManual:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectorPostgresSslMode.
 const (
 	ConnectorPostgresSslModeDisable    ConnectorPostgresSslMode = "Disable"
@@ -946,6 +1093,42 @@ func (e ConnectorScheduleTimePeriodUnit) Valid() bool {
 	case ConnectorScheduleTimePeriodUnitHour:
 		return true
 	case ConnectorScheduleTimePeriodUnitMinute:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorSqlServerApplicationIntent.
+const (
+	ReadOnly  ConnectorSqlServerApplicationIntent = "ReadOnly"
+	ReadWrite ConnectorSqlServerApplicationIntent = "ReadWrite"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorSqlServerApplicationIntent enum.
+func (e ConnectorSqlServerApplicationIntent) Valid() bool {
+	switch e {
+	case ReadOnly:
+		return true
+	case ReadWrite:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectorSqlServerCdcManagementMode.
+const (
+	Automatic ConnectorSqlServerCdcManagementMode = "Automatic"
+	External  ConnectorSqlServerCdcManagementMode = "External"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorSqlServerCdcManagementMode enum.
+func (e ConnectorSqlServerCdcManagementMode) Valid() bool {
+	switch e {
+	case Automatic:
+		return true
+	case External:
 		return true
 	default:
 		return false
@@ -1319,9 +1502,11 @@ type ConnectorCatalogAction string
 
 // ConnectorCatalogCatalog defines model for ConnectorCatalogCatalog.
 type ConnectorCatalogCatalog struct {
-	DefaultAction *ConnectorCatalogCatalog_DefaultAction `json:"default_action,omitempty"`
-	Name          string                                 `json:"name"`
-	Schemas       []ConnectorCatalogSchema               `json:"schemas"`
+	ColumnHashing  *ConnectorCatalogColumnHashing         `json:"column_hashing,omitempty"`
+	DefaultAction  *ConnectorCatalogCatalog_DefaultAction `json:"default_action,omitempty"`
+	Name           string                                 `json:"name"`
+	Schemas        []ConnectorCatalogSchema               `json:"schemas"`
+	UnlistedAction *ConnectorCatalogAction                `json:"unlisted_action,omitempty"`
 }
 
 // ConnectorCatalogCatalog_DefaultAction defines model for ConnectorCatalogCatalog.DefaultAction.
@@ -1334,12 +1519,14 @@ type ConnectorCatalogCoerce = map[string]interface{}
 
 // ConnectorCatalogColumn defines model for ConnectorCatalogColumn.
 type ConnectorCatalogColumn struct {
-	Action     *ConnectorCatalogColumn_Action `json:"action,omitempty"`
-	DataType   *string                        `json:"data_type,omitempty"`
-	Name       string                         `json:"name"`
-	Nullable   *bool                          `json:"nullable,omitempty"`
-	PrimaryKey *bool                          `json:"primary_key,omitempty"`
-	Supported  *bool                          `json:"supported,omitempty"`
+	Action       *ConnectorCatalogColumn_Action       `json:"action,omitempty"`
+	DataType     *string                              `json:"data_type,omitempty"`
+	Hash         *ConnectorCatalogColumnHashAlgorithm `json:"hash,omitempty"`
+	Name         string                               `json:"name"`
+	Nullable     *bool                                `json:"nullable,omitempty"`
+	PrimaryKey   *bool                                `json:"primary_key,omitempty"`
+	SourceOption *ConnectorCatalogSourceColumnOption  `json:"source_option,omitempty"`
+	Supported    *bool                                `json:"supported,omitempty"`
 }
 
 // ConnectorCatalogColumn_Action defines model for ConnectorCatalogColumn.Action.
@@ -1347,11 +1534,50 @@ type ConnectorCatalogColumn_Action struct {
 	union json.RawMessage
 }
 
+// ConnectorCatalogColumnHashAlgorithm defines model for ConnectorCatalogColumnHashAlgorithm.
+type ConnectorCatalogColumnHashAlgorithm struct {
+	union json.RawMessage
+}
+
+// ConnectorCatalogColumnHashAlgorithm0 defines model for .
+type ConnectorCatalogColumnHashAlgorithm0 struct {
+	// Xxh3128 Fast non cryptographic hash
+	Xxh3128 ConnectorCatalogXxh3128 `json:"xxh3_128"`
+}
+
+// ConnectorCatalogColumnHashAlgorithm1 defines model for .
+type ConnectorCatalogColumnHashAlgorithm1 struct {
+	// HmacSha256 Keyed cryptographic hash
+	HmacSha256 ConnectorCatalogHmacSha256 `json:"hmac_sha256"`
+}
+
+// ConnectorCatalogColumnHashing defines model for ConnectorCatalogColumnHashing.
+type ConnectorCatalogColumnHashing struct {
+	// SharedSecret Shared secret for keyed hashes. Created automatically when left blank. Reuse the same secret to produce matching hashes across connectors.
+	SharedSecret *string `json:"shared_secret,omitempty"`
+}
+
 // ConnectorCatalogFileSourceTableOption defines model for ConnectorCatalogFileSourceTableOption.
 type ConnectorCatalogFileSourceTableOption struct {
 	// PrimaryKeys Primary key columns for this table. Rows are deduplicated by these keys, keeping the latest file. Leave empty to append.
 	PrimaryKeys *[]string `json:"primary_keys,omitempty"`
 }
+
+// ConnectorCatalogHmacSha256 Keyed cryptographic hash
+type ConnectorCatalogHmacSha256 = map[string]interface{}
+
+// ConnectorCatalogMySqlColumnOption defines model for ConnectorCatalogMySqlColumnOption.
+type ConnectorCatalogMySqlColumnOption struct {
+	Tinyint1Mode *ConnectorCatalogMySqlColumnOption_Tinyint1Mode `json:"tinyint1_mode,omitempty"`
+}
+
+// ConnectorCatalogMySqlColumnOption_Tinyint1Mode defines model for ConnectorCatalogMySqlColumnOption.Tinyint1Mode.
+type ConnectorCatalogMySqlColumnOption_Tinyint1Mode struct {
+	union json.RawMessage
+}
+
+// ConnectorCatalogMySqlTinyInt1Mode Overrides how one signed MySQL TINYINT(1) column maps to the target
+type ConnectorCatalogMySqlTinyInt1Mode string
 
 // ConnectorCatalogOnTypeConflict How typed-string inference resolves a value that doesn't fit its field's inferred type. Defaults to Coerce, preserving the majority type and nulling the values that don't fit.
 type ConnectorCatalogOnTypeConflict struct {
@@ -1372,14 +1598,25 @@ type ConnectorCatalogOnTypeConflict1 struct {
 
 // ConnectorCatalogSchema defines model for ConnectorCatalogSchema.
 type ConnectorCatalogSchema struct {
-	Action *ConnectorCatalogSchema_Action `json:"action,omitempty"`
-	Name   string                         `json:"name"`
-	Tables []ConnectorCatalogTable        `json:"tables"`
+	Action         *ConnectorCatalogSchema_Action `json:"action,omitempty"`
+	Name           string                         `json:"name"`
+	Tables         []ConnectorCatalogTable        `json:"tables"`
+	UnlistedAction *ConnectorCatalogAction        `json:"unlisted_action,omitempty"`
 }
 
 // ConnectorCatalogSchema_Action defines model for ConnectorCatalogSchema.Action.
 type ConnectorCatalogSchema_Action struct {
 	union json.RawMessage
+}
+
+// ConnectorCatalogSourceColumnOption defines model for ConnectorCatalogSourceColumnOption.
+type ConnectorCatalogSourceColumnOption struct {
+	union json.RawMessage
+}
+
+// ConnectorCatalogSourceColumnOption0 defines model for .
+type ConnectorCatalogSourceColumnOption0 struct {
+	Mysql ConnectorCatalogMySqlColumnOption `json:"mysql"`
 }
 
 // ConnectorCatalogSourceTableOption defines model for ConnectorCatalogSourceTableOption.
@@ -1394,13 +1631,18 @@ type ConnectorCatalogSourceTableOption0 struct {
 
 // ConnectorCatalogTable defines model for ConnectorCatalogTable.
 type ConnectorCatalogTable struct {
-	Action               *ConnectorCatalogTable_Action      `json:"action,omitempty"`
-	Columns              *[]ConnectorCatalogColumn          `json:"columns,omitempty"`
-	IcebergPartitionSpec *ConnectorIcebergPartitionSpec     `json:"iceberg_partition_spec,omitempty"`
-	Name                 string                             `json:"name"`
-	OnMongoTypeConflict  *ConnectorCatalogOnTypeConflict    `json:"on_mongo_type_conflict,omitempty"`
-	SourceOption         *ConnectorCatalogSourceTableOption `json:"source_option,omitempty"`
-	TargetOption         *ConnectorCatalogTargetTableOption `json:"target_option,omitempty"`
+	Action  *ConnectorCatalogTable_Action `json:"action,omitempty"`
+	Columns *[]ConnectorCatalogColumn     `json:"columns,omitempty"`
+
+	// HistoryEnabled Include or exclude this table when history Table Selection is Catalog Opt In or Catalog Opt Out. Unset inherits the sink setting.
+	HistoryEnabled       *bool                                `json:"history_enabled,omitempty"`
+	IcebergPartitionSpec *ConnectorIcebergPartitionSpec       `json:"iceberg_partition_spec,omitempty"`
+	MigrationStrategy    *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
+	Name                 string                               `json:"name"`
+	OnMongoTypeConflict  *ConnectorCatalogOnTypeConflict      `json:"on_mongo_type_conflict,omitempty"`
+	SourceOption         *ConnectorCatalogSourceTableOption   `json:"source_option,omitempty"`
+	TargetOption         *ConnectorCatalogTargetTableOption   `json:"target_option,omitempty"`
+	UnlistedAction       *ConnectorCatalogAction              `json:"unlisted_action,omitempty"`
 }
 
 // ConnectorCatalogTable_Action defines model for ConnectorCatalogTable.Action.
@@ -1426,6 +1668,9 @@ type ConnectorCatalogTargetTableOption1 struct {
 
 // ConnectorCatalogWidenToString Widen the column to a string so the values that don't fit are preserved instead of nulled
 type ConnectorCatalogWidenToString = map[string]interface{}
+
+// ConnectorCatalogXxh3128 Fast non cryptographic hash
+type ConnectorCatalogXxh3128 = map[string]interface{}
 
 // ConnectorClickhouseClickhouse ClickHouse server connection details
 type ConnectorClickhouseClickhouse struct {
@@ -1480,8 +1725,9 @@ type ConnectorClickhouseClickhouseSink struct {
 	DisableSchemaPrefix *bool                                     `json:"disable_schema_prefix,omitempty"`
 	Engine              *ConnectorClickhouseClickhouseSink_Engine `json:"engine,omitempty"`
 	HistoryMode         *ConnectorMigrationHistoryMode            `json:"history_mode,omitempty"`
+	InsertDeduplication *ConnectorClickhouseInsertDeduplication   `json:"insert_deduplication,omitempty"`
 
-	// MaxSnapshotConcurrency Max concurrent snapshot loads to ClickHouse (0 = no limit). Lower this if ClickHouse runs out of memory during large snapshots.
+	// MaxSnapshotConcurrency Max concurrent ClickHouse loads (0 = no limit). Lower this if ClickHouse runs out of memory.
 	MaxSnapshotConcurrency *int32                               `json:"max_snapshot_concurrency,omitempty"`
 	MergeSchedule          *ConnectorMigrationMergeSchedule     `json:"merge_schedule,omitempty"`
 	MigrationStrategy      *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
@@ -1510,6 +1756,26 @@ type ConnectorClickhouseClickhouseSink_Engine struct {
 // ConnectorClickhouseClickhouseSink_SnapshotLoadMode defines model for ConnectorClickhouseClickhouseSink.SnapshotLoadMode.
 type ConnectorClickhouseClickhouseSink_SnapshotLoadMode struct {
 	union json.RawMessage
+}
+
+// ConnectorClickhouseClickhouseSource ClickHouse replication source
+type ConnectorClickhouseClickhouseSource struct {
+	Catalog *ConnectorCatalogCatalog `json:"catalog,omitempty"`
+
+	// Connection Connection details for the source ClickHouse server
+	Connection ConnectorClickhouseClickhouse `json:"connection"`
+
+	// IncludeSystemColumns Include `_sm_version`, `_sm_deleted`, and `_sm_synced_at` columns managed by Supermetal in replicated tables
+	IncludeSystemColumns *bool `json:"include_system_columns,omitempty"`
+
+	// MaxConcurrentExportWriters Maximum concurrent export writers on one ClickHouse source server. Defaults to 16. More writers use more source memory. The measured supported ceiling is 32.
+	MaxConcurrentExportWriters *int32 `json:"max_concurrent_export_writers,omitempty"`
+
+	// MaxConcurrentExports Maximum number of ClickHouse tables exported at once. Each export reads a full table. Defaults to 2 based on measurements with ClickHouse 25.6 and 26.7 under a 12 GiB memory limit. Set to 0 to remove the concurrent export limit.
+	MaxConcurrentExports *int32 `json:"max_concurrent_exports,omitempty"`
+
+	// SourceDatabase Name of the database in ClickHouse to replicate from
+	SourceDatabase string `json:"source_database"`
 }
 
 // ConnectorClickhouseCompressionConfig defines model for ConnectorClickhouseCompressionConfig.
@@ -1542,6 +1808,9 @@ type ConnectorClickhouseCompressionPolicy string
 // ConnectorClickhouseCompressionTypeFamily ClickHouse type groups for compression overrides. Nullable and LowCardinality use their inner type's family.
 type ConnectorClickhouseCompressionTypeFamily string
 
+// ConnectorClickhouseContentHashDeduplication Sort each change batch so ClickHouse can discard a replayed copy. This has no effect on plain MergeTree tables without a deduplication log. See https://clickhouse.com/docs/concepts/features/operations/insert/deduplicating-inserts-on-retries
+type ConnectorClickhouseContentHashDeduplication = map[string]interface{}
+
 // ConnectorClickhouseCustomPrefix Prepend a custom string before the table name
 type ConnectorClickhouseCustomPrefix struct {
 	Value string `json:"value"`
@@ -1550,6 +1819,17 @@ type ConnectorClickhouseCustomPrefix struct {
 // ConnectorClickhouseCustomSuffix Append a custom string after the table name
 type ConnectorClickhouseCustomSuffix struct {
 	Value string `json:"value"`
+}
+
+// ConnectorClickhouseInsertDeduplication How ClickHouse deduplicates retried inserts
+type ConnectorClickhouseInsertDeduplication struct {
+	union json.RawMessage
+}
+
+// ConnectorClickhouseInsertDeduplication0 defines model for .
+type ConnectorClickhouseInsertDeduplication0 struct {
+	// ContentHash Sort each change batch so ClickHouse can discard a replayed copy. This has no effect on plain MergeTree tables without a deduplication log. See https://clickhouse.com/docs/concepts/features/operations/insert/deduplicating-inserts-on-retries
+	ContentHash ConnectorClickhouseContentHashDeduplication `json:"content_hash"`
 }
 
 // ConnectorClickhouseOrderBy defines model for ConnectorClickhouseOrderBy.
@@ -2393,6 +2673,9 @@ type ConnectorIcebergGlueCatalog struct {
 	Warehouse string `json:"warehouse"`
 }
 
+// ConnectorIcebergHistoryTableTruncation Whether to truncate a history table before a snapshot load
+type ConnectorIcebergHistoryTableTruncation string
+
 // ConnectorIcebergHmsCatalog Hive Metastore catalog configuration
 type ConnectorIcebergHmsCatalog struct {
 	// Properties Additional properties
@@ -2425,7 +2708,8 @@ type ConnectorIcebergIcebergSink struct {
 	StorageCredentials    *ConnectorIcebergStorageCredentials              `json:"storage_credentials,omitempty"`
 
 	// TargetNamespace Target namespace (e.g., ["my_database", "my_schema"])
-	TargetNamespace []string `json:"target_namespace"`
+	TargetNamespace              []string                                                  `json:"target_namespace"`
+	TruncateHistoryTableIfExists *ConnectorIcebergIcebergSink_TruncateHistoryTableIfExists `json:"truncate_history_table_if_exists,omitempty"`
 
 	// TruncateTableIfExists Truncate existing table data before snapshot load to prevent duplicates. Old data remains in previous Iceberg snapshots for time-travel recovery. The truncation snapshot stores `sm.truncated_from_snapshot` in its summary properties, queryable via `SELECT * FROM table$snapshots`.
 	TruncateTableIfExists *bool                             `json:"truncate_table_if_exists,omitempty"`
@@ -2446,20 +2730,23 @@ type ConnectorIcebergIcebergSink_SpecVersion struct {
 	union json.RawMessage
 }
 
+// ConnectorIcebergIcebergSink_TruncateHistoryTableIfExists defines model for ConnectorIcebergIcebergSink.TruncateHistoryTableIfExists.
+type ConnectorIcebergIcebergSink_TruncateHistoryTableIfExists struct {
+	union json.RawMessage
+}
+
 // ConnectorIcebergIdentityTransform Source value, unchanged
 type ConnectorIcebergIdentityTransform = map[string]interface{}
 
-// ConnectorIcebergMergeOnRead Row-level deletes using equality delete files
+// ConnectorIcebergMergeOnRead Row-level deletes using equality or positional delete files
 type ConnectorIcebergMergeOnRead struct {
-	DeleteMode  *ConnectorIcebergMergeOnRead_DeleteMode `json:"delete_mode,omitempty"`
-	HistoryMode *ConnectorMigrationHistoryMode          `json:"history_mode,omitempty"`
+	DeleteMode   *ConnectorIcebergMergeOnRead_DeleteMode `json:"delete_mode,omitempty"`
+	HistoryMode  *ConnectorMigrationHistoryMode          `json:"history_mode,omitempty"`
+	IndexBackend *ConnectorIcebergPkIndexBackend         `json:"index_backend,omitempty"`
 
 	// UsePositionalDeletesOnly Emit positional deletes only (default: false). Set true for
-	//  Snowflake/Databricks readers that reject equality deletes. Requires a
-	//  primary key and requires `delete_mode = Hard`, since positional deletes
-	//  reference physical row offsets and cannot tombstone a row in place for
-	//  soft-delete semantics. V2 tables emit positional delete files, V3
-	//  tables emit deletion vectors.
+	//  readers that reject equality deletes. Requires a primary key. V2 tables
+	//  emit positional delete files. V3 tables emit deletion vectors.
 	UsePositionalDeletesOnly *bool `json:"use_positional_deletes_only,omitempty"`
 }
 
@@ -2533,6 +2820,23 @@ type ConnectorIcebergPartitionField struct {
 type ConnectorIcebergPartitionSpec struct {
 	// Fields Partition fields, applied in order
 	Fields []ConnectorIcebergPartitionField `json:"fields"`
+}
+
+// ConnectorIcebergPkIndexBackend Primary key index storage
+type ConnectorIcebergPkIndexBackend struct {
+	union json.RawMessage
+}
+
+// ConnectorIcebergPkIndexBackend0 Store the index on local disk
+type ConnectorIcebergPkIndexBackend0 struct {
+	// Sqlite Store the index on local disk
+	Sqlite ConnectorIcebergSqliteIndex `json:"sqlite"`
+}
+
+// ConnectorIcebergPkIndexBackend1 Store the index in object storage
+type ConnectorIcebergPkIndexBackend1 struct {
+	// Slatedb Store the index in object storage
+	Slatedb ConnectorIcebergSlatedbIndex `json:"slatedb"`
 }
 
 // ConnectorIcebergProperty Generic key/value property used for escape-hatch configuration
@@ -2636,6 +2940,11 @@ type ConnectorIcebergSigV4Auth struct {
 	SessionToken *string `json:"session_token,omitempty"`
 }
 
+// ConnectorIcebergSlatedbIndex Primary key index stored in object storage
+type ConnectorIcebergSlatedbIndex struct {
+	ObjectStore *ConnectorBufferObjectStore `json:"object_store,omitempty"`
+}
+
 // ConnectorIcebergSnowflakeCatalog Snowflake Iceberg catalog configuration
 type ConnectorIcebergSnowflakeCatalog struct {
 	// Database Snowflake database
@@ -2679,6 +2988,12 @@ type ConnectorIcebergSqlCatalog struct {
 
 	// Warehouse Warehouse location
 	Warehouse string `json:"warehouse"`
+}
+
+// ConnectorIcebergSqliteIndex Primary key index stored on local disk
+type ConnectorIcebergSqliteIndex struct {
+	// Tombstone Invalidate removed files without scanning and deleting their primary key rows. Enabled by default and can make recovery faster for large indexes.
+	Tombstone *bool `json:"tombstone,omitempty"`
 }
 
 // ConnectorIcebergStorageCredentials Storage credentials for accessing data files
@@ -2789,9 +3104,9 @@ type ConnectorIcebergWriteMode0 struct {
 	Append ConnectorIcebergAppend `json:"append"`
 }
 
-// ConnectorIcebergWriteMode1 Row-level deletes using equality delete files
+// ConnectorIcebergWriteMode1 Row-level deletes using equality or positional delete files
 type ConnectorIcebergWriteMode1 struct {
-	// MergeOnRead Row-level deletes using equality delete files
+	// MergeOnRead Row-level deletes using equality or positional delete files
 	MergeOnRead ConnectorIcebergMergeOnRead `json:"merge_on_read"`
 }
 
@@ -3212,14 +3527,47 @@ type ConnectorKafkaSerDe2 struct {
 	Protobuf ConnectorKafkaProtobuf `json:"protobuf"`
 }
 
+// ConnectorKafkaSupermetalBinaryEncoding Binary representation in the Supermetal format
+type ConnectorKafkaSupermetalBinaryEncoding string
+
+// ConnectorKafkaSupermetalDataTypeConfig Controls timestamp, decimal, and binary representation in Supermetal messages
+type ConnectorKafkaSupermetalDataTypeConfig struct {
+	BinaryEncoding    *ConnectorKafkaSupermetalDataTypeConfig_BinaryEncoding    `json:"binary_encoding,omitempty"`
+	DecimalEncoding   *ConnectorKafkaSupermetalDataTypeConfig_DecimalEncoding   `json:"decimal_encoding,omitempty"`
+	TimestampEncoding *ConnectorKafkaSupermetalDataTypeConfig_TimestampEncoding `json:"timestamp_encoding,omitempty"`
+}
+
+// ConnectorKafkaSupermetalDataTypeConfig_BinaryEncoding defines model for ConnectorKafkaSupermetalDataTypeConfig.BinaryEncoding.
+type ConnectorKafkaSupermetalDataTypeConfig_BinaryEncoding struct {
+	union json.RawMessage
+}
+
+// ConnectorKafkaSupermetalDataTypeConfig_DecimalEncoding defines model for ConnectorKafkaSupermetalDataTypeConfig.DecimalEncoding.
+type ConnectorKafkaSupermetalDataTypeConfig_DecimalEncoding struct {
+	union json.RawMessage
+}
+
+// ConnectorKafkaSupermetalDataTypeConfig_TimestampEncoding defines model for ConnectorKafkaSupermetalDataTypeConfig.TimestampEncoding.
+type ConnectorKafkaSupermetalDataTypeConfig_TimestampEncoding struct {
+	union json.RawMessage
+}
+
+// ConnectorKafkaSupermetalDecimalEncoding Decimal representation in the Supermetal format
+type ConnectorKafkaSupermetalDecimalEncoding string
+
 // ConnectorKafkaSupermetalFormat Supermetal native message format
 type ConnectorKafkaSupermetalFormat struct {
+	DataTypes *ConnectorKafkaSupermetalDataTypeConfig `json:"data_types,omitempty"`
+
 	// FormatConfig Base format configuration shared by all formats
 	FormatConfig ConnectorKafkaFormatConfig `json:"format_config"`
 
 	// TombstonesOnDelete Whether a delete event is followed by a tombstone event
 	TombstonesOnDelete *bool `json:"tombstones_on_delete,omitempty"`
 }
+
+// ConnectorKafkaSupermetalTimestampEncoding Timestamp representation in the Supermetal format
+type ConnectorKafkaSupermetalTimestampEncoding string
 
 // ConnectorKafkaTimePrecisionMode Debezium `time.precision.mode`
 type ConnectorKafkaTimePrecisionMode string
@@ -3339,7 +3687,13 @@ type ConnectorMaterializeSslMode string
 // ConnectorMigrationAppendHistory Write every source event to a separate table that preserves full change history
 type ConnectorMigrationAppendHistory struct {
 	// Suffix Suffix appended to the source table name to form the history table name, for example `_history` produces `orders_history`
-	Suffix *string `json:"suffix,omitempty"`
+	Suffix         *string                                         `json:"suffix,omitempty"`
+	TableSelection *ConnectorMigrationAppendHistory_TableSelection `json:"table_selection,omitempty"`
+}
+
+// ConnectorMigrationAppendHistory_TableSelection defines model for ConnectorMigrationAppendHistory.TableSelection.
+type ConnectorMigrationAppendHistory_TableSelection struct {
+	union json.RawMessage
 }
 
 // ConnectorMigrationAppendOnly Write every change as a new row; no deduplication
@@ -3358,6 +3712,9 @@ type ConnectorMigrationHistoryMode0 struct {
 	// Append Write events to a parallel table
 	Append ConnectorMigrationAppendHistory `json:"append"`
 }
+
+// ConnectorMigrationHistoryTableSelection Which synced tables keep change history
+type ConnectorMigrationHistoryTableSelection string
 
 // ConnectorMigrationKeylessTableStrategy How to replicate tables without a primary key
 type ConnectorMigrationKeylessTableStrategy struct {
@@ -3639,7 +3996,7 @@ type ConnectorMysqlMySqlSource struct {
 	// Connection Connection details for the source MySQL server
 	Connection ConnectorMysqlMySql `json:"connection"`
 
-	// InferTinyint1AsBoolean Map MySQL `TINYINT(1)` columns to boolean on the target. Disable to keep them as integers when columns can hold values outside `{0, 1}`. `BIT(1)` is always mapped to boolean (MySQL constrains its storage).
+	// InferTinyint1AsBoolean Map signed MySQL `TINYINT(1)` columns to boolean on the target. Zero becomes false and every nonzero value becomes true. Disable to preserve the values as integers. `BIT(1)` is always mapped to boolean because MySQL constrains it to one bit.
 	InferTinyint1AsBoolean *bool                                   `json:"infer_tinyint1_as_boolean,omitempty"`
 	KeylessTableStrategy   *ConnectorMigrationKeylessTableStrategy `json:"keyless_table_strategy,omitempty"`
 
@@ -3783,7 +4140,8 @@ type ConnectorPostgresDeleteTrackingConfig struct {
 // ConnectorPostgresLogicalReplication Settings for PostgreSQL logical replication
 type ConnectorPostgresLogicalReplication struct {
 	// PublicationName Existing publication to subscribe to. Superusers can leave this empty to create one automatically.
-	PublicationName *string `json:"publication_name,omitempty"`
+	PublicationName           *string                                                        `json:"publication_name,omitempty"`
+	ReplicaIdentityManagement *ConnectorPostgresLogicalReplication_ReplicaIdentityManagement `json:"replica_identity_management,omitempty"`
 
 	// RetryWindowSeconds Maximum time window (in seconds) to retry transient connection errors before failing. Defaults to 300 seconds.
 	RetryWindowSeconds *int64 `json:"retry_window_seconds,omitempty"`
@@ -3791,6 +4149,11 @@ type ConnectorPostgresLogicalReplication struct {
 	// SkipSnapshots Skip the initial snapshot/backfill and start streaming changes from the replication slot's consistent point. Use when existing data does not need to be replicated.
 	SkipSnapshots *bool                                          `json:"skip_snapshots,omitempty"`
 	ToastMode     *ConnectorPostgresLogicalReplication_ToastMode `json:"toast_mode,omitempty"`
+}
+
+// ConnectorPostgresLogicalReplication_ReplicaIdentityManagement defines model for ConnectorPostgresLogicalReplication.ReplicaIdentityManagement.
+type ConnectorPostgresLogicalReplication_ReplicaIdentityManagement struct {
+	union json.RawMessage
 }
 
 // ConnectorPostgresLogicalReplication_ToastMode defines model for ConnectorPostgresLogicalReplication.ToastMode.
@@ -3901,6 +4264,9 @@ type ConnectorPostgresQueryBased struct {
 	// PollIntervalSeconds Seconds between sync cycles for inserts and updates
 	PollIntervalSeconds *int32 `json:"poll_interval_seconds,omitempty"`
 }
+
+// ConnectorPostgresReplicaIdentityManagementMode Management of PostgreSQL replica identities
+type ConnectorPostgresReplicaIdentityManagementMode string
 
 // ConnectorPostgresSnapshot Postgres snapshot / backfill-only replication settings
 type ConnectorPostgresSnapshot = map[string]interface{}
@@ -4253,11 +4619,20 @@ type ConnectorSource6 struct {
 	Db2 ConnectorDb2Db2Source `json:"db2"`
 }
 
+// ConnectorSource7 defines model for .
+type ConnectorSource7 struct {
+	// Clickhouse ClickHouse replication source
+	Clickhouse ConnectorClickhouseClickhouseSource `json:"clickhouse"`
+}
+
 // ConnectorSqlServerAdAuth Credentials for Azure Active Directory authentication
 type ConnectorSqlServerAdAuth struct {
 	// Token Azure Active Directory access token
 	Token string `json:"token"`
 }
+
+// ConnectorSqlServerApplicationIntent Connection intent sent to SQL Server for source reads
+type ConnectorSqlServerApplicationIntent string
 
 // ConnectorSqlServerAuth Authentication method for SQL Server
 type ConnectorSqlServerAuth struct {
@@ -4284,6 +4659,8 @@ type ConnectorSqlServerAuth2 struct {
 
 // ConnectorSqlServerCaptureTableReplication Change Data Capture (CDC) settings for SQL Server
 type ConnectorSqlServerCaptureTableReplication struct {
+	CdcManagement *ConnectorSqlServerCaptureTableReplication_CdcManagement `json:"cdc_management,omitempty"`
+
 	// CdcMaxScans Maximum number of scan cycles per polling interval for CDC
 	CdcMaxScans *int32 `json:"cdc_max_scans,omitempty"`
 
@@ -4303,6 +4680,14 @@ type ConnectorSqlServerCaptureTableReplication struct {
 	TransactionalCdcEnabled *bool `json:"transactional_cdc_enabled,omitempty"`
 }
 
+// ConnectorSqlServerCaptureTableReplication_CdcManagement defines model for ConnectorSqlServerCaptureTableReplication.CdcManagement.
+type ConnectorSqlServerCaptureTableReplication_CdcManagement struct {
+	union json.RawMessage
+}
+
+// ConnectorSqlServerCdcManagementMode Management of SQL Server CDC objects
+type ConnectorSqlServerCdcManagementMode string
+
 // ConnectorSqlServerDisable Disable SSL encryption
 type ConnectorSqlServerDisable = map[string]interface{}
 
@@ -4320,6 +4705,8 @@ type ConnectorSqlServerSnapshotIsolationMode string
 
 // ConnectorSqlServerSqlServer SQL Server connection details
 type ConnectorSqlServerSqlServer struct {
+	ApplicationIntent *ConnectorSqlServerSqlServer_ApplicationIntent `json:"application_intent,omitempty"`
+
 	// Auth Authentication method and its credentials
 	Auth ConnectorSqlServerAuth `json:"auth"`
 
@@ -4336,6 +4723,11 @@ type ConnectorSqlServerSqlServer struct {
 	Port    *int32                     `json:"port,omitempty"`
 	SslMode *ConnectorSqlServerSslMode `json:"ssl_mode,omitempty"`
 	Tunnel  *ConnectorSshTunnelType    `json:"tunnel,omitempty"`
+}
+
+// ConnectorSqlServerSqlServer_ApplicationIntent defines model for ConnectorSqlServerSqlServer.ApplicationIntent.
+type ConnectorSqlServerSqlServer_ApplicationIntent struct {
+	union json.RawMessage
 }
 
 // ConnectorSqlServerSqlServerReplicationType SQL Server replication method
@@ -4497,6 +4889,12 @@ type ConnectorStatusConnectorHistory_Component struct {
 	union json.RawMessage
 }
 
+// ConnectorStatusConnectorHistoryRun defines model for ConnectorStatusConnectorHistoryRun.
+type ConnectorStatusConnectorHistoryRun struct {
+	Cursor string `json:"cursor"`
+	RunId  string `json:"run_id"`
+}
+
 // ConnectorStatusConnectorStatus defines model for ConnectorStatusConnectorStatus.
 type ConnectorStatusConnectorStatus struct {
 	State  ConnectorStatusState  `json:"state"`
@@ -4548,7 +4946,10 @@ type ConnectorStatusSnapshot struct {
 }
 
 // ConnectorStatusStart defines model for ConnectorStatusStart.
-type ConnectorStatusStart = map[string]interface{}
+type ConnectorStatusStart struct {
+	GitSha  *string `json:"git_sha,omitempty"`
+	Version *string `json:"version,omitempty"`
+}
 
 // ConnectorStatusState defines model for ConnectorStatusState.
 type ConnectorStatusState struct {
@@ -4653,6 +5054,12 @@ type ConnectorTaskRequest0 struct {
 	Snapshot ConnectorTaskSnapshot `json:"Snapshot"`
 }
 
+// ConnectorTaskRequest1 defines model for .
+type ConnectorTaskRequest1 struct {
+	// SnapshotBatch One task that copies selected tables. Connector settings control each table copy.
+	SnapshotBatch ConnectorTaskSnapshotBatch `json:"SnapshotBatch"`
+}
+
 // ConnectorTaskSnapshot A copy of one table taken at a single point in time
 type ConnectorTaskSnapshot struct {
 	// Database Database name
@@ -4669,6 +5076,12 @@ type ConnectorTaskSnapshot struct {
 
 	// Truncate After the copy, supported targets mark rows the copy did not refresh as deleted. Other targets run a plain copy.
 	Truncate *bool `json:"truncate,omitempty"`
+}
+
+// ConnectorTaskSnapshotBatch One task that copies selected tables. Connector settings control each table copy.
+type ConnectorTaskSnapshotBatch struct {
+	// Snapshots Tables to copy. When the connector has no configured catalog, the API accepts these names and validates them when the task runs.
+	Snapshots []ConnectorTaskSnapshot `json:"snapshots"`
 }
 
 // ConnectorTaskTask Work requested for a connector
@@ -5066,6 +5479,30 @@ type GetCatalogParams struct {
 	// running validation. Used in edit mode where the frontend never has the
 	// original secret values.
 	ConnectorId *string `form:"connector_id,omitempty" json:"connector_id,omitempty"`
+}
+
+// GetConnectorHistoryParams defines parameters for GetConnectorHistory.
+type GetConnectorHistoryParams struct {
+	// At Begin at this history cursor, including the referenced entry.
+	At *string `form:"at,omitempty" json:"at,omitempty"`
+
+	// Before Return entries older than this history cursor.
+	Before *string `form:"before,omitempty" json:"before,omitempty"`
+
+	// After Return entries newer than this history cursor.
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+
+	// Limit Number of entries to return. Defaults to 100 when a cursor is present; must be between 1 and 500.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// GetConnectorHistoryRunsParams defines parameters for GetConnectorHistoryRuns.
+type GetConnectorHistoryRunsParams struct {
+	// Before Return runs older than this UUIDv7 run ID.
+	Before *string `form:"before,omitempty" json:"before,omitempty"`
+
+	// Limit Number of runs to return. Defaults to 50; must be between 1 and 500.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // PatchConnectorApplicationMergePatchPlusJSONBody defines parameters for PatchConnector.
@@ -5481,6 +5918,104 @@ func (t *ConnectorCatalogColumn_Action) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsConnectorCatalogColumnHashAlgorithm0 returns the union data inside the ConnectorCatalogColumnHashAlgorithm as a ConnectorCatalogColumnHashAlgorithm0
+func (t ConnectorCatalogColumnHashAlgorithm) AsConnectorCatalogColumnHashAlgorithm0() (ConnectorCatalogColumnHashAlgorithm0, error) {
+	var body ConnectorCatalogColumnHashAlgorithm0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorCatalogColumnHashAlgorithm0 overwrites any union data inside the ConnectorCatalogColumnHashAlgorithm as the provided ConnectorCatalogColumnHashAlgorithm0
+func (t *ConnectorCatalogColumnHashAlgorithm) FromConnectorCatalogColumnHashAlgorithm0(v ConnectorCatalogColumnHashAlgorithm0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorCatalogColumnHashAlgorithm0 performs a merge with any union data inside the ConnectorCatalogColumnHashAlgorithm, using the provided ConnectorCatalogColumnHashAlgorithm0
+func (t *ConnectorCatalogColumnHashAlgorithm) MergeConnectorCatalogColumnHashAlgorithm0(v ConnectorCatalogColumnHashAlgorithm0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConnectorCatalogColumnHashAlgorithm1 returns the union data inside the ConnectorCatalogColumnHashAlgorithm as a ConnectorCatalogColumnHashAlgorithm1
+func (t ConnectorCatalogColumnHashAlgorithm) AsConnectorCatalogColumnHashAlgorithm1() (ConnectorCatalogColumnHashAlgorithm1, error) {
+	var body ConnectorCatalogColumnHashAlgorithm1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorCatalogColumnHashAlgorithm1 overwrites any union data inside the ConnectorCatalogColumnHashAlgorithm as the provided ConnectorCatalogColumnHashAlgorithm1
+func (t *ConnectorCatalogColumnHashAlgorithm) FromConnectorCatalogColumnHashAlgorithm1(v ConnectorCatalogColumnHashAlgorithm1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorCatalogColumnHashAlgorithm1 performs a merge with any union data inside the ConnectorCatalogColumnHashAlgorithm, using the provided ConnectorCatalogColumnHashAlgorithm1
+func (t *ConnectorCatalogColumnHashAlgorithm) MergeConnectorCatalogColumnHashAlgorithm1(v ConnectorCatalogColumnHashAlgorithm1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorCatalogColumnHashAlgorithm) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorCatalogColumnHashAlgorithm) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorCatalogMySqlTinyInt1Mode returns the union data inside the ConnectorCatalogMySqlColumnOption_Tinyint1Mode as a ConnectorCatalogMySqlTinyInt1Mode
+func (t ConnectorCatalogMySqlColumnOption_Tinyint1Mode) AsConnectorCatalogMySqlTinyInt1Mode() (ConnectorCatalogMySqlTinyInt1Mode, error) {
+	var body ConnectorCatalogMySqlTinyInt1Mode
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorCatalogMySqlTinyInt1Mode overwrites any union data inside the ConnectorCatalogMySqlColumnOption_Tinyint1Mode as the provided ConnectorCatalogMySqlTinyInt1Mode
+func (t *ConnectorCatalogMySqlColumnOption_Tinyint1Mode) FromConnectorCatalogMySqlTinyInt1Mode(v ConnectorCatalogMySqlTinyInt1Mode) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorCatalogMySqlTinyInt1Mode performs a merge with any union data inside the ConnectorCatalogMySqlColumnOption_Tinyint1Mode, using the provided ConnectorCatalogMySqlTinyInt1Mode
+func (t *ConnectorCatalogMySqlColumnOption_Tinyint1Mode) MergeConnectorCatalogMySqlTinyInt1Mode(v ConnectorCatalogMySqlTinyInt1Mode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorCatalogMySqlColumnOption_Tinyint1Mode) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorCatalogMySqlColumnOption_Tinyint1Mode) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsConnectorCatalogOnTypeConflict0 returns the union data inside the ConnectorCatalogOnTypeConflict as a ConnectorCatalogOnTypeConflict0
 func (t ConnectorCatalogOnTypeConflict) AsConnectorCatalogOnTypeConflict0() (ConnectorCatalogOnTypeConflict0, error) {
 	var body ConnectorCatalogOnTypeConflict0
@@ -5575,6 +6110,42 @@ func (t ConnectorCatalogSchema_Action) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ConnectorCatalogSchema_Action) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorCatalogSourceColumnOption0 returns the union data inside the ConnectorCatalogSourceColumnOption as a ConnectorCatalogSourceColumnOption0
+func (t ConnectorCatalogSourceColumnOption) AsConnectorCatalogSourceColumnOption0() (ConnectorCatalogSourceColumnOption0, error) {
+	var body ConnectorCatalogSourceColumnOption0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorCatalogSourceColumnOption0 overwrites any union data inside the ConnectorCatalogSourceColumnOption as the provided ConnectorCatalogSourceColumnOption0
+func (t *ConnectorCatalogSourceColumnOption) FromConnectorCatalogSourceColumnOption0(v ConnectorCatalogSourceColumnOption0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorCatalogSourceColumnOption0 performs a merge with any union data inside the ConnectorCatalogSourceColumnOption, using the provided ConnectorCatalogSourceColumnOption0
+func (t *ConnectorCatalogSourceColumnOption) MergeConnectorCatalogSourceColumnOption0(v ConnectorCatalogSourceColumnOption0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorCatalogSourceColumnOption) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorCatalogSourceColumnOption) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -5853,6 +6424,42 @@ func (t ConnectorClickhouseCompressionOverride_TypeFamily) MarshalJSON() ([]byte
 }
 
 func (t *ConnectorClickhouseCompressionOverride_TypeFamily) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorClickhouseInsertDeduplication0 returns the union data inside the ConnectorClickhouseInsertDeduplication as a ConnectorClickhouseInsertDeduplication0
+func (t ConnectorClickhouseInsertDeduplication) AsConnectorClickhouseInsertDeduplication0() (ConnectorClickhouseInsertDeduplication0, error) {
+	var body ConnectorClickhouseInsertDeduplication0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorClickhouseInsertDeduplication0 overwrites any union data inside the ConnectorClickhouseInsertDeduplication as the provided ConnectorClickhouseInsertDeduplication0
+func (t *ConnectorClickhouseInsertDeduplication) FromConnectorClickhouseInsertDeduplication0(v ConnectorClickhouseInsertDeduplication0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorClickhouseInsertDeduplication0 performs a merge with any union data inside the ConnectorClickhouseInsertDeduplication, using the provided ConnectorClickhouseInsertDeduplication0
+func (t *ConnectorClickhouseInsertDeduplication) MergeConnectorClickhouseInsertDeduplication0(v ConnectorClickhouseInsertDeduplication0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorClickhouseInsertDeduplication) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorClickhouseInsertDeduplication) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -7133,6 +7740,42 @@ func (t *ConnectorIcebergIcebergSink_SpecVersion) UnmarshalJSON(b []byte) error 
 	return err
 }
 
+// AsConnectorIcebergHistoryTableTruncation returns the union data inside the ConnectorIcebergIcebergSink_TruncateHistoryTableIfExists as a ConnectorIcebergHistoryTableTruncation
+func (t ConnectorIcebergIcebergSink_TruncateHistoryTableIfExists) AsConnectorIcebergHistoryTableTruncation() (ConnectorIcebergHistoryTableTruncation, error) {
+	var body ConnectorIcebergHistoryTableTruncation
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorIcebergHistoryTableTruncation overwrites any union data inside the ConnectorIcebergIcebergSink_TruncateHistoryTableIfExists as the provided ConnectorIcebergHistoryTableTruncation
+func (t *ConnectorIcebergIcebergSink_TruncateHistoryTableIfExists) FromConnectorIcebergHistoryTableTruncation(v ConnectorIcebergHistoryTableTruncation) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorIcebergHistoryTableTruncation performs a merge with any union data inside the ConnectorIcebergIcebergSink_TruncateHistoryTableIfExists, using the provided ConnectorIcebergHistoryTableTruncation
+func (t *ConnectorIcebergIcebergSink_TruncateHistoryTableIfExists) MergeConnectorIcebergHistoryTableTruncation(v ConnectorIcebergHistoryTableTruncation) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorIcebergIcebergSink_TruncateHistoryTableIfExists) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorIcebergIcebergSink_TruncateHistoryTableIfExists) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsConnectorIcebergDeleteMode returns the union data inside the ConnectorIcebergMergeOnRead_DeleteMode as a ConnectorIcebergDeleteMode
 func (t ConnectorIcebergMergeOnRead_DeleteMode) AsConnectorIcebergDeleteMode() (ConnectorIcebergDeleteMode, error) {
 	var body ConnectorIcebergDeleteMode
@@ -7237,6 +7880,68 @@ func (t ConnectorIcebergParquetWriterSettings_Version) MarshalJSON() ([]byte, er
 }
 
 func (t *ConnectorIcebergParquetWriterSettings_Version) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorIcebergPkIndexBackend0 returns the union data inside the ConnectorIcebergPkIndexBackend as a ConnectorIcebergPkIndexBackend0
+func (t ConnectorIcebergPkIndexBackend) AsConnectorIcebergPkIndexBackend0() (ConnectorIcebergPkIndexBackend0, error) {
+	var body ConnectorIcebergPkIndexBackend0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorIcebergPkIndexBackend0 overwrites any union data inside the ConnectorIcebergPkIndexBackend as the provided ConnectorIcebergPkIndexBackend0
+func (t *ConnectorIcebergPkIndexBackend) FromConnectorIcebergPkIndexBackend0(v ConnectorIcebergPkIndexBackend0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorIcebergPkIndexBackend0 performs a merge with any union data inside the ConnectorIcebergPkIndexBackend, using the provided ConnectorIcebergPkIndexBackend0
+func (t *ConnectorIcebergPkIndexBackend) MergeConnectorIcebergPkIndexBackend0(v ConnectorIcebergPkIndexBackend0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConnectorIcebergPkIndexBackend1 returns the union data inside the ConnectorIcebergPkIndexBackend as a ConnectorIcebergPkIndexBackend1
+func (t ConnectorIcebergPkIndexBackend) AsConnectorIcebergPkIndexBackend1() (ConnectorIcebergPkIndexBackend1, error) {
+	var body ConnectorIcebergPkIndexBackend1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorIcebergPkIndexBackend1 overwrites any union data inside the ConnectorIcebergPkIndexBackend as the provided ConnectorIcebergPkIndexBackend1
+func (t *ConnectorIcebergPkIndexBackend) FromConnectorIcebergPkIndexBackend1(v ConnectorIcebergPkIndexBackend1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorIcebergPkIndexBackend1 performs a merge with any union data inside the ConnectorIcebergPkIndexBackend, using the provided ConnectorIcebergPkIndexBackend1
+func (t *ConnectorIcebergPkIndexBackend) MergeConnectorIcebergPkIndexBackend1(v ConnectorIcebergPkIndexBackend1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorIcebergPkIndexBackend) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorIcebergPkIndexBackend) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -8243,6 +8948,114 @@ func (t *ConnectorKafkaSerDe) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsConnectorKafkaSupermetalBinaryEncoding returns the union data inside the ConnectorKafkaSupermetalDataTypeConfig_BinaryEncoding as a ConnectorKafkaSupermetalBinaryEncoding
+func (t ConnectorKafkaSupermetalDataTypeConfig_BinaryEncoding) AsConnectorKafkaSupermetalBinaryEncoding() (ConnectorKafkaSupermetalBinaryEncoding, error) {
+	var body ConnectorKafkaSupermetalBinaryEncoding
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorKafkaSupermetalBinaryEncoding overwrites any union data inside the ConnectorKafkaSupermetalDataTypeConfig_BinaryEncoding as the provided ConnectorKafkaSupermetalBinaryEncoding
+func (t *ConnectorKafkaSupermetalDataTypeConfig_BinaryEncoding) FromConnectorKafkaSupermetalBinaryEncoding(v ConnectorKafkaSupermetalBinaryEncoding) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorKafkaSupermetalBinaryEncoding performs a merge with any union data inside the ConnectorKafkaSupermetalDataTypeConfig_BinaryEncoding, using the provided ConnectorKafkaSupermetalBinaryEncoding
+func (t *ConnectorKafkaSupermetalDataTypeConfig_BinaryEncoding) MergeConnectorKafkaSupermetalBinaryEncoding(v ConnectorKafkaSupermetalBinaryEncoding) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorKafkaSupermetalDataTypeConfig_BinaryEncoding) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorKafkaSupermetalDataTypeConfig_BinaryEncoding) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorKafkaSupermetalDecimalEncoding returns the union data inside the ConnectorKafkaSupermetalDataTypeConfig_DecimalEncoding as a ConnectorKafkaSupermetalDecimalEncoding
+func (t ConnectorKafkaSupermetalDataTypeConfig_DecimalEncoding) AsConnectorKafkaSupermetalDecimalEncoding() (ConnectorKafkaSupermetalDecimalEncoding, error) {
+	var body ConnectorKafkaSupermetalDecimalEncoding
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorKafkaSupermetalDecimalEncoding overwrites any union data inside the ConnectorKafkaSupermetalDataTypeConfig_DecimalEncoding as the provided ConnectorKafkaSupermetalDecimalEncoding
+func (t *ConnectorKafkaSupermetalDataTypeConfig_DecimalEncoding) FromConnectorKafkaSupermetalDecimalEncoding(v ConnectorKafkaSupermetalDecimalEncoding) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorKafkaSupermetalDecimalEncoding performs a merge with any union data inside the ConnectorKafkaSupermetalDataTypeConfig_DecimalEncoding, using the provided ConnectorKafkaSupermetalDecimalEncoding
+func (t *ConnectorKafkaSupermetalDataTypeConfig_DecimalEncoding) MergeConnectorKafkaSupermetalDecimalEncoding(v ConnectorKafkaSupermetalDecimalEncoding) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorKafkaSupermetalDataTypeConfig_DecimalEncoding) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorKafkaSupermetalDataTypeConfig_DecimalEncoding) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorKafkaSupermetalTimestampEncoding returns the union data inside the ConnectorKafkaSupermetalDataTypeConfig_TimestampEncoding as a ConnectorKafkaSupermetalTimestampEncoding
+func (t ConnectorKafkaSupermetalDataTypeConfig_TimestampEncoding) AsConnectorKafkaSupermetalTimestampEncoding() (ConnectorKafkaSupermetalTimestampEncoding, error) {
+	var body ConnectorKafkaSupermetalTimestampEncoding
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorKafkaSupermetalTimestampEncoding overwrites any union data inside the ConnectorKafkaSupermetalDataTypeConfig_TimestampEncoding as the provided ConnectorKafkaSupermetalTimestampEncoding
+func (t *ConnectorKafkaSupermetalDataTypeConfig_TimestampEncoding) FromConnectorKafkaSupermetalTimestampEncoding(v ConnectorKafkaSupermetalTimestampEncoding) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorKafkaSupermetalTimestampEncoding performs a merge with any union data inside the ConnectorKafkaSupermetalDataTypeConfig_TimestampEncoding, using the provided ConnectorKafkaSupermetalTimestampEncoding
+func (t *ConnectorKafkaSupermetalDataTypeConfig_TimestampEncoding) MergeConnectorKafkaSupermetalTimestampEncoding(v ConnectorKafkaSupermetalTimestampEncoding) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorKafkaSupermetalDataTypeConfig_TimestampEncoding) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorKafkaSupermetalDataTypeConfig_TimestampEncoding) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsConnectorKafkaTopicNamingMode returns the union data inside the ConnectorKafkaTopicOptions_NamingMode as a ConnectorKafkaTopicNamingMode
 func (t ConnectorKafkaTopicOptions_NamingMode) AsConnectorKafkaTopicNamingMode() (ConnectorKafkaTopicNamingMode, error) {
 	var body ConnectorKafkaTopicNamingMode
@@ -8311,6 +9124,42 @@ func (t ConnectorMaterializeMaterialize_SslMode) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ConnectorMaterializeMaterialize_SslMode) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorMigrationHistoryTableSelection returns the union data inside the ConnectorMigrationAppendHistory_TableSelection as a ConnectorMigrationHistoryTableSelection
+func (t ConnectorMigrationAppendHistory_TableSelection) AsConnectorMigrationHistoryTableSelection() (ConnectorMigrationHistoryTableSelection, error) {
+	var body ConnectorMigrationHistoryTableSelection
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorMigrationHistoryTableSelection overwrites any union data inside the ConnectorMigrationAppendHistory_TableSelection as the provided ConnectorMigrationHistoryTableSelection
+func (t *ConnectorMigrationAppendHistory_TableSelection) FromConnectorMigrationHistoryTableSelection(v ConnectorMigrationHistoryTableSelection) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorMigrationHistoryTableSelection performs a merge with any union data inside the ConnectorMigrationAppendHistory_TableSelection, using the provided ConnectorMigrationHistoryTableSelection
+func (t *ConnectorMigrationAppendHistory_TableSelection) MergeConnectorMigrationHistoryTableSelection(v ConnectorMigrationHistoryTableSelection) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorMigrationAppendHistory_TableSelection) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorMigrationAppendHistory_TableSelection) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -8925,6 +9774,42 @@ func (t ConnectorPostgresDeleteTracking) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ConnectorPostgresDeleteTracking) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorPostgresReplicaIdentityManagementMode returns the union data inside the ConnectorPostgresLogicalReplication_ReplicaIdentityManagement as a ConnectorPostgresReplicaIdentityManagementMode
+func (t ConnectorPostgresLogicalReplication_ReplicaIdentityManagement) AsConnectorPostgresReplicaIdentityManagementMode() (ConnectorPostgresReplicaIdentityManagementMode, error) {
+	var body ConnectorPostgresReplicaIdentityManagementMode
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorPostgresReplicaIdentityManagementMode overwrites any union data inside the ConnectorPostgresLogicalReplication_ReplicaIdentityManagement as the provided ConnectorPostgresReplicaIdentityManagementMode
+func (t *ConnectorPostgresLogicalReplication_ReplicaIdentityManagement) FromConnectorPostgresReplicaIdentityManagementMode(v ConnectorPostgresReplicaIdentityManagementMode) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorPostgresReplicaIdentityManagementMode performs a merge with any union data inside the ConnectorPostgresLogicalReplication_ReplicaIdentityManagement, using the provided ConnectorPostgresReplicaIdentityManagementMode
+func (t *ConnectorPostgresLogicalReplication_ReplicaIdentityManagement) MergeConnectorPostgresReplicaIdentityManagementMode(v ConnectorPostgresReplicaIdentityManagementMode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorPostgresLogicalReplication_ReplicaIdentityManagement) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorPostgresLogicalReplication_ReplicaIdentityManagement) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -9903,6 +10788,32 @@ func (t *ConnectorSource) MergeConnectorSource6(v ConnectorSource6) error {
 	return err
 }
 
+// AsConnectorSource7 returns the union data inside the ConnectorSource as a ConnectorSource7
+func (t ConnectorSource) AsConnectorSource7() (ConnectorSource7, error) {
+	var body ConnectorSource7
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorSource7 overwrites any union data inside the ConnectorSource as the provided ConnectorSource7
+func (t *ConnectorSource) FromConnectorSource7(v ConnectorSource7) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorSource7 performs a merge with any union data inside the ConnectorSource, using the provided ConnectorSource7
+func (t *ConnectorSource) MergeConnectorSource7(v ConnectorSource7) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t ConnectorSource) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
@@ -9997,6 +10908,78 @@ func (t ConnectorSqlServerAuth) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ConnectorSqlServerAuth) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorSqlServerCdcManagementMode returns the union data inside the ConnectorSqlServerCaptureTableReplication_CdcManagement as a ConnectorSqlServerCdcManagementMode
+func (t ConnectorSqlServerCaptureTableReplication_CdcManagement) AsConnectorSqlServerCdcManagementMode() (ConnectorSqlServerCdcManagementMode, error) {
+	var body ConnectorSqlServerCdcManagementMode
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorSqlServerCdcManagementMode overwrites any union data inside the ConnectorSqlServerCaptureTableReplication_CdcManagement as the provided ConnectorSqlServerCdcManagementMode
+func (t *ConnectorSqlServerCaptureTableReplication_CdcManagement) FromConnectorSqlServerCdcManagementMode(v ConnectorSqlServerCdcManagementMode) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorSqlServerCdcManagementMode performs a merge with any union data inside the ConnectorSqlServerCaptureTableReplication_CdcManagement, using the provided ConnectorSqlServerCdcManagementMode
+func (t *ConnectorSqlServerCaptureTableReplication_CdcManagement) MergeConnectorSqlServerCdcManagementMode(v ConnectorSqlServerCdcManagementMode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorSqlServerCaptureTableReplication_CdcManagement) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorSqlServerCaptureTableReplication_CdcManagement) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorSqlServerApplicationIntent returns the union data inside the ConnectorSqlServerSqlServer_ApplicationIntent as a ConnectorSqlServerApplicationIntent
+func (t ConnectorSqlServerSqlServer_ApplicationIntent) AsConnectorSqlServerApplicationIntent() (ConnectorSqlServerApplicationIntent, error) {
+	var body ConnectorSqlServerApplicationIntent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorSqlServerApplicationIntent overwrites any union data inside the ConnectorSqlServerSqlServer_ApplicationIntent as the provided ConnectorSqlServerApplicationIntent
+func (t *ConnectorSqlServerSqlServer_ApplicationIntent) FromConnectorSqlServerApplicationIntent(v ConnectorSqlServerApplicationIntent) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorSqlServerApplicationIntent performs a merge with any union data inside the ConnectorSqlServerSqlServer_ApplicationIntent, using the provided ConnectorSqlServerApplicationIntent
+func (t *ConnectorSqlServerSqlServer_ApplicationIntent) MergeConnectorSqlServerApplicationIntent(v ConnectorSqlServerApplicationIntent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorSqlServerSqlServer_ApplicationIntent) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorSqlServerSqlServer_ApplicationIntent) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -10721,6 +11704,32 @@ func (t *ConnectorTaskRequest) FromConnectorTaskRequest0(v ConnectorTaskRequest0
 
 // MergeConnectorTaskRequest0 performs a merge with any union data inside the ConnectorTaskRequest, using the provided ConnectorTaskRequest0
 func (t *ConnectorTaskRequest) MergeConnectorTaskRequest0(v ConnectorTaskRequest0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConnectorTaskRequest1 returns the union data inside the ConnectorTaskRequest as a ConnectorTaskRequest1
+func (t ConnectorTaskRequest) AsConnectorTaskRequest1() (ConnectorTaskRequest1, error) {
+	var body ConnectorTaskRequest1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorTaskRequest1 overwrites any union data inside the ConnectorTaskRequest as the provided ConnectorTaskRequest1
+func (t *ConnectorTaskRequest) FromConnectorTaskRequest1(v ConnectorTaskRequest1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorTaskRequest1 performs a merge with any union data inside the ConnectorTaskRequest, using the provided ConnectorTaskRequest1
+func (t *ConnectorTaskRequest) MergeConnectorTaskRequest1(v ConnectorTaskRequest1) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -11521,10 +12530,17 @@ type ClientInterface interface {
 
 	// GetConnectorHistory Get connector history
 	//
-	// Retrieve status history for a connector in chronological order, oldest first. Entries with the same run_id belong to one connector run. UUIDv7 run_id values sort by time.
+	// Retrieve connector history in chronological order. Use optional cursor and limit parameters to read a bounded page.
 	//
 	// Corresponds with GET /api/v1/connector/history/{connector_id} (the `GetConnectorHistory` operationId).
-	GetConnectorHistory(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetConnectorHistory(ctx context.Context, connectorId string, params *GetConnectorHistoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConnectorHistoryRuns List connector history runs
+	//
+	// Retrieve connector runs in newest-first order. Pass the last returned run ID as `before` to read the next older page. Pass a run's `cursor` value as `at` when retrieving that run's history.
+	//
+	// Corresponds with GET /api/v1/connector/history/{connector_id}/runs (the `GetConnectorHistoryRuns` operationId).
+	GetConnectorHistoryRuns(ctx context.Context, connectorId string, params *GetConnectorHistoryRunsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListConnectors List all connectors
 	//
@@ -11805,11 +12821,28 @@ func (c *Client) SendConnectorCommand(ctx context.Context, connectorId string, b
 
 // GetConnectorHistory Get connector history
 //
-// Retrieve status history for a connector in chronological order, oldest first. Entries with the same run_id belong to one connector run. UUIDv7 run_id values sort by time.
+// Retrieve connector history in chronological order. Use optional cursor and limit parameters to read a bounded page.
 //
 // Corresponds with GET /api/v1/connector/history/{connector_id} (the `GetConnectorHistory` operationId).
-func (c *Client) GetConnectorHistory(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetConnectorHistoryRequest(c.Server, connectorId)
+func (c *Client) GetConnectorHistory(ctx context.Context, connectorId string, params *GetConnectorHistoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConnectorHistoryRequest(c.Server, connectorId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetConnectorHistoryRuns List connector history runs
+//
+// Retrieve connector runs in newest-first order. Pass the last returned run ID as `before` to read the next older page. Pass a run's `cursor` value as `at` when retrieving that run's history.
+//
+// Corresponds with GET /api/v1/connector/history/{connector_id}/runs (the `GetConnectorHistoryRuns` operationId).
+func (c *Client) GetConnectorHistoryRuns(ctx context.Context, connectorId string, params *GetConnectorHistoryRunsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConnectorHistoryRunsRequest(c.Server, connectorId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -12375,7 +13408,7 @@ func NewSendConnectorCommandRequestWithBody(server string, connectorId string, c
 }
 
 // NewGetConnectorHistoryRequest constructs an http.Request for the GetConnectorHistory method
-func NewGetConnectorHistoryRequest(server string, connectorId string) (*http.Request, error) {
+func NewGetConnectorHistoryRequest(server string, connectorId string, params *GetConnectorHistoryParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -12398,6 +13431,142 @@ func NewGetConnectorHistoryRequest(server string, connectorId string) (*http.Req
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.At != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "at", *params.At, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Before != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "before", *params.Before, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.After != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "after", *params.After, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetConnectorHistoryRunsRequest constructs an http.Request for the GetConnectorHistoryRuns method
+func NewGetConnectorHistoryRunsRequest(server string, connectorId string, params *GetConnectorHistoryRunsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "connector_id", connectorId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/connector/history/%s/runs", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Before != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "before", *params.Before, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -13211,12 +14380,21 @@ type ClientWithResponsesInterface interface {
 
 	// GetConnectorHistoryWithResponse Get connector history
 	//
-	// Retrieve status history for a connector in chronological order, oldest first. Entries with the same run_id belong to one connector run. UUIDv7 run_id values sort by time.
+	// Retrieve connector history in chronological order. Use optional cursor and limit parameters to read a bounded page.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /api/v1/connector/history/{connector_id} (the `GetConnectorHistory` operationId).
-	GetConnectorHistoryWithResponse(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*GetConnectorHistoryResponse, error)
+	GetConnectorHistoryWithResponse(ctx context.Context, connectorId string, params *GetConnectorHistoryParams, reqEditors ...RequestEditorFn) (*GetConnectorHistoryResponse, error)
+
+	// GetConnectorHistoryRunsWithResponse List connector history runs
+	//
+	// Retrieve connector runs in newest-first order. Pass the last returned run ID as `before` to read the next older page. Pass a run's `cursor` value as `at` when retrieving that run's history.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /api/v1/connector/history/{connector_id}/runs (the `GetConnectorHistoryRuns` operationId).
+	GetConnectorHistoryRunsWithResponse(ctx context.Context, connectorId string, params *GetConnectorHistoryRunsParams, reqEditors ...RequestEditorFn) (*GetConnectorHistoryRunsResponse, error)
 
 	// ListConnectorsWithResponse List all connectors
 	//
@@ -13545,6 +14723,47 @@ func (r GetConnectorHistoryResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetConnectorHistoryResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetConnectorHistoryRunsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *[]ConnectorStatusConnectorHistoryRun
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetConnectorHistoryRunsResponse) GetJSON200() *[]ConnectorStatusConnectorHistoryRun {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r GetConnectorHistoryRunsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConnectorHistoryRunsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConnectorHistoryRunsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetConnectorHistoryRunsResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -14262,17 +15481,32 @@ func (c *ClientWithResponses) SendConnectorCommandWithResponse(ctx context.Conte
 
 // GetConnectorHistoryWithResponse Get connector history
 //
-// Retrieve status history for a connector in chronological order, oldest first. Entries with the same run_id belong to one connector run. UUIDv7 run_id values sort by time.
+// Retrieve connector history in chronological order. Use optional cursor and limit parameters to read a bounded page.
 //
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /api/v1/connector/history/{connector_id} (the `GetConnectorHistory` operationId).
-func (c *ClientWithResponses) GetConnectorHistoryWithResponse(ctx context.Context, connectorId string, reqEditors ...RequestEditorFn) (*GetConnectorHistoryResponse, error) {
-	rsp, err := c.GetConnectorHistory(ctx, connectorId, reqEditors...)
+func (c *ClientWithResponses) GetConnectorHistoryWithResponse(ctx context.Context, connectorId string, params *GetConnectorHistoryParams, reqEditors ...RequestEditorFn) (*GetConnectorHistoryResponse, error) {
+	rsp, err := c.GetConnectorHistory(ctx, connectorId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseGetConnectorHistoryResponse(rsp)
+}
+
+// GetConnectorHistoryRunsWithResponse List connector history runs
+//
+// Retrieve connector runs in newest-first order. Pass the last returned run ID as `before` to read the next older page. Pass a run's `cursor` value as `at` when retrieving that run's history.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /api/v1/connector/history/{connector_id}/runs (the `GetConnectorHistoryRuns` operationId).
+func (c *ClientWithResponses) GetConnectorHistoryRunsWithResponse(ctx context.Context, connectorId string, params *GetConnectorHistoryRunsParams, reqEditors ...RequestEditorFn) (*GetConnectorHistoryRunsResponse, error) {
+	rsp, err := c.GetConnectorHistoryRuns(ctx, connectorId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConnectorHistoryRunsResponse(rsp)
 }
 
 // ListConnectorsWithResponse List all connectors
@@ -14693,6 +15927,32 @@ func ParseGetConnectorHistoryResponse(rsp *http.Response) (*GetConnectorHistoryR
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest []ConnectorStatusConnectorHistory
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConnectorHistoryRunsResponse parses an HTTP response from a GetConnectorHistoryRunsWithResponse call
+func ParseGetConnectorHistoryRunsResponse(rsp *http.Response) (*GetConnectorHistoryRunsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConnectorHistoryRunsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []ConnectorStatusConnectorHistoryRun
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
