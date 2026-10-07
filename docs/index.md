@@ -95,5 +95,5 @@ in the provider block or via environment variables.
 - `endpoint` (String) Supermetal agent API endpoint (e.g. `https://sm.internal:3000`). Can also be set via `SUPERMETAL_ENDPOINT` environment variable.
 - `insecure` (Boolean) Skip TLS certificate verification. Not recommended for production.
 - `password` (String, Sensitive) Password for basic authentication. Can also be set via `SUPERMETAL_PASSWORD` environment variable.
-- `skip_validation` (Boolean) Skip server-side validation of source and sink configurations before create/update. Can also be set via `SUPERMETAL_SKIP_VALIDATION` environment variable.
+- `skip_validation` (Boolean) Skip server-side validation of connector configuration during planning and before create/update. Can also be set via `SUPERMETAL_SKIP_VALIDATION` environment variable.
 - `username` (String) Username for basic authentication. Can also be set via `SUPERMETAL_USERNAME` environment variable.

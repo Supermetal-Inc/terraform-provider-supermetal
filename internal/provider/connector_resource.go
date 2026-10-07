@@ -3,6 +3,7 @@ package provider
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -25,6 +26,7 @@ import (
 var (
 	_ resource.Resource                   = &ConnectorResource{}
 	_ resource.ResourceWithImportState    = &ConnectorResource{}
+	_ resource.ResourceWithModifyPlan     = &ConnectorResource{}
 	_ resource.ResourceWithValidateConfig = &ConnectorResource{}
 
 	connectorIDPattern = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
@@ -188,6 +190,31 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 				path.Root("sink").AtName("duckdb").AtName("connection").AtName("pg").AtName("tunnel"))
 		}
 	}
+}
+
+func (r *ConnectorResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.skipValidation || r.client == nil || req.Plan.Raw.IsNull() || !req.Plan.Raw.IsFullyKnown() {
+		return
+	}
+
+	var plan ConnectorModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() || plan.Disabled.ValueBool() {
+		return
+	}
+
+	connector, diags := plan.toAPIConnector()
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var connectorID *string
+	if !req.State.Raw.IsNull() {
+		id := plan.ID.ValueString()
+		connectorID = &id
+	}
+	r.warnConnectorValidation(ctx, connector, connectorID, &resp.Diagnostics)
 }
 
 func validateTunnel(resp *resource.ValidateConfigResponse, tunnel *SshTunnelTypeModel, attrPath path.Path) {
@@ -544,6 +571,142 @@ func (r *ConnectorResource) validateConnector(ctx context.Context, connector api
 		diags.AddError("Sink validation failed", reason)
 		return
 	}
+}
+
+func (r *ConnectorResource) warnConnectorValidation(ctx context.Context, connector api.ConnectorConnector, connectorID *string, diags *diag.Diagnostics) {
+	sourceParams := &api.ValidateSourceParams{ConnectorId: connectorID}
+	sourceBody := api.ValidateSourceJSONRequestBody{Source: connector.Source}
+	sourceResp, err := r.client.ValidateSourceWithResponse(ctx, sourceParams, sourceBody)
+	if err != nil {
+		addPlanValidationCallWarning(diags, "Source", err.Error())
+	} else if sourceResp.StatusCode() != http.StatusOK {
+		addPlanValidationCallWarning(diags, "Source", fmt.Sprintf("API returned status %d: %s", sourceResp.StatusCode(), string(sourceResp.Body)))
+	} else {
+		addPlanValidationEventWarnings(diags, "Source", sourceResp.JSON200)
+	}
+
+	if connector.Buffer != nil {
+		bufferParams := &api.ValidateBufferParams{ConnectorId: connectorID}
+		bufferBody := api.ValidateBufferJSONRequestBody{Buffer: *connector.Buffer}
+		bufferResp, err := r.client.ValidateBufferWithResponse(ctx, bufferParams, bufferBody)
+		if err != nil {
+			addPlanValidationCallWarning(diags, "Buffer", err.Error())
+		} else if bufferResp.StatusCode() != http.StatusOK {
+			addPlanValidationCallWarning(diags, "Buffer", fmt.Sprintf("API returned status %d: %s", bufferResp.StatusCode(), string(bufferResp.Body)))
+		} else {
+			addPlanValidationEventWarnings(diags, "Buffer", bufferResp.JSON200)
+		}
+	}
+
+	sinkParams := &api.ValidateSinkParams{ConnectorId: connectorID}
+	sinkBody := api.ValidateSinkJSONRequestBody{Sink: connector.Sink}
+	sinkResp, err := r.client.ValidateSinkWithResponse(ctx, sinkParams, sinkBody)
+	if err != nil {
+		addPlanValidationCallWarning(diags, "Sink", err.Error())
+	} else if sinkResp.StatusCode() != http.StatusOK {
+		addPlanValidationCallWarning(diags, "Sink", fmt.Sprintf("API returned status %d: %s", sinkResp.StatusCode(), string(sinkResp.Body)))
+	} else {
+		addPlanValidationEventWarnings(diags, "Sink", sinkResp.JSON200)
+	}
+}
+
+func addPlanValidationCallWarning(diags *diag.Diagnostics, component, detail string) {
+	diags.AddWarning(
+		component+" validation could not run",
+		detail+"\n\nTerraform will continue planning. Validation is retried and enforced during apply.",
+	)
+}
+
+func addPlanValidationEventWarnings(diags *diag.Diagnostics, component string, events *[]api.ConnectorValidateEvent) {
+	for _, notice := range extractValidationNotices(events) {
+		summary := component + " validation warning"
+		if notice.failed {
+			summary = component + " validation failed"
+		}
+		diags.AddWarning(
+			summary,
+			notice.detail+"\n\nTerraform will continue planning. Validation is enforced during apply.",
+		)
+	}
+}
+
+type validationNotice struct {
+	failed bool
+	detail string
+}
+
+func extractValidationNotices(events *[]api.ConnectorValidateEvent) []validationNotice {
+	if events == nil {
+		return nil
+	}
+
+	notices := make([]validationNotice, 0, len(*events))
+	for _, event := range *events {
+		if hasValidationUnionKey(event, "failed") {
+			failed, _ := event.AsConnectorValidateEvent2()
+			detail := "Supermetal reported a validation failure."
+			if failed.Failed.Reason != nil && *failed.Failed.Reason != "" {
+				detail = *failed.Failed.Reason
+			}
+			notices = append(notices, validationNotice{failed: true, detail: detail})
+			continue
+		}
+
+		if !hasValidationUnionKey(event, "test") {
+			continue
+		}
+		testEvent, _ := event.AsConnectorValidateEvent1()
+		failed := hasValidationUnionKey(testEvent.Test.Status, "Failed")
+		warned := hasValidationUnionKey(testEvent.Test.Status, "Warn")
+		if !failed && !warned {
+			continue
+		}
+
+		var reason string
+		if failed {
+			failedStatus, _ := testEvent.Test.Status.AsConnectorValidateStatus2()
+			if failedStatus.Failed.Reason != nil {
+				reason = *failedStatus.Failed.Reason
+			}
+		}
+		notices = append(notices, validationNotice{
+			failed: failed,
+			detail: formatValidationTestNotice(testEvent.Test, reason),
+		})
+	}
+	return notices
+}
+
+func formatValidationTestNotice(test api.ConnectorValidateTest, reason string) string {
+	parts := make([]string, 0, 3)
+	if test.Message != nil && *test.Message != "" {
+		parts = append(parts, *test.Message)
+	}
+	if reason != "" && (test.Message == nil || reason != *test.Message) {
+		parts = append(parts, reason)
+	}
+	if len(parts) == 0 {
+		parts = append(parts, "Supermetal reported a validation issue.")
+	}
+
+	detail := strings.Join(parts, ": ")
+	if test.Id != "" {
+		detail = test.Id + ": " + detail
+	}
+	return detail
+}
+
+func hasValidationUnionKey(value any, key string) bool {
+	raw, err := json.Marshal(value)
+	if err != nil {
+		return false
+	}
+	var object map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &object); err != nil {
+		return false
+	}
+	_, ok := object[key]
+	return ok
 }
 
 func extractValidationFailure(events *[]api.ConnectorValidateEvent) string {

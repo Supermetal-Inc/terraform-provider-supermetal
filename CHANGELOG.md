@@ -1,3 +1,7 @@
+## Unreleased
+
+- Show connector validation warnings during Terraform plans.
+
 ## v0.2.5
 
 - Add support for the latest Supermetal connector configuration.

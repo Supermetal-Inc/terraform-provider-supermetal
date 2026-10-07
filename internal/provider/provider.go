@@ -83,7 +83,7 @@ func (p *SupermetalProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 				Optional:            true,
 			},
 			"skip_validation": schema.BoolAttribute{
-				MarkdownDescription: "Skip server-side validation of source and sink configurations before create/update. " +
+				MarkdownDescription: "Skip server-side validation of connector configuration during planning and before create/update. " +
 					"Can also be set via `SUPERMETAL_SKIP_VALIDATION` environment variable.",
 				Optional: true,
 			},
