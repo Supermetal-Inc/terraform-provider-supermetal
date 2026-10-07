@@ -208,6 +208,7 @@ resource "supermetal_connector" "postgres_to_bigquery_via_gcs" {
       project_id               = "analytics-project"
       dataset                  = "raw"
       max_snapshot_concurrency = 4
+      snapshot_load_mode       = "AtomicSwap"
 
       auth = {
         service_account_key = {
@@ -765,7 +766,8 @@ Optional:
 - `max_snapshot_concurrency` (Number) Maximum concurrent snapshot writes to BigQuery (0 = no limit). Lower this if BigQuery reports rate limits during large snapshots.
 - `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--migration_strategy))
-- `query_priority` (String)
+- `query_priority` (String) Priority for BigQuery query jobs such as DDL, MERGE, and scripts. Load jobs are unaffected.
+- `snapshot_load_mode` (String) How initial snapshot rows are loaded into BigQuery tables
 
 <a id="nestedatt--sink--big_query--auth"></a>
 ### Nested Schema for `sink.big_query.auth`
@@ -886,7 +888,7 @@ Optional:
 - `cluster` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--cluster))
 - `compression` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--compression))
 - `disable_schema_prefix` (Boolean) Do not prefix target table names with the source schema. By default, a source table `public.users` lands as `public_users`; with this enabled it lands as `users`. Only safe when source table names are unique across schemas.
-- `engine` (String)
+- `engine` (String) ClickHouse table engine
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--history_mode))
 - `insert_deduplication` (Attributes) (see [below for nested schema](#nestedatt--sink--clickhouse--insert_deduplication))
 - `max_snapshot_concurrency` (Number) Max concurrent ClickHouse loads (0 = no limit). Lower this if ClickHouse runs out of memory.
@@ -896,7 +898,7 @@ Optional:
 - `password` (String, Sensitive) Password for ClickHouse authentication
 - `preserve_source_nullability` (Boolean) Preserve NOT NULL constraints from source schema.
 Default off, all non-PK columns are nullable to handle CDC edge cases with large object types.
-- `snapshot_load_mode` (String)
+- `snapshot_load_mode` (String) How snapshot rows are loaded into existing ClickHouse tables
 - `ssl_client_cert_pem` (String, Sensitive) Client's SSL certificate content in PEM format, if client certificate authentication is required
 - `ssl_client_key_pem` (String, Sensitive) Client's SSL private key content in PEM format (if separate from certificate)
 - `ssl_root_cert` (String, Sensitive) SSL root certificate content to verify the server's certificate
@@ -1177,7 +1179,7 @@ Required:
 
 Optional:
 
-- `binary_handling_mode` (String)
+- `binary_handling_mode` (String) Encoding for binary columns stored as Apache Doris STRING
 - `disable_schema_prefix` (Boolean) Do not prefix target table names with the source schema. By default, a source table `public.users` lands as `public_users`; with this enabled it lands as `users`. Only safe when source table names are unique across schemas.
 - `fe_mysql_pool_max` (Number) Max MySQL connections per connector for SQL and metadata. 0 uses the default of 32.
 - `fe_mysql_port` (Number) MySQL wire protocol port for SQL and metadata. Default 9030 matches Apache Doris and all Apache Doris tiers.
@@ -1191,7 +1193,7 @@ Optional:
 - `ssl_client_key_pem` (String, Sensitive) Client SSL private key (PEM).
 - `ssl_root_cert` (String, Sensitive) Root CA certificate (PEM). Required when the server uses a private CA.
 - `ssl_verify` (Boolean) Verify the server's TLS certificate on HTTPS endpoints.
-- `table_model` (String)
+- `table_model` (String) Apache Doris table model (Unique Key, Duplicate Key, or Auto).
 - `table_name_modifier` (Attributes) (see [below for nested schema](#nestedatt--sink--doris--table_name_modifier))
 
 <a id="nestedatt--sink--doris--history_mode"></a>
@@ -1589,12 +1591,12 @@ Required:
 Optional:
 
 - `max_catalog_concurrency` (Number) Maximum concurrent catalog operations. 0 means unbounded.
-- `metadata_compression` (String)
+- `metadata_compression` (String) Iceberg metadata file compression
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--migration_strategy))
 - `parquet` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--parquet))
-- `spec_version` (String)
+- `spec_version` (String) Iceberg table format version
 - `storage_credentials` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--storage_credentials))
-- `truncate_history_table_if_exists` (String)
+- `truncate_history_table_if_exists` (String) Whether to truncate a history table before a snapshot load
 - `truncate_table_if_exists` (Boolean) Truncate existing table data before snapshot load to prevent duplicates. Old data remains in previous Iceberg snapshots for time-travel recovery. The truncation snapshot stores `sm.truncated_from_snapshot` in its summary properties, queryable via `SELECT * FROM table$snapshots`.
 - `type_conversion` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--type_conversion))
 - `vended_credentials` (Boolean) Unused, reserved for future vended credentials support
@@ -3112,7 +3114,7 @@ Optional:
 - `port` (Number) Port number for the PostgreSQL server
 - `ssl_cert` (String, Sensitive) Client's SSL certificate content
 - `ssl_key` (String, Sensitive) Client's private SSL key content
-- `ssl_mode` (String)
+- `ssl_mode` (String) SSL connection mode for the PostgreSQL server
 - `ssl_root_cert` (String, Sensitive) SSL root certificate content for server verification
 - `target_schema` (String) Target schema name within the database
 - `tunnel` (Attributes) (see [below for nested schema](#nestedatt--sink--postgres--tunnel))
@@ -3231,7 +3233,7 @@ Optional:
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--redshift--migration_strategy))
 - `port` (Number) Port number for the Redshift cluster
 - `sort_dist_keys` (Boolean) Set the distribution key and sort key from the primary key when creating tables. Changing table layout later requires a table rewrite. Tables created ahead of time keep their own layout.
-- `ssl_mode` (String)
+- `ssl_mode` (String) SSL connection mode for the Redshift cluster
 - `ssl_root_cert` (String, Sensitive) SSL root certificate content for server verification
 - `target_schema` (String) Target schema name within the database
 - `tunnel` (Attributes) (see [below for nested schema](#nestedatt--sink--redshift--tunnel))
@@ -3505,7 +3507,7 @@ Optional:
 
 - `auth` (Attributes) (see [below for nested schema](#nestedatt--sink--webhook--auth))
 - `batch` (Attributes) (see [below for nested schema](#nestedatt--sink--webhook--batch))
-- `compression` (String)
+- `compression` (String) Request body compression
 - `headers` (Attributes) (see [below for nested schema](#nestedatt--sink--webhook--headers))
 - `path_template` (String) Path template appended to URL. Supports {schema} and {table} placeholders.
 - `rate_limit` (Attributes) (see [below for nested schema](#nestedatt--sink--webhook--rate_limit))
@@ -4323,8 +4325,10 @@ Optional:
 
 - `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog))
 - `include_system_columns` (Boolean) Include `_sm_version`, `_sm_deleted`, and `_sm_synced_at` columns managed by Supermetal in replicated tables
+- `max_concurrent_export_processing_threads` (Number) Processing threads shared by exports on one physical source server. Defaults to 4. An export may use the full allowance while later exports on that server wait. Independent servers have separate allowances. Lower this for servers with limited memory.
 - `max_concurrent_export_writers` (Number) Maximum concurrent export writers on one ClickHouse source server. Defaults to 16. More writers use more source memory. The measured supported ceiling is 32.
-- `max_concurrent_exports` (Number) Maximum number of ClickHouse tables exported at once. Each export reads a full table. Defaults to 2 based on measurements with ClickHouse 25.6 and 26.7 under a 12 GiB memory limit. Set to 0 to remove the concurrent export limit.
+- `max_concurrent_exports` (Number) Maximum tables exported at once. Defaults to 2. Set to 0 to remove the table limit.
+- `parquet_row_group_size_bytes` (Number) Maximum bytes per Parquet row group during snapshot export. Defaults to 64 MiB. Lower this to reduce encoder buffers.
 - `password` (String, Sensitive) Password for ClickHouse authentication
 - `ssl_client_cert_pem` (String, Sensitive) Client's SSL certificate content in PEM format, if client certificate authentication is required
 - `ssl_client_key_pem` (String, Sensitive) Client's SSL private key content in PEM format (if separate from certificate)
@@ -5963,6 +5967,7 @@ Optional:
 - `parallel_snapshots_enabled` (Boolean) Use parallel snapshots for initial data synchronization
 - `password` (String, Sensitive) MySQL password for authentication
 - `port` (Number) Port number for the MySQL server
+- `skip_gtid_set` (String) CDC skips transactions in this set. Their changes may be absent from the target.
 - `skip_snapshot` (Boolean) Skip the initial snapshot and start CDC from the current binlog position
 - `ssl_mode` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--ssl_mode))
 - `system_columns` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--system_columns))
@@ -6731,7 +6736,7 @@ Optional:
 - `port` (Number) Port number for the PostgreSQL server
 - `ssl_cert` (String, Sensitive) Client's SSL certificate content
 - `ssl_key` (String, Sensitive) Client's private SSL key content
-- `ssl_mode` (String)
+- `ssl_mode` (String) SSL connection mode for the PostgreSQL server
 - `ssl_root_cert` (String, Sensitive) SSL root certificate content for server verification
 - `system_columns` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--system_columns))
 - `tunnel` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--tunnel))
@@ -7198,13 +7203,13 @@ Required:
 
 Optional:
 
-- `application_intent` (String)
+- `application_intent` (String) Connection intent sent to SQL Server for source reads
 - `catalog` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog))
 - `keyless_table_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--keyless_table_strategy))
 - `max_pool_size` (Number) Maximum number of connections in the connection pool (0 for default)
 - `parallel_snapshots_enabled` (Boolean) Use parallel snapshots for initial data synchronization
 - `port` (Number) Port number for the SQL Server instance
-- `snapshot_isolation` (String)
+- `snapshot_isolation` (String) Snapshot isolation behavior during snapshot reads
 - `ssl_mode` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--ssl_mode))
 - `system_columns` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--system_columns))
 - `tunnel` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--tunnel))

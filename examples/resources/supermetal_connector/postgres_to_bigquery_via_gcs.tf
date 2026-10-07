@@ -47,6 +47,7 @@ resource "supermetal_connector" "postgres_to_bigquery_via_gcs" {
       project_id               = "analytics-project"
       dataset                  = "raw"
       max_snapshot_concurrency = 4
+      snapshot_load_mode       = "AtomicSwap"
 
       auth = {
         service_account_key = {

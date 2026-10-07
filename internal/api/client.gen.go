@@ -34,6 +34,27 @@ func (e ConnectorBigqueryQueryPriority) Valid() bool {
 	}
 }
 
+// Defines values for ConnectorBigquerySnapshotLoadMode.
+const (
+	ConnectorBigquerySnapshotLoadModeAtomicSwap ConnectorBigquerySnapshotLoadMode = "AtomicSwap"
+	ConnectorBigquerySnapshotLoadModeInPlace    ConnectorBigquerySnapshotLoadMode = "InPlace"
+	ConnectorBigquerySnapshotLoadModeTruncate   ConnectorBigquerySnapshotLoadMode = "Truncate"
+)
+
+// Valid indicates whether the value is a known member of the ConnectorBigquerySnapshotLoadMode enum.
+func (e ConnectorBigquerySnapshotLoadMode) Valid() bool {
+	switch e {
+	case ConnectorBigquerySnapshotLoadModeAtomicSwap:
+		return true
+	case ConnectorBigquerySnapshotLoadModeInPlace:
+		return true
+	case ConnectorBigquerySnapshotLoadModeTruncate:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectorBufferFileCompression.
 const (
 	ConnectorBufferFileCompressionBrotli    ConnectorBufferFileCompression = "Brotli"
@@ -207,22 +228,22 @@ func (e ConnectorClickhouseCompressionTypeFamily) Valid() bool {
 
 // Defines values for ConnectorClickhouseSnapshotLoadMode.
 const (
-	AtomicSwap   ConnectorClickhouseSnapshotLoadMode = "AtomicSwap"
-	InPlace      ConnectorClickhouseSnapshotLoadMode = "InPlace"
-	StagedRename ConnectorClickhouseSnapshotLoadMode = "StagedRename"
-	Truncate     ConnectorClickhouseSnapshotLoadMode = "Truncate"
+	ConnectorClickhouseSnapshotLoadModeAtomicSwap   ConnectorClickhouseSnapshotLoadMode = "AtomicSwap"
+	ConnectorClickhouseSnapshotLoadModeInPlace      ConnectorClickhouseSnapshotLoadMode = "InPlace"
+	ConnectorClickhouseSnapshotLoadModeStagedRename ConnectorClickhouseSnapshotLoadMode = "StagedRename"
+	ConnectorClickhouseSnapshotLoadModeTruncate     ConnectorClickhouseSnapshotLoadMode = "Truncate"
 )
 
 // Valid indicates whether the value is a known member of the ConnectorClickhouseSnapshotLoadMode enum.
 func (e ConnectorClickhouseSnapshotLoadMode) Valid() bool {
 	switch e {
-	case AtomicSwap:
+	case ConnectorClickhouseSnapshotLoadModeAtomicSwap:
 		return true
-	case InPlace:
+	case ConnectorClickhouseSnapshotLoadModeInPlace:
 		return true
-	case StagedRename:
+	case ConnectorClickhouseSnapshotLoadModeStagedRename:
 		return true
-	case Truncate:
+	case ConnectorClickhouseSnapshotLoadModeTruncate:
 		return true
 	default:
 		return false
@@ -1313,8 +1334,9 @@ type ConnectorBigqueryBigQuerySink struct {
 	MigrationStrategy      *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
 	// ProjectId GCP project identifier containing the target dataset, for example "my-project-123"
-	ProjectId     string                                       `json:"project_id"`
-	QueryPriority *ConnectorBigqueryBigQuerySink_QueryPriority `json:"query_priority,omitempty"`
+	ProjectId        string                                          `json:"project_id"`
+	QueryPriority    *ConnectorBigqueryBigQuerySink_QueryPriority    `json:"query_priority,omitempty"`
+	SnapshotLoadMode *ConnectorBigqueryBigQuerySink_SnapshotLoadMode `json:"snapshot_load_mode,omitempty"`
 
 	// WriteMode How the target writes data into BigQuery
 	WriteMode ConnectorBigqueryWriteMode `json:"write_mode"`
@@ -1322,6 +1344,11 @@ type ConnectorBigqueryBigQuerySink struct {
 
 // ConnectorBigqueryBigQuerySink_QueryPriority defines model for ConnectorBigqueryBigQuerySink.QueryPriority.
 type ConnectorBigqueryBigQuerySink_QueryPriority struct {
+	union json.RawMessage
+}
+
+// ConnectorBigqueryBigQuerySink_SnapshotLoadMode defines model for ConnectorBigqueryBigQuerySink.SnapshotLoadMode.
+type ConnectorBigqueryBigQuerySink_SnapshotLoadMode struct {
 	union json.RawMessage
 }
 
@@ -1339,6 +1366,9 @@ type ConnectorBigqueryServiceAccountKey struct {
 	// KeyJson Service account JSON key contents (the full JSON document inline)
 	KeyJson string `json:"key_json"`
 }
+
+// ConnectorBigquerySnapshotLoadMode How initial snapshot rows are loaded into BigQuery tables
+type ConnectorBigquerySnapshotLoadMode string
 
 // ConnectorBigqueryStorageWriteApi Stream changes via the BigQuery Storage Write API. BigQuery applies them in the background.
 type ConnectorBigqueryStorageWriteApi struct {
@@ -1768,11 +1798,17 @@ type ConnectorClickhouseClickhouseSource struct {
 	// IncludeSystemColumns Include `_sm_version`, `_sm_deleted`, and `_sm_synced_at` columns managed by Supermetal in replicated tables
 	IncludeSystemColumns *bool `json:"include_system_columns,omitempty"`
 
+	// MaxConcurrentExportProcessingThreads Processing threads shared by exports on one physical source server. Defaults to 4. An export may use the full allowance while later exports on that server wait. Independent servers have separate allowances. Lower this for servers with limited memory.
+	MaxConcurrentExportProcessingThreads *int32 `json:"max_concurrent_export_processing_threads,omitempty"`
+
 	// MaxConcurrentExportWriters Maximum concurrent export writers on one ClickHouse source server. Defaults to 16. More writers use more source memory. The measured supported ceiling is 32.
 	MaxConcurrentExportWriters *int32 `json:"max_concurrent_export_writers,omitempty"`
 
-	// MaxConcurrentExports Maximum number of ClickHouse tables exported at once. Each export reads a full table. Defaults to 2 based on measurements with ClickHouse 25.6 and 26.7 under a 12 GiB memory limit. Set to 0 to remove the concurrent export limit.
+	// MaxConcurrentExports Maximum tables exported at once. Defaults to 2. Set to 0 to remove the table limit.
 	MaxConcurrentExports *int32 `json:"max_concurrent_exports,omitempty"`
+
+	// ParquetRowGroupSizeBytes Maximum bytes per Parquet row group during snapshot export. Defaults to 64 MiB. Lower this to reduce encoder buffers.
+	ParquetRowGroupSizeBytes *int64 `json:"parquet_row_group_size_bytes,omitempty"`
 
 	// SourceDatabase Name of the database in ClickHouse to replicate from
 	SourceDatabase string `json:"source_database"`
@@ -4003,6 +4039,9 @@ type ConnectorMysqlMySqlSource struct {
 	// ParallelSnapshotsEnabled Use parallel snapshots for initial data synchronization
 	ParallelSnapshotsEnabled *bool `json:"parallel_snapshots_enabled,omitempty"`
 
+	// SkipGtidSet CDC skips transactions in this set. Their changes may be absent from the target.
+	SkipGtidSet *string `json:"skip_gtid_set,omitempty"`
+
 	// SkipSnapshot Skip the initial snapshot and start CDC from the current binlog position
 	SkipSnapshot  *bool                            `json:"skip_snapshot,omitempty"`
 	SystemColumns *ConnectorMigrationSystemColumns `json:"system_columns,omitempty"`
@@ -5656,6 +5695,42 @@ func (t ConnectorBigqueryBigQuerySink_QueryPriority) MarshalJSON() ([]byte, erro
 }
 
 func (t *ConnectorBigqueryBigQuerySink_QueryPriority) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorBigquerySnapshotLoadMode returns the union data inside the ConnectorBigqueryBigQuerySink_SnapshotLoadMode as a ConnectorBigquerySnapshotLoadMode
+func (t ConnectorBigqueryBigQuerySink_SnapshotLoadMode) AsConnectorBigquerySnapshotLoadMode() (ConnectorBigquerySnapshotLoadMode, error) {
+	var body ConnectorBigquerySnapshotLoadMode
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorBigquerySnapshotLoadMode overwrites any union data inside the ConnectorBigqueryBigQuerySink_SnapshotLoadMode as the provided ConnectorBigquerySnapshotLoadMode
+func (t *ConnectorBigqueryBigQuerySink_SnapshotLoadMode) FromConnectorBigquerySnapshotLoadMode(v ConnectorBigquerySnapshotLoadMode) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorBigquerySnapshotLoadMode performs a merge with any union data inside the ConnectorBigqueryBigQuerySink_SnapshotLoadMode, using the provided ConnectorBigquerySnapshotLoadMode
+func (t *ConnectorBigqueryBigQuerySink_SnapshotLoadMode) MergeConnectorBigquerySnapshotLoadMode(v ConnectorBigquerySnapshotLoadMode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorBigqueryBigQuerySink_SnapshotLoadMode) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorBigqueryBigQuerySink_SnapshotLoadMode) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

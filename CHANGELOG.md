@@ -1,6 +1,7 @@
-## Unreleased
+## v0.2.6
 
 - Show connector validation warnings during Terraform plans.
+- Update connector configuration.
 
 ## v0.2.5
 
