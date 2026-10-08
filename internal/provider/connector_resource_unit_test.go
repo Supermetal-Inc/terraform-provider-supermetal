@@ -64,8 +64,9 @@ func TestConnectorResourceModifyPlanReportsValidationWarnings(t *testing.T) {
 		switch r.URL.Path {
 		case "/api/v1/validate/source":
 			_, _ = w.Write([]byte(`[
-  {"test":{"id":"source-latency","message":"Connection is slow","status":{"Warn":{}},"test_type":{"Network":{}},"timestamp":"now"}},
-  {"test":{"id":"source-permissions","message":"Replication permission is missing","status":{"Failed":{"reason":"access denied"}},"test_type":{"Permission":{}},"timestamp":"now"}}
+  {"test":{"id":"source-config","status":{"Warn":{}},"test_type":{"Config":{"name":"Table Replica Identity","description":"Some tables require REPLICA IDENTITY FULL.","suggestions":["ALTER TABLE public.needs_full REPLICA IDENTITY FULL;"]}},"timestamp":"now"}},
+  {"test":{"id":"source-permissions","status":{"Failed":{"reason":"access denied"}},"test_type":{"Permission":{"name":"Replication permissions","description":"Replication permission is missing.","suggestions":["Grant the REPLICATION role."]}},"timestamp":"now"}},
+  {"test":{"id":"source-server-info","message":"PostgreSQL version detected.","status":{"Warn":{}},"test_type":{"ServerInfo":{}},"timestamp":"now"}}
 ]`))
 		case "/api/v1/validate/buffer":
 			_, _ = w.Write([]byte(`[{"failed":{"reason":"bucket is unavailable"}}]`))
@@ -103,7 +104,7 @@ func TestConnectorResourceModifyPlanReportsValidationWarnings(t *testing.T) {
 	if resp.Diagnostics.HasError() {
 		t.Fatalf("plan validation returned errors: %v", resp.Diagnostics)
 	}
-	if got, want := resp.Diagnostics.WarningsCount(), 4; got != want {
+	if got, want := resp.Diagnostics.WarningsCount(), 5; got != want {
 		t.Fatalf("warning count = %d, want %d: %v", got, want, resp.Diagnostics)
 	}
 
@@ -113,10 +114,18 @@ func TestConnectorResourceModifyPlanReportsValidationWarnings(t *testing.T) {
 	}
 	joined := strings.Join(warnings, "\n")
 	for _, expected := range []string{
-		"Source validation warning",
-		"source-latency: Connection is slow",
-		"Source validation failed",
-		"source-permissions: Replication permission is missing: access denied",
+		"Source validation warning: Table Replica Identity",
+		"Some tables require REPLICA IDENTITY FULL.",
+		"Suggested action:\nALTER TABLE public.needs_full REPLICA IDENTITY FULL;",
+		"Validation test ID: source-config",
+		"Source validation failed: Replication permissions",
+		"Replication permission is missing.",
+		"Failure reason: access denied",
+		"Suggested action:\nGrant the REPLICATION role.",
+		"Validation test ID: source-permissions",
+		"Source validation warning: Server Info",
+		"PostgreSQL version detected.",
+		"Validation test ID: source-server-info",
 		"Buffer validation failed",
 		"bucket is unavailable",
 		"Sink validation could not run",

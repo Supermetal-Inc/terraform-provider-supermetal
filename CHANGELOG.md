@@ -1,3 +1,7 @@
+## v0.2.7
+
+- Show complete connector validation warning details during Terraform plans.
+
 ## v0.2.6
 
 - Show connector validation warnings during Terraform plans.

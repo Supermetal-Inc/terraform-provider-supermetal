@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -623,6 +624,9 @@ func addPlanValidationEventWarnings(diags *diag.Diagnostics, component string, e
 		if notice.failed {
 			summary = component + " validation failed"
 		}
+		if notice.name != "" {
+			summary += ": " + notice.name
+		}
 		diags.AddWarning(
 			summary,
 			notice.detail+"\n\nTerraform will continue planning. Validation is enforced during apply.",
@@ -632,6 +636,7 @@ func addPlanValidationEventWarnings(diags *diag.Diagnostics, component string, e
 
 type validationNotice struct {
 	failed bool
+	name   string
 	detail string
 }
 
@@ -669,31 +674,110 @@ func extractValidationNotices(events *[]api.ConnectorValidateEvent) []validation
 				reason = *failedStatus.Failed.Reason
 			}
 		}
+		name, detail := formatValidationTestNotice(testEvent.Test, reason)
 		notices = append(notices, validationNotice{
 			failed: failed,
-			detail: formatValidationTestNotice(testEvent.Test, reason),
+			name:   name,
+			detail: detail,
 		})
 	}
 	return notices
 }
 
-func formatValidationTestNotice(test api.ConnectorValidateTest, reason string) string {
-	parts := make([]string, 0, 3)
-	if test.Message != nil && *test.Message != "" {
-		parts = append(parts, *test.Message)
-	}
-	if reason != "" && (test.Message == nil || reason != *test.Message) {
-		parts = append(parts, reason)
-	}
-	if len(parts) == 0 {
-		parts = append(parts, "Supermetal reported a validation issue.")
+func formatValidationTestNotice(test api.ConnectorValidateTest, reason string) (string, string) {
+	name, description, suggestions := validationTestMetadata(test.TestType)
+	sections := make([]string, 0, 5)
+	appendUnique := func(value string) {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			return
+		}
+		for _, section := range sections {
+			if section == value {
+				return
+			}
+		}
+		sections = append(sections, value)
 	}
 
-	detail := strings.Join(parts, ": ")
-	if test.Id != "" {
-		detail = test.Id + ": " + detail
+	appendUnique(description)
+	if test.Message != nil {
+		appendUnique(*test.Message)
 	}
-	return detail
+	if reason != "" {
+		appendUnique("Failure reason: " + reason)
+	}
+	if len(suggestions) > 0 {
+		heading := "Suggested action:"
+		formatted := strings.TrimSpace(suggestions[0])
+		if len(suggestions) > 1 {
+			heading = "Suggested actions:"
+			items := make([]string, 0, len(suggestions))
+			for _, suggestion := range suggestions {
+				suggestion = strings.TrimSpace(suggestion)
+				if suggestion == "" {
+					continue
+				}
+				items = append(items, "- "+strings.ReplaceAll(suggestion, "\n", "\n  "))
+			}
+			formatted = strings.Join(items, "\n")
+		}
+		if formatted != "" {
+			appendUnique(heading + "\n" + formatted)
+		}
+	}
+	if len(sections) == 0 {
+		sections = append(sections, "Supermetal reported a validation issue.")
+	}
+	if test.Id != "" {
+		sections = append(sections, "Validation test ID: "+test.Id)
+	}
+
+	return name, strings.Join(sections, "\n\n")
+}
+
+func validationTestMetadata(testType api.ConnectorValidateTestType) (string, string, []string) {
+	if hasValidationUnionKey(testType, "Config") {
+		config, err := testType.AsConnectorValidateTestType6()
+		if err == nil {
+			return optionalString(config.Config.Name), optionalString(config.Config.Description), optionalStrings(config.Config.Suggestions)
+		}
+	}
+	if hasValidationUnionKey(testType, "Permission") {
+		permission, err := testType.AsConnectorValidateTestType5()
+		if err == nil {
+			return optionalString(permission.Permission.Name), optionalString(permission.Permission.Description), optionalStrings(permission.Permission.Suggestions)
+		}
+	}
+
+	return humanizeValidationVariant(validationUnionKey(testType)), "", nil
+}
+
+func humanizeValidationVariant(variant string) string {
+	runes := []rune(variant)
+	var name strings.Builder
+	for index, current := range runes {
+		if index > 0 && unicode.IsUpper(current) &&
+			(unicode.IsLower(runes[index-1]) || (index+1 < len(runes) && unicode.IsLower(runes[index+1]))) {
+			name.WriteByte(' ')
+		}
+		name.WriteRune(current)
+	}
+	return name.String()
+}
+
+func optionalString(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
+}
+
+func optionalStrings(value *[]string) []string {
+	if value == nil {
+		return nil
+	}
+	return *value
 }
 
 func hasValidationUnionKey(value any, key string) bool {
@@ -707,6 +791,21 @@ func hasValidationUnionKey(value any, key string) bool {
 	}
 	_, ok := object[key]
 	return ok
+}
+
+func validationUnionKey(value any) string {
+	raw, err := json.Marshal(value)
+	if err != nil {
+		return ""
+	}
+	var object map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &object); err != nil || len(object) != 1 {
+		return ""
+	}
+	for key := range object {
+		return key
+	}
+	return ""
 }
 
 func extractValidationFailure(events *[]api.ConnectorValidateEvent) string {
