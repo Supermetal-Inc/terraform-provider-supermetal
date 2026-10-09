@@ -916,8 +916,9 @@ Required:
 
 Optional:
 
-- `create_distributed_table` (Boolean) Create and manage a Distributed table under the target name. Disable to write directly to the suffixed replicated table on the connected shard
-- `local_table_suffix` (String) Suffix for the replicated tables on each shard. Defaults to _local
+- `create_distributed_table` (Boolean) Create and manage a Distributed table under the target name. Disable to write directly to the replicated table on the connected shard
+- `disable_local_table_suffix` (Boolean) Name the replicated tables exactly as the targets, without a suffix. Applies only when the Distributed table is disabled
+- `local_table_suffix` (String) Suffix for the replicated tables on each shard. Defaults to _local when omitted or empty
 
 
 <a id="nestedatt--sink--clickhouse--compression"></a>
@@ -3399,6 +3400,7 @@ Optional:
 - `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--snowflake--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--snowflake--migration_strategy))
 - `role` (String) Snowflake role to use after establishing the connection
+- `storage_integration` (String) Storage integration Snowflake uses to read the buffer. Required for Google Cloud Storage buffers and accounts that require integrations. The name is case sensitive
 - `target_schema` (String) Target schema name within the specified target database
 - `use_transactions` (Boolean) Enable transactional DML (disabled by default)
 
@@ -4305,7 +4307,7 @@ Optional:
 Optional:
 
 - `clickhouse` (Attributes) ClickHouse replication source (see [below for nested schema](#nestedatt--source--clickhouse))
-- `db2` (Attributes) Db2 replication source (see [below for nested schema](#nestedatt--source--db2))
+- `db2` (Attributes) IBM Db2 for Linux, UNIX, and Windows with snapshot replication (see [below for nested schema](#nestedatt--source--db2))
 - `file_source` (Attributes) Ingest files from object stores (S3, GCS, Azure Blob) or filesystems (local, SFTP) (see [below for nested schema](#nestedatt--source--file_source))
 - `mongo` (Attributes) MongoDB replication source (see [below for nested schema](#nestedatt--source--mongo))
 - `mysql` (Attributes) MySQL replication source (see [below for nested schema](#nestedatt--source--mysql))

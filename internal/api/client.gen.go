@@ -1728,10 +1728,13 @@ type ConnectorClickhouseClickhouse struct {
 
 // ConnectorClickhouseClickhouseCluster Replicate and shard tables across a self managed ClickHouse cluster
 type ConnectorClickhouseClickhouseCluster struct {
-	// CreateDistributedTable Create and manage a Distributed table under the target name. Disable to write directly to the suffixed replicated table on the connected shard
+	// CreateDistributedTable Create and manage a Distributed table under the target name. Disable to write directly to the replicated table on the connected shard
 	CreateDistributedTable *bool `json:"create_distributed_table,omitempty"`
 
-	// LocalTableSuffix Suffix for the replicated tables on each shard. Defaults to _local
+	// DisableLocalTableSuffix Name the replicated tables exactly as the targets, without a suffix. Applies only when the Distributed table is disabled
+	DisableLocalTableSuffix *bool `json:"disable_local_table_suffix,omitempty"`
+
+	// LocalTableSuffix Suffix for the replicated tables on each shard. Defaults to _local when omitted or empty
 	LocalTableSuffix *string `json:"local_table_suffix,omitempty"`
 
 	// Name Cluster name from the server's remote_servers configuration
@@ -2016,7 +2019,7 @@ type ConnectorDatabricksTableFeatures struct {
 	TypeWidening *bool `json:"type_widening,omitempty"`
 }
 
-// ConnectorDb2Db2 Db2 database connection details
+// ConnectorDb2Db2 Db2 LUW connection details
 type ConnectorDb2Db2 struct {
 	// Database Database name
 	Database string `json:"database"`
@@ -2037,7 +2040,7 @@ type ConnectorDb2Db2 struct {
 	User string `json:"user"`
 }
 
-// ConnectorDb2Db2ReplicationType Specifies the Db2 replication method
+// ConnectorDb2Db2ReplicationType Specifies the Db2 LUW replication method
 type ConnectorDb2Db2ReplicationType struct {
 	union json.RawMessage
 }
@@ -2048,11 +2051,11 @@ type ConnectorDb2Db2ReplicationType0 struct {
 	Snapshot ConnectorDb2Snapshot `json:"snapshot"`
 }
 
-// ConnectorDb2Db2Source Db2 replication source
+// ConnectorDb2Db2Source IBM Db2 for Linux, UNIX, and Windows with snapshot replication
 type ConnectorDb2Db2Source struct {
 	Catalog *ConnectorCatalogCatalog `json:"catalog,omitempty"`
 
-	// Connection Connection details for Db2 database
+	// Connection Connection details for Db2 LUW
 	Connection           ConnectorDb2Db2                         `json:"connection"`
 	KeylessTableStrategy *ConnectorMigrationKeylessTableStrategy `json:"keyless_table_strategy,omitempty"`
 
@@ -2061,7 +2064,7 @@ type ConnectorDb2Db2Source struct {
 	SystemColumns   *ConnectorMigrationSystemColumns `json:"system_columns,omitempty"`
 }
 
-// ConnectorDb2Snapshot Db2 snapshot / backfill-only replication settings
+// ConnectorDb2Snapshot Db2 LUW snapshot replication settings
 type ConnectorDb2Snapshot struct {
 	// MaxTextSize The maximum size we are allocating for a field in a column holding text. This protects
 	// against the driver not knowing a sensible upper bound or The schema not being sanitized.
@@ -4601,6 +4604,9 @@ type ConnectorSnowflakeSnowflakeSink struct {
 	MergeSchedule     *ConnectorMigrationMergeSchedule     `json:"merge_schedule,omitempty"`
 	MigrationStrategy *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
+	// StorageIntegration Storage integration Snowflake uses to read the buffer. Required for Google Cloud Storage buffers and accounts that require integrations. The name is case sensitive
+	StorageIntegration *string `json:"storage_integration,omitempty"`
+
 	// TargetDatabase Name of the target database within Snowflake where data will be written
 	TargetDatabase string `json:"target_database"`
 
@@ -4654,7 +4660,7 @@ type ConnectorSource5 struct {
 
 // ConnectorSource6 defines model for .
 type ConnectorSource6 struct {
-	// Db2 Db2 replication source
+	// Db2 IBM Db2 for Linux, UNIX, and Windows with snapshot replication
 	Db2 ConnectorDb2Db2Source `json:"db2"`
 }
 
