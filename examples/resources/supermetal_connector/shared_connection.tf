@@ -16,7 +16,7 @@ locals {
 
 # Orders tables
 resource "supermetal_connector" "orders" {
-  id   = "orders-pipeline"
+  id   = "orders_pipeline"
   name = "Orders"
 
   source = {
@@ -57,7 +57,7 @@ resource "supermetal_connector" "orders" {
 
 # Customer tables (same source, different publication and catalog)
 resource "supermetal_connector" "customers" {
-  id   = "customers-pipeline"
+  id   = "customers_pipeline"
   name = "Customers"
 
   source = {

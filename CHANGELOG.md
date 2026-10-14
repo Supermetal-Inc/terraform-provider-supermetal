@@ -1,3 +1,7 @@
+## v0.2.9
+
+- Update connector validation and configuration.
+
 ## v0.2.8
 
 - Update connector configuration.

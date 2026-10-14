@@ -7,7 +7,7 @@ variable "gcs_service_account_key" {
 
 # Password authentication with buffered CDC and scheduled merges
 resource "supermetal_connector" "snowflake_password" {
-  id   = "to-snowflake-password"
+  id   = "to_snowflake_password"
   name = "Snowflake (password auth)"
 
   source = {
@@ -68,7 +68,7 @@ resource "supermetal_connector" "snowflake_password" {
 
 # Key pair authentication (recommended for production)
 resource "supermetal_connector" "snowflake_keypair" {
-  id   = "to-snowflake-keypair"
+  id   = "to_snowflake_keypair"
   name = "Snowflake (key pair auth)"
 
   source = {

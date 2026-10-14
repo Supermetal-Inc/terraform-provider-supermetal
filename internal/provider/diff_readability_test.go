@@ -62,11 +62,11 @@ func TestDiffReadability_CatalogTableAddition(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: h.config("diff-readability-test", "Diff Readability Test",
+				Config: h.config("diff_readability_test", "Diff Readability Test",
 					withResourceName("diff_test"), threeTableCatalog),
 			},
 			{
-				Config: h.config("diff-readability-test", "Diff Readability Test",
+				Config: h.config("diff_readability_test", "Diff Readability Test",
 					withResourceName("diff_test"), fiveTableCatalog),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -112,11 +112,11 @@ func TestDiffReadability_CatalogTableInsertMiddle(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: h.config("insert-middle-test", "Insert Middle Test",
+				Config: h.config("insert_middle_test", "Insert Middle Test",
 					withResourceName("insert_test"), threeTableCatalog),
 			},
 			{
-				Config: h.config("insert-middle-test", "Insert Middle Test",
+				Config: h.config("insert_middle_test", "Insert Middle Test",
 					withResourceName("insert_test"), fourTableCatalog),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -137,11 +137,11 @@ func TestDiffReadability_NameChange(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: h.config("name-change-test", "Original Name",
+				Config: h.config("name_change_test", "Original Name",
 					withResourceName("name_test")),
 			},
 			{
-				Config: h.config("name-change-test", "Updated Pipeline Name",
+				Config: h.config("name_change_test", "Updated Pipeline Name",
 					withResourceName("name_test")),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -162,11 +162,11 @@ func TestDiffReadability_PasswordRotation(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: h.config("password-rotation-test", "Password Test",
+				Config: h.config("password_rotation_test", "Password Test",
 					withResourceName("password_test"), withPassword("original-password-123")),
 			},
 			{
-				Config: h.config("password-rotation-test", "Password Test",
+				Config: h.config("password_rotation_test", "Password Test",
 					withResourceName("password_test"), withPassword("rotated-password-456")),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

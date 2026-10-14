@@ -2,7 +2,7 @@
 # Useful for pre-staging config that will be enabled later.
 
 resource "supermetal_connector" "staged" {
-  id       = "staged-connector"
+  id       = "staged_connector"
   name     = "Staged pipeline"
   disabled = true
 

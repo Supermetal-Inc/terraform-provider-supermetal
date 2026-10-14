@@ -234,7 +234,7 @@ func TestValidateConfig_connectorIDTooLong(t *testing.T) {
 				Config: `
 provider "supermetal" { endpoint = "http://localhost:3000" }
 resource "supermetal_connector" "test" {
-  id   = "this-id-is-way-too-long-for-the-thirty-character-limit"
+  id   = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   name = "test"
   source = {
     postgres = {
@@ -274,7 +274,7 @@ resource "terraform_data" "tables" {
 }
 
 resource "supermetal_connector" "test" {
-  id = "dynamic-map-keys"
+  id = "dynamic_map_keys"
   source = {
     postgres = {
       host     = "localhost"

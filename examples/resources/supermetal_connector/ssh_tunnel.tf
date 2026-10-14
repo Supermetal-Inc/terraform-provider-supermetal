@@ -2,7 +2,7 @@
 # The database host and port are as seen from the bastion, not your network.
 
 resource "supermetal_connector" "tunneled" {
-  id   = "tunneled-connector"
+  id   = "tunneled_connector"
   name = "Database via SSH tunnel"
 
   source = {

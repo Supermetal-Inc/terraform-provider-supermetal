@@ -60,7 +60,7 @@ variable "gcs_service_account_key" {
 
 # Password authentication with buffered CDC and scheduled merges
 resource "supermetal_connector" "snowflake_password" {
-  id   = "to-snowflake-password"
+  id   = "to_snowflake_password"
   name = "Snowflake (password auth)"
 
   source = {
@@ -121,7 +121,7 @@ resource "supermetal_connector" "snowflake_password" {
 
 # Key pair authentication (recommended for production)
 resource "supermetal_connector" "snowflake_keypair" {
-  id   = "to-snowflake-keypair"
+  id   = "to_snowflake_keypair"
   name = "Snowflake (key pair auth)"
 
   source = {
@@ -173,7 +173,7 @@ variable "postgres_tables" {
 }
 
 resource "supermetal_connector" "postgres_to_bigquery_via_gcs" {
-  id   = "orders-to-bigquery"
+  id   = "orders_to_bigquery"
   name = "PostgreSQL to BigQuery via GCS"
 
   source = {
@@ -255,7 +255,7 @@ variable "clickhouse_password" {
 }
 
 resource "supermetal_connector" "postgres_to_clickhouse" {
-  id   = "orders-to-clickhouse"
+  id   = "orders_to_clickhouse"
   name = "PostgreSQL to ClickHouse"
 
   source = {
@@ -296,7 +296,7 @@ variable "db2_password" {
 }
 
 resource "supermetal_connector" "db2_to_duckdb" {
-  id   = "db2-to-duckdb"
+  id   = "db2_to_duckdb"
   name = "DB2 to DuckDB"
 
   source = {
@@ -333,7 +333,7 @@ resource "supermetal_connector" "db2_to_duckdb" {
 # and lifecycle protection against accidental deletion.
 
 resource "supermetal_connector" "production" {
-  id   = "orders-cdc"
+  id   = "orders_cdc"
   name = "Orders CDC pipeline"
 
   source = {
@@ -398,7 +398,7 @@ resource "supermetal_connector" "production" {
 # The database host and port are as seen from the bastion, not your network.
 
 resource "supermetal_connector" "tunneled" {
-  id   = "tunneled-connector"
+  id   = "tunneled_connector"
   name = "Database via SSH tunnel"
 
   source = {
@@ -459,7 +459,7 @@ resource "supermetal_connector" "tunneled" {
 
 # Pattern 1. Replicate everything except specific tables
 resource "supermetal_connector" "include_by_default" {
-  id   = "include-by-default"
+  id   = "include_by_default"
   name = "Include by default"
 
   source = {
@@ -499,7 +499,7 @@ resource "supermetal_connector" "include_by_default" {
 # Pattern 2. Replicate only specific tables.
 # Set schema and default to Exclude, then Include individual tables.
 resource "supermetal_connector" "exclude_by_default" {
-  id   = "exclude-by-default"
+  id   = "exclude_by_default"
   name = "Exclude by default"
 
   source = {
@@ -540,7 +540,7 @@ resource "supermetal_connector" "exclude_by_default" {
 
 # Pattern 3. Replicate entire schemas
 resource "supermetal_connector" "full_schema" {
-  id   = "full-schema"
+  id   = "full_schema"
   name = "Full schema"
 
   source = {
@@ -581,7 +581,7 @@ resource "supermetal_connector" "full_schema" {
 # Useful for pre-staging config that will be enabled later.
 
 resource "supermetal_connector" "staged" {
-  id       = "staged-connector"
+  id       = "staged_connector"
   name     = "Staged pipeline"
   disabled = true
 
@@ -631,7 +631,7 @@ locals {
 
 # Orders tables
 resource "supermetal_connector" "orders" {
-  id   = "orders-pipeline"
+  id   = "orders_pipeline"
   name = "Orders"
 
   source = {
@@ -672,7 +672,7 @@ resource "supermetal_connector" "orders" {
 
 # Customer tables (same source, different publication and catalog)
 resource "supermetal_connector" "customers" {
-  id   = "customers-pipeline"
+  id   = "customers_pipeline"
   name = "Customers"
 
   source = {
@@ -717,7 +717,7 @@ resource "supermetal_connector" "customers" {
 
 ### Required
 
-- `id` (String) Unique identifier for this connector. Used in the API path and for import. Must contain only letters, numbers, hyphens, and underscores (max 30 characters).
+- `id` (String) Unique identifier for this connector. Used in the API path and for import. Must contain only lowercase letters, numbers, and underscores (max 30 characters).
 - `sink` (Attributes) Sink configuration. Exactly one sink type must be specified. (see [below for nested schema](#nestedatt--sink))
 - `source` (Attributes) Source configuration. Exactly one source type must be specified. (see [below for nested schema](#nestedatt--source))
 
@@ -791,7 +791,6 @@ Required:
 Optional:
 
 - `merge` (Attributes) Load Parquet into a staging table, then MERGE into the target (see [below for nested schema](#nestedatt--sink--big_query--write_mode--merge))
-- `storage_write_api` (Attributes) Stream changes row by row via the BigQuery Storage Write API (see [below for nested schema](#nestedatt--sink--big_query--write_mode--storage_write_api))
 
 <a id="nestedatt--sink--big_query--write_mode--merge"></a>
 ### Nested Schema for `sink.big_query.write_mode.merge`
@@ -799,14 +798,6 @@ Optional:
 Optional:
 
 - `use_transactions` (Boolean) Wrap DML across multiple tables in a BigQuery script transaction for atomicity
-
-
-<a id="nestedatt--sink--big_query--write_mode--storage_write_api"></a>
-### Nested Schema for `sink.big_query.write_mode.storage_write_api`
-
-Optional:
-
-- `max_staleness_minutes` (Number) Maximum time readers may see stale data, in minutes. Sets BigQuery's background apply window.
 
 
 

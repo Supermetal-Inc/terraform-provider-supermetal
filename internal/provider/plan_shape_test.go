@@ -17,10 +17,10 @@ func TestPlanShape_UpdateInPlace(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: h.config("update-in-place-test", "Original Name"),
+				Config: h.config("update_in_place_test", "Original Name"),
 			},
 			{
-				Config: h.config("update-in-place-test", "Updated Name"),
+				Config: h.config("update_in_place_test", "Updated Name"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("supermetal_connector.test", plancheck.ResourceActionUpdate),
@@ -59,10 +59,10 @@ func TestPlanShape_UpdateInPlace_AddTable(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: h.config("add-table-test", "Add Table Test", oneTable),
+				Config: h.config("add_table_test", "Add Table Test", oneTable),
 			},
 			{
-				Config: h.config("add-table-test", "Add Table Test", twoTables),
+				Config: h.config("add_table_test", "Add Table Test", twoTables),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("supermetal_connector.test", plancheck.ResourceActionUpdate),
@@ -80,10 +80,10 @@ func TestPlanShape_Replace(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: h.config("replace-test", "Replace Test"),
+				Config: h.config("replace_test", "Replace Test"),
 			},
 			{
-				Config: h.config("replace-test", "Replace Test", withDatabase("different_db")),
+				Config: h.config("replace_test", "Replace Test", withDatabase("different_db")),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("supermetal_connector.test", plancheck.ResourceActionDestroyBeforeCreate),
@@ -101,10 +101,10 @@ func TestPlanShape_SensitiveMasking(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: h.config("sensitive-test", "Sensitive Test", withPassword("original-secret")),
+				Config: h.config("sensitive_test", "Sensitive Test", withPassword("original-secret")),
 			},
 			{
-				Config: h.config("sensitive-test", "Sensitive Test", withPassword("rotated-secret")),
+				Config: h.config("sensitive_test", "Sensitive Test", withPassword("rotated-secret")),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("supermetal_connector.test", plancheck.ResourceActionUpdate),
@@ -120,7 +120,7 @@ func TestPlanShape_SensitiveMasking(t *testing.T) {
 func TestPlanShape_Composition(t *testing.T) {
 	h := newTestHarness(t)
 
-	config := h.config("composition-test", "Composition Test",
+	config := h.config("composition_test", "Composition Test",
 		withPasswordExpr("random_password.db.result"),
 		withExtra(`resource "random_password" "db" {
   length  = 16
@@ -154,7 +154,7 @@ func TestPlanShape_Composition(t *testing.T) {
 func TestPlanShape_RefreshOnly(t *testing.T) {
 	h := newTestHarness(t)
 
-	config := h.config("refresh-only-test", "Refresh Only Test")
+	config := h.config("refresh_only_test", "Refresh Only Test")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -194,7 +194,7 @@ func TestPlanShape_ScaleSmoke(t *testing.T) {
           }
         }`, tables.String()))
 
-	config := h.config("scale-smoke-test", "Scale Smoke Test", catalog)
+	config := h.config("scale_smoke_test", "Scale Smoke Test", catalog)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

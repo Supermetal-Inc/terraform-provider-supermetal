@@ -2,7 +2,7 @@
 # and lifecycle protection against accidental deletion.
 
 resource "supermetal_connector" "production" {
-  id   = "orders-cdc"
+  id   = "orders_cdc"
   name = "Orders CDC pipeline"
 
   source = {

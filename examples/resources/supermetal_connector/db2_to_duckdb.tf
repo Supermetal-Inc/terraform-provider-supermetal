@@ -6,7 +6,7 @@ variable "db2_password" {
 }
 
 resource "supermetal_connector" "db2_to_duckdb" {
-  id   = "db2-to-duckdb"
+  id   = "db2_to_duckdb"
   name = "DB2 to DuckDB"
 
   source = {

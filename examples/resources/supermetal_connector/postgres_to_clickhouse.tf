@@ -15,7 +15,7 @@ variable "clickhouse_password" {
 }
 
 resource "supermetal_connector" "postgres_to_clickhouse" {
-  id   = "orders-to-clickhouse"
+  id   = "orders_to_clickhouse"
   name = "PostgreSQL to ClickHouse"
 
   source = {

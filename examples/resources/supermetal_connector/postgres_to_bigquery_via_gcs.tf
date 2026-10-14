@@ -12,7 +12,7 @@ variable "postgres_tables" {
 }
 
 resource "supermetal_connector" "postgres_to_bigquery_via_gcs" {
-  id   = "orders-to-bigquery"
+  id   = "orders_to_bigquery"
   name = "PostgreSQL to BigQuery via GCS"
 
   source = {

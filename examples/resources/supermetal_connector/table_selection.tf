@@ -5,7 +5,7 @@
 
 # Pattern 1. Replicate everything except specific tables
 resource "supermetal_connector" "include_by_default" {
-  id   = "include-by-default"
+  id   = "include_by_default"
   name = "Include by default"
 
   source = {
@@ -45,7 +45,7 @@ resource "supermetal_connector" "include_by_default" {
 # Pattern 2. Replicate only specific tables.
 # Set schema and default to Exclude, then Include individual tables.
 resource "supermetal_connector" "exclude_by_default" {
-  id   = "exclude-by-default"
+  id   = "exclude_by_default"
   name = "Exclude by default"
 
   source = {
@@ -86,7 +86,7 @@ resource "supermetal_connector" "exclude_by_default" {
 
 # Pattern 3. Replicate entire schemas
 resource "supermetal_connector" "full_schema" {
-  id   = "full-schema"
+  id   = "full_schema"
   name = "Full schema"
 
   source = {

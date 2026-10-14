@@ -20,6 +20,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/supermetal-inc/terraform-provider-supermetal/internal/api"
 )
@@ -30,7 +32,7 @@ var (
 	_ resource.ResourceWithModifyPlan     = &ConnectorResource{}
 	_ resource.ResourceWithValidateConfig = &ConnectorResource{}
 
-	connectorIDPattern = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
+	connectorIDPattern = regexp.MustCompile(`^[a-z0-9_]+$`)
 )
 
 type ConnectorResource struct {
@@ -50,7 +52,7 @@ func (r *ConnectorResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 	attributes := map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			MarkdownDescription: "Unique identifier for this connector. Used in the API path and for import. " +
-				"Must contain only letters, numbers, hyphens, and underscores (max 30 characters).",
+				"Must contain only lowercase letters, numbers, and underscores (max 30 characters).",
 			Required: true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
@@ -59,7 +61,7 @@ func (r *ConnectorResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				stringvalidator.LengthAtMost(30),
 				stringvalidator.RegexMatches(
 					connectorIDPattern,
-					"must contain only letters, numbers, hyphens, and underscores",
+					"must contain only lowercase letters, numbers, and underscores",
 				),
 			},
 		},
@@ -194,28 +196,83 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 }
 
 func (r *ConnectorResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	if r.skipValidation || r.client == nil || req.Plan.Raw.IsNull() || !req.Plan.Raw.IsFullyKnown() {
+	if r.skipValidation || r.client == nil || req.Plan.Raw.IsNull() {
 		return
 	}
 
-	var plan ConnectorModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if resp.Diagnostics.HasError() || plan.Disabled.ValueBool() {
+	if !planAttributeIsKnown(req.Plan.Raw, "disabled") {
 		return
 	}
-
-	connector, diags := plan.toAPIConnector()
-	resp.Diagnostics.Append(diags...)
+	var disabled types.Bool
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("disabled"), &disabled)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if disabled.ValueBool() {
 		return
 	}
 
 	var connectorID *string
-	if !req.State.Raw.IsNull() {
-		id := plan.ID.ValueString()
+	if !req.State.Raw.IsNull() && planAttributeIsKnown(req.Plan.Raw, "id") {
+		var plannedID types.String
+		resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("id"), &plannedID)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		id := plannedID.ValueString()
 		connectorID = &id
 	}
-	r.warnConnectorValidation(ctx, connector, connectorID, &resp.Diagnostics)
+
+	if planAttributeIsKnown(req.Plan.Raw, "source") {
+		var source SourceModel
+		resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("source"), &source)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		apiSource, diags := source.toAPI()
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		r.warnSourceValidation(ctx, apiSource, connectorID, &resp.Diagnostics)
+	}
+
+	if planAttributeIsKnown(req.Plan.Raw, "buffer") {
+		var buffer BufferModel
+		resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("buffer"), &buffer)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		apiBuffer, diags := buffer.toAPI()
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		r.warnBufferValidation(ctx, apiBuffer, connectorID, &resp.Diagnostics)
+	}
+
+	if planAttributeIsKnown(req.Plan.Raw, "sink") {
+		var sink SinkModel
+		resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("sink"), &sink)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		apiSink, diags := sink.toAPI()
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		r.warnSinkValidation(ctx, apiSink, connectorID, &resp.Diagnostics)
+	}
+}
+
+func planAttributeIsKnown(raw tftypes.Value, name string) bool {
+	value, err := raw.ApplyTerraform5AttributePathStep(tftypes.AttributeName(name))
+	if err != nil {
+		return false
+	}
+	attribute, ok := value.(tftypes.Value)
+	return ok && !attribute.IsNull() && attribute.IsFullyKnown()
 }
 
 func validateTunnel(resp *resource.ValidateConfigResponse, tunnel *SshTunnelTypeModel, attrPath path.Path) {
@@ -574,9 +631,9 @@ func (r *ConnectorResource) validateConnector(ctx context.Context, connector api
 	}
 }
 
-func (r *ConnectorResource) warnConnectorValidation(ctx context.Context, connector api.ConnectorConnector, connectorID *string, diags *diag.Diagnostics) {
+func (r *ConnectorResource) warnSourceValidation(ctx context.Context, source api.ConnectorSource, connectorID *string, diags *diag.Diagnostics) {
 	sourceParams := &api.ValidateSourceParams{ConnectorId: connectorID}
-	sourceBody := api.ValidateSourceJSONRequestBody{Source: connector.Source}
+	sourceBody := api.ValidateSourceJSONRequestBody{Source: source}
 	sourceResp, err := r.client.ValidateSourceWithResponse(ctx, sourceParams, sourceBody)
 	if err != nil {
 		addPlanValidationCallWarning(diags, "Source", err.Error())
@@ -585,22 +642,24 @@ func (r *ConnectorResource) warnConnectorValidation(ctx context.Context, connect
 	} else {
 		addPlanValidationEventWarnings(diags, "Source", sourceResp.JSON200)
 	}
+}
 
-	if connector.Buffer != nil {
-		bufferParams := &api.ValidateBufferParams{ConnectorId: connectorID}
-		bufferBody := api.ValidateBufferJSONRequestBody{Buffer: *connector.Buffer}
-		bufferResp, err := r.client.ValidateBufferWithResponse(ctx, bufferParams, bufferBody)
-		if err != nil {
-			addPlanValidationCallWarning(diags, "Buffer", err.Error())
-		} else if bufferResp.StatusCode() != http.StatusOK {
-			addPlanValidationCallWarning(diags, "Buffer", fmt.Sprintf("API returned status %d: %s", bufferResp.StatusCode(), string(bufferResp.Body)))
-		} else {
-			addPlanValidationEventWarnings(diags, "Buffer", bufferResp.JSON200)
-		}
+func (r *ConnectorResource) warnBufferValidation(ctx context.Context, buffer api.ConnectorBufferBuffer, connectorID *string, diags *diag.Diagnostics) {
+	bufferParams := &api.ValidateBufferParams{ConnectorId: connectorID}
+	bufferBody := api.ValidateBufferJSONRequestBody{Buffer: buffer}
+	bufferResp, err := r.client.ValidateBufferWithResponse(ctx, bufferParams, bufferBody)
+	if err != nil {
+		addPlanValidationCallWarning(diags, "Buffer", err.Error())
+	} else if bufferResp.StatusCode() != http.StatusOK {
+		addPlanValidationCallWarning(diags, "Buffer", fmt.Sprintf("API returned status %d: %s", bufferResp.StatusCode(), string(bufferResp.Body)))
+	} else {
+		addPlanValidationEventWarnings(diags, "Buffer", bufferResp.JSON200)
 	}
+}
 
+func (r *ConnectorResource) warnSinkValidation(ctx context.Context, sink api.ConnectorSink, connectorID *string, diags *diag.Diagnostics) {
 	sinkParams := &api.ValidateSinkParams{ConnectorId: connectorID}
-	sinkBody := api.ValidateSinkJSONRequestBody{Sink: connector.Sink}
+	sinkBody := api.ValidateSinkJSONRequestBody{Sink: sink}
 	sinkResp, err := r.client.ValidateSinkWithResponse(ctx, sinkParams, sinkBody)
 	if err != nil {
 		addPlanValidationCallWarning(diags, "Sink", err.Error())
