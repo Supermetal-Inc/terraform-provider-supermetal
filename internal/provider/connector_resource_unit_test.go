@@ -105,11 +105,15 @@ func TestConnectorIDValidation(t *testing.T) {
 	}
 }
 
-func TestConnectorResourceValidateConnectorCallsBuffer(t *testing.T) {
+func TestConnectorResourceValidateConnectorReportsWarningsAndCallsBuffer(t *testing.T) {
 	calls := make(map[string]int)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		calls[r.URL.Path]++
 		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/api/v1/validate/source" {
+			_, _ = w.Write([]byte(`[{"test":{"id":"source-config","status":{"Warn":{}},"test_type":{"Config":{"name":"Table Replica Identity","description":"Some tables require REPLICA IDENTITY FULL.","suggestions":["ALTER TABLE public.needs_full REPLICA IDENTITY FULL;"]}},"timestamp":"now"}}]`))
+			return
+		}
 		_, _ = w.Write([]byte("[]"))
 	}))
 	t.Cleanup(server.Close)
@@ -132,6 +136,22 @@ func TestConnectorResourceValidateConnectorCallsBuffer(t *testing.T) {
 	resource.validateConnector(context.Background(), connector, &connectorID, &validationDiags)
 	if validationDiags.HasError() {
 		t.Fatalf("validate connector: %v", validationDiags)
+	}
+	if got := validationDiags.WarningsCount(); got != 1 {
+		t.Fatalf("warning count = %d, want 1: %v", got, validationDiags)
+	}
+	warning := validationDiags[0]
+	if warning.Summary() != "Source validation warning: Table Replica Identity" {
+		t.Errorf("warning summary = %q", warning.Summary())
+	}
+	for _, expected := range []string{
+		"Some tables require REPLICA IDENTITY FULL.",
+		"Suggested action:\nALTER TABLE public.needs_full REPLICA IDENTITY FULL;",
+		"Validation test ID: source-config",
+	} {
+		if !strings.Contains(warning.Detail(), expected) {
+			t.Errorf("warning detail does not contain %q: %s", expected, warning.Detail())
+		}
 	}
 
 	for _, path := range []string{

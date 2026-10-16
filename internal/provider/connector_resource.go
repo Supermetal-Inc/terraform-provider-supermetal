@@ -606,6 +606,7 @@ func (r *ConnectorResource) validateConnector(ctx context.Context, connector api
 		)
 		return
 	}
+	addApplyValidationWarnings(diags, "Source", sourceResp.JSON200)
 	if reason := extractValidationFailure(sourceResp.JSON200); reason != "" {
 		diags.AddError("Source validation failed", reason)
 		return
@@ -626,6 +627,7 @@ func (r *ConnectorResource) validateConnector(ctx context.Context, connector api
 			)
 			return
 		}
+		addApplyValidationWarnings(diags, "Buffer", bufferResp.JSON200)
 		if reason := extractValidationFailure(bufferResp.JSON200); reason != "" {
 			diags.AddError("Buffer validation failed", reason)
 			return
@@ -646,9 +648,23 @@ func (r *ConnectorResource) validateConnector(ctx context.Context, connector api
 		)
 		return
 	}
+	addApplyValidationWarnings(diags, "Sink", sinkResp.JSON200)
 	if reason := extractValidationFailure(sinkResp.JSON200); reason != "" {
 		diags.AddError("Sink validation failed", reason)
 		return
+	}
+}
+
+func addApplyValidationWarnings(diags *diag.Diagnostics, component string, events *[]api.ConnectorValidateEvent) {
+	for _, notice := range extractValidationNotices(events) {
+		if notice.failed {
+			continue
+		}
+		summary := component + " validation warning"
+		if notice.name != "" {
+			summary += ": " + notice.name
+		}
+		diags.AddWarning(summary, notice.detail)
 	}
 }
 
