@@ -1,3 +1,8 @@
+## v0.2.10
+
+- Add GCS Application Default Credentials support.
+- Improve connector validation.
+
 ## v0.2.9
 
 - Update connector validation and configuration.
