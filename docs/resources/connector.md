@@ -762,11 +762,13 @@ Required:
 Optional:
 
 - `disable_schema_prefix` (Boolean) Do not prefix target table names with the source schema. By default, a source table `public.users` lands as `public_users`; with this enabled it lands as `users`. Only safe when source table names are unique across schemas.
+- `execution_project_id` (String) Project that runs BigQuery jobs. Defaults to the target project
 - `history_mode` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--history_mode))
 - `max_snapshot_concurrency` (Number) Maximum concurrent snapshot writes to BigQuery (0 = no limit). Lower this if BigQuery reports rate limits during large snapshots.
 - `merge_schedule` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--merge_schedule))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--sink--big_query--migration_strategy))
 - `query_priority` (String) Priority for BigQuery query jobs such as DDL, MERGE, and scripts. Load jobs are unaffected.
+- `reservation` (String) Reservation that runs query jobs, for example "projects/admin-project/locations/US/reservations/prod". Defaults to the execution project's reservation assignment
 - `snapshot_load_mode` (String) How initial snapshot rows are loaded into BigQuery tables
 
 <a id="nestedatt--sink--big_query--auth"></a>
@@ -774,7 +776,12 @@ Optional:
 
 Optional:
 
+- `application_default_credentials` (Attributes) Google Cloud identity of the workload, such as GKE Workload Identity, an attached service account, or a GOOGLE_APPLICATION_CREDENTIALS file (see [below for nested schema](#nestedatt--sink--big_query--auth--application_default_credentials))
 - `service_account_key` (Attributes) Service account JSON key (see [below for nested schema](#nestedatt--sink--big_query--auth--service_account_key))
+
+<a id="nestedatt--sink--big_query--auth--application_default_credentials"></a>
+### Nested Schema for `sink.big_query.auth.application_default_credentials`
+
 
 <a id="nestedatt--sink--big_query--auth--service_account_key"></a>
 ### Nested Schema for `sink.big_query.auth.service_account_key`
@@ -1487,6 +1494,8 @@ Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "
 
 GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
 
+GCS (Application Default Credentials): []
+
 GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
 
 Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
@@ -2039,6 +2048,7 @@ Optional:
 
 Optional:
 
+- `cache_size_mb` (Number) Local disk cache for index reads, in MB. Each connector uses up to this much disk. The whole index fits in about 20 MB per million target rows with integer keys and 40 MB with string or UUID keys. Half that usually covers the rows a workload updates.
 - `object_store` (Attributes) (see [below for nested schema](#nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend--slatedb--object_store))
 
 <a id="nestedatt--sink--iceberg--write_mode--merge_on_read--index_backend--slatedb--object_store"></a>
@@ -2061,6 +2071,8 @@ S3: [{"name": "region", "value": "us-east-1"}, {"name": "access_key_id", "value"
 Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "value": "..."} or {"name": "sas_token", "value": "sp=..."}]
 
 GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
+
+GCS (Application Default Credentials): []
 
 GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
 
@@ -4366,6 +4378,7 @@ Optional:
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--iceberg_partition_spec))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--on_mongo_type_conflict))
+- `snapshot_filter` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--snapshot_filter))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--target_option))
 - `unlisted_action` (String)
@@ -4507,6 +4520,22 @@ Optional:
 
 <a id="nestedatt--source--clickhouse--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
 ### Nested Schema for `source.clickhouse.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--snapshot_filter"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.snapshot_filter`
+
+Optional:
+
+- `string_filter` (Attributes) Raw predicate (see [below for nested schema](#nestedatt--source--clickhouse--catalog--schemas--tables--snapshot_filter--string_filter))
+
+<a id="nestedatt--source--clickhouse--catalog--schemas--tables--snapshot_filter--string_filter"></a>
+### Nested Schema for `source.clickhouse.catalog.schemas.tables.snapshot_filter.string_filter`
+
+Required:
+
+- `predicate` (String) A SQL Server condition without the WHERE keyword
 
 
 
@@ -4669,6 +4698,7 @@ Optional:
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--iceberg_partition_spec))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--on_mongo_type_conflict))
+- `snapshot_filter` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--snapshot_filter))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--target_option))
 - `unlisted_action` (String)
@@ -4810,6 +4840,22 @@ Optional:
 
 <a id="nestedatt--source--db2--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
 ### Nested Schema for `source.db2.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--snapshot_filter"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.snapshot_filter`
+
+Optional:
+
+- `string_filter` (Attributes) Raw predicate (see [below for nested schema](#nestedatt--source--db2--catalog--schemas--tables--snapshot_filter--string_filter))
+
+<a id="nestedatt--source--db2--catalog--schemas--tables--snapshot_filter--string_filter"></a>
+### Nested Schema for `source.db2.catalog.schemas.tables.snapshot_filter.string_filter`
+
+Required:
+
+- `predicate` (String) A SQL Server condition without the WHERE keyword
 
 
 
@@ -4983,6 +5029,8 @@ Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "
 
 GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
 
+GCS (Application Default Credentials): []
+
 GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
 
 Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
@@ -5038,6 +5086,7 @@ Optional:
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--iceberg_partition_spec))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--on_mongo_type_conflict))
+- `snapshot_filter` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--snapshot_filter))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--target_option))
 - `unlisted_action` (String)
@@ -5179,6 +5228,22 @@ Optional:
 
 <a id="nestedatt--source--file_source--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
 ### Nested Schema for `source.file_source.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--snapshot_filter"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.snapshot_filter`
+
+Optional:
+
+- `string_filter` (Attributes) Raw predicate (see [below for nested schema](#nestedatt--source--file_source--catalog--schemas--tables--snapshot_filter--string_filter))
+
+<a id="nestedatt--source--file_source--catalog--schemas--tables--snapshot_filter--string_filter"></a>
+### Nested Schema for `source.file_source.catalog.schemas.tables.snapshot_filter.string_filter`
+
+Required:
+
+- `predicate` (String) A SQL Server condition without the WHERE keyword
 
 
 
@@ -5498,6 +5563,8 @@ Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "
 
 GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
 
+GCS (Application Default Credentials): []
+
 GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
 
 Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
@@ -5586,6 +5653,8 @@ Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "
 
 GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
 
+GCS (Application Default Credentials): []
+
 GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
 
 Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
@@ -5666,6 +5735,7 @@ Optional:
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--iceberg_partition_spec))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--on_mongo_type_conflict))
+- `snapshot_filter` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--snapshot_filter))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--target_option))
 - `unlisted_action` (String)
@@ -5807,6 +5877,22 @@ Optional:
 
 <a id="nestedatt--source--mongo--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
 ### Nested Schema for `source.mongo.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--snapshot_filter"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.snapshot_filter`
+
+Optional:
+
+- `string_filter` (Attributes) Raw predicate (see [below for nested schema](#nestedatt--source--mongo--catalog--schemas--tables--snapshot_filter--string_filter))
+
+<a id="nestedatt--source--mongo--catalog--schemas--tables--snapshot_filter--string_filter"></a>
+### Nested Schema for `source.mongo.catalog.schemas.tables.snapshot_filter.string_filter`
+
+Required:
+
+- `predicate` (String) A SQL Server condition without the WHERE keyword
 
 
 
@@ -6004,6 +6090,7 @@ Optional:
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--iceberg_partition_spec))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--on_mongo_type_conflict))
+- `snapshot_filter` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--snapshot_filter))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--target_option))
 - `unlisted_action` (String)
@@ -6145,6 +6232,22 @@ Optional:
 
 <a id="nestedatt--source--mysql--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
 ### Nested Schema for `source.mysql.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--snapshot_filter"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.snapshot_filter`
+
+Optional:
+
+- `string_filter` (Attributes) Raw predicate (see [below for nested schema](#nestedatt--source--mysql--catalog--schemas--tables--snapshot_filter--string_filter))
+
+<a id="nestedatt--source--mysql--catalog--schemas--tables--snapshot_filter--string_filter"></a>
+### Nested Schema for `source.mysql.catalog.schemas.tables.snapshot_filter.string_filter`
+
+Required:
+
+- `predicate` (String) A SQL Server condition without the WHERE keyword
 
 
 
@@ -6435,6 +6538,7 @@ Optional:
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--iceberg_partition_spec))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--on_mongo_type_conflict))
+- `snapshot_filter` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--snapshot_filter))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--target_option))
 - `unlisted_action` (String)
@@ -6576,6 +6680,22 @@ Optional:
 
 <a id="nestedatt--source--oracle--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
 ### Nested Schema for `source.oracle.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--snapshot_filter"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.snapshot_filter`
+
+Optional:
+
+- `string_filter` (Attributes) Raw predicate (see [below for nested schema](#nestedatt--source--oracle--catalog--schemas--tables--snapshot_filter--string_filter))
+
+<a id="nestedatt--source--oracle--catalog--schemas--tables--snapshot_filter--string_filter"></a>
+### Nested Schema for `source.oracle.catalog.schemas.tables.snapshot_filter.string_filter`
+
+Required:
+
+- `predicate` (String) A SQL Server condition without the WHERE keyword
 
 
 
@@ -6800,6 +6920,8 @@ Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "
 
 GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
 
+GCS (Application Default Credentials): []
+
 GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
 
 Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
@@ -6863,6 +6985,7 @@ Optional:
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--iceberg_partition_spec))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--on_mongo_type_conflict))
+- `snapshot_filter` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--snapshot_filter))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--target_option))
 - `unlisted_action` (String)
@@ -7004,6 +7127,22 @@ Optional:
 
 <a id="nestedatt--source--postgres--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
 ### Nested Schema for `source.postgres.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--snapshot_filter"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.snapshot_filter`
+
+Optional:
+
+- `string_filter` (Attributes) Raw predicate (see [below for nested schema](#nestedatt--source--postgres--catalog--schemas--tables--snapshot_filter--string_filter))
+
+<a id="nestedatt--source--postgres--catalog--schemas--tables--snapshot_filter--string_filter"></a>
+### Nested Schema for `source.postgres.catalog.schemas.tables.snapshot_filter.string_filter`
+
+Required:
+
+- `predicate` (String) A SQL Server condition without the WHERE keyword
 
 
 
@@ -7307,6 +7446,7 @@ Optional:
 - `iceberg_partition_spec` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--iceberg_partition_spec))
 - `migration_strategy` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--migration_strategy))
 - `on_mongo_type_conflict` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--on_mongo_type_conflict))
+- `snapshot_filter` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--snapshot_filter))
 - `source_option` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--source_option))
 - `target_option` (Attributes) (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--target_option))
 - `unlisted_action` (String)
@@ -7448,6 +7588,22 @@ Optional:
 
 <a id="nestedatt--source--sqlserver--catalog--schemas--tables--on_mongo_type_conflict--widentostring"></a>
 ### Nested Schema for `source.sqlserver.catalog.schemas.tables.on_mongo_type_conflict.widentostring`
+
+
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--snapshot_filter"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.snapshot_filter`
+
+Optional:
+
+- `string_filter` (Attributes) Raw predicate (see [below for nested schema](#nestedatt--source--sqlserver--catalog--schemas--tables--snapshot_filter--string_filter))
+
+<a id="nestedatt--source--sqlserver--catalog--schemas--tables--snapshot_filter--string_filter"></a>
+### Nested Schema for `source.sqlserver.catalog.schemas.tables.snapshot_filter.string_filter`
+
+Required:
+
+- `predicate` (String) A SQL Server condition without the WHERE keyword
 
 
 
@@ -7677,6 +7833,8 @@ S3: [{"name": "region", "value": "us-east-1"}, {"name": "access_key_id", "value"
 Azure: [{"name": "account_name", "value": "myaccount"}, {"name": "access_key", "value": "..."} or {"name": "sas_token", "value": "sp=..."}]
 
 GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
+
+GCS (Application Default Credentials): []
 
 GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
 

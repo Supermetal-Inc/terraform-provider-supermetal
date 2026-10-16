@@ -341,3 +341,41 @@ resource "supermetal_connector" "test" {
 		}},
 	})
 }
+
+func TestValidateConfig_bigQueryApplicationDefaultCredentials(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{{
+			PlanOnly:           true,
+			ExpectNonEmptyPlan: true,
+			Config: `
+provider "supermetal" { endpoint = "http://localhost:3000" }
+resource "supermetal_connector" "test" {
+  id       = "bigquery_adc"
+  name     = "BigQuery ADC"
+  disabled = true
+  source = {
+    postgres = {
+      host     = "localhost"
+      port     = 5432
+      database = "db"
+      user     = "u"
+      password = "p"
+      ssl_mode = "Disable"
+      replication_type = { snapshot = {} }
+    }
+  }
+  sink = {
+    big_query = {
+      project_id = "analytics-project"
+      dataset    = "raw"
+      auth = {
+        application_default_credentials = {}
+      }
+      write_mode = { merge = {} }
+    }
+  }
+}`,
+		}},
+	})
+}

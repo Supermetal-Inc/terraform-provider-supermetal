@@ -70,14 +70,22 @@ func isObjectStoreSecretOption(name string) bool {
 		"azure_storage_token",
 		"federated_token_file",
 		"azure_federated_token_file",
-		"service_account",
-		"service_account_path",
-		"google_service_account",
-		"google_service_account_path",
-		"service_account_key",
-		"google_service_account_key",
 		"application_credentials",
 		"google_application_credentials":
+		return true
+	default:
+		return false
+	}
+}
+
+func isGCSServiceAccountOption(name string) bool {
+	switch name {
+	case "service_account_key",
+		"google_service_account_key",
+		"service_account",
+		"google_service_account",
+		"service_account_path",
+		"google_service_account_path":
 		return true
 	default:
 		return false
@@ -99,11 +107,51 @@ func connectorJSONWithSecretTombstones(plan, state api.ConnectorConnector) ([]by
 	}
 
 	addDeclaredSecretTombstones(planJSON, stateJSON)
+	addGCSServiceAccountOptionRemovals(planJSON, stateJSON)
 	body, err := json.Marshal(planJSON)
 	if err != nil {
 		return nil, fmt.Errorf("marshal connector with secret removals: %w", err)
 	}
 	return body, nil
+}
+
+// addGCSServiceAccountOptionRemovals distinguishes removing the final GCS
+// service-account option from omitting options altogether. The latter asks the
+// agent to retain all stored options; an explicit empty list switches GCS to
+// Application Default Credentials.
+func addGCSServiceAccountOptionRemovals(plan, state map[string]any) {
+	for _, path := range objectStoreJSONPaths {
+		stateStore, ok := jsonObjectAtPath(state, path)
+		if !ok || !optionsContainGCSServiceAccount(stateStore["options"]) {
+			continue
+		}
+
+		planStore, ok := jsonObjectAtPath(plan, path)
+		if !ok {
+			continue
+		}
+		if _, present := planStore["options"]; !present {
+			planStore["options"] = []any{}
+		}
+	}
+}
+
+func optionsContainGCSServiceAccount(value any) bool {
+	options, ok := value.([]any)
+	if !ok {
+		return false
+	}
+	for _, option := range options {
+		object, ok := option.(map[string]any)
+		if !ok {
+			continue
+		}
+		name, ok := object["name"].(string)
+		if ok && isGCSServiceAccountOption(name) {
+			return true
+		}
+	}
+	return false
 }
 
 func connectorJSONObject(connector api.ConnectorConnector) (map[string]any, error) {

@@ -1305,6 +1305,9 @@ type CommandWrapper struct {
 	Command ConnectorStatusCommand `json:"command"`
 }
 
+// ConnectorBigqueryApplicationDefaultCredentials Application Default Credentials authentication
+type ConnectorBigqueryApplicationDefaultCredentials = map[string]interface{}
+
 // ConnectorBigqueryAuth Authentication method for connecting to BigQuery
 type ConnectorBigqueryAuth struct {
 	union json.RawMessage
@@ -1316,6 +1319,12 @@ type ConnectorBigqueryAuth0 struct {
 	ServiceAccountKey ConnectorBigqueryServiceAccountKey `json:"service_account_key"`
 }
 
+// ConnectorBigqueryAuth1 Google Cloud identity of the workload, such as GKE Workload Identity, an attached service account, or a GOOGLE_APPLICATION_CREDENTIALS file
+type ConnectorBigqueryAuth1 struct {
+	// ApplicationDefaultCredentials Google Cloud identity of the workload, such as GKE Workload Identity, an attached service account, or a GOOGLE_APPLICATION_CREDENTIALS file
+	ApplicationDefaultCredentials ConnectorBigqueryApplicationDefaultCredentials `json:"application_default_credentials"`
+}
+
 // ConnectorBigqueryBigQuerySink BigQuery destination
 type ConnectorBigqueryBigQuerySink struct {
 	// Auth Authentication method and its credentials
@@ -1325,8 +1334,11 @@ type ConnectorBigqueryBigQuerySink struct {
 	Dataset string `json:"dataset"`
 
 	// DisableSchemaPrefix Do not prefix target table names with the source schema. By default, a source table `public.users` lands as `public_users`; with this enabled it lands as `users`. Only safe when source table names are unique across schemas.
-	DisableSchemaPrefix *bool                          `json:"disable_schema_prefix,omitempty"`
-	HistoryMode         *ConnectorMigrationHistoryMode `json:"history_mode,omitempty"`
+	DisableSchemaPrefix *bool `json:"disable_schema_prefix,omitempty"`
+
+	// ExecutionProjectId Project that runs BigQuery jobs. Defaults to the target project
+	ExecutionProjectId *string                        `json:"execution_project_id,omitempty"`
+	HistoryMode        *ConnectorMigrationHistoryMode `json:"history_mode,omitempty"`
 
 	// MaxSnapshotConcurrency Maximum concurrent snapshot writes to BigQuery (0 = no limit). Lower this if BigQuery reports rate limits during large snapshots.
 	MaxSnapshotConcurrency *int32                               `json:"max_snapshot_concurrency,omitempty"`
@@ -1334,8 +1346,11 @@ type ConnectorBigqueryBigQuerySink struct {
 	MigrationStrategy      *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 
 	// ProjectId GCP project identifier containing the target dataset, for example "my-project-123"
-	ProjectId        string                                          `json:"project_id"`
-	QueryPriority    *ConnectorBigqueryBigQuerySink_QueryPriority    `json:"query_priority,omitempty"`
+	ProjectId     string                                       `json:"project_id"`
+	QueryPriority *ConnectorBigqueryBigQuerySink_QueryPriority `json:"query_priority,omitempty"`
+
+	// Reservation Reservation that runs query jobs, for example "projects/admin-project/locations/US/reservations/prod". Defaults to the execution project's reservation assignment
+	Reservation      *string                                         `json:"reservation,omitempty"`
 	SnapshotLoadMode *ConnectorBigqueryBigQuerySink_SnapshotLoadMode `json:"snapshot_load_mode,omitempty"`
 
 	// WriteMode How the target writes data into BigQuery
@@ -1496,6 +1511,8 @@ type ConnectorBufferObjectStore struct {
 	//
 	// GCS (service account): [{"name": "service_account_key", "value": "{...JSON...}"}]
 	//
+	// GCS (Application Default Credentials): []
+	//
 	// GCS (S3-compatible HMAC): [{"name": "access_key_id", "value": "GOOG1E..."}, {"name": "secret_access_key", "value": "..."}]
 	//
 	// Google Drive and Dropbox access token: [{"name": "auth_type", "value": "access_token"}, {"name": "access_token", "value": "..."}]
@@ -1639,6 +1656,17 @@ type ConnectorCatalogSchema_Action struct {
 	union json.RawMessage
 }
 
+// ConnectorCatalogSnapshotFilter Rows to keep in a SQL Server table's snapshots
+type ConnectorCatalogSnapshotFilter struct {
+	union json.RawMessage
+}
+
+// ConnectorCatalogSnapshotFilter0 Raw predicate
+type ConnectorCatalogSnapshotFilter0 struct {
+	// StringFilter Raw predicate
+	StringFilter ConnectorCatalogStringFilter `json:"string_filter"`
+}
+
 // ConnectorCatalogSourceColumnOption defines model for ConnectorCatalogSourceColumnOption.
 type ConnectorCatalogSourceColumnOption struct {
 	union json.RawMessage
@@ -1659,6 +1687,12 @@ type ConnectorCatalogSourceTableOption0 struct {
 	File ConnectorCatalogFileSourceTableOption `json:"file"`
 }
 
+// ConnectorCatalogStringFilter A filter written as a raw predicate
+type ConnectorCatalogStringFilter struct {
+	// Predicate A SQL Server condition without the WHERE keyword
+	Predicate string `json:"predicate"`
+}
+
 // ConnectorCatalogTable defines model for ConnectorCatalogTable.
 type ConnectorCatalogTable struct {
 	Action  *ConnectorCatalogTable_Action `json:"action,omitempty"`
@@ -1670,6 +1704,7 @@ type ConnectorCatalogTable struct {
 	MigrationStrategy    *ConnectorMigrationMigrationStrategy `json:"migration_strategy,omitempty"`
 	Name                 string                               `json:"name"`
 	OnMongoTypeConflict  *ConnectorCatalogOnTypeConflict      `json:"on_mongo_type_conflict,omitempty"`
+	SnapshotFilter       *ConnectorCatalogSnapshotFilter      `json:"snapshot_filter,omitempty"`
 	SourceOption         *ConnectorCatalogSourceTableOption   `json:"source_option,omitempty"`
 	TargetOption         *ConnectorCatalogTargetTableOption   `json:"target_option,omitempty"`
 	UnlistedAction       *ConnectorCatalogAction              `json:"unlisted_action,omitempty"`
@@ -2981,6 +3016,8 @@ type ConnectorIcebergSigV4Auth struct {
 
 // ConnectorIcebergSlatedbIndex Primary key index stored in object storage
 type ConnectorIcebergSlatedbIndex struct {
+	// CacheSizeMb Local disk cache for index reads, in MB. Each connector uses up to this much disk. The whole index fits in about 20 MB per million target rows with integer keys and 40 MB with string or UUID keys. Half that usually covers the rows a workload updates.
+	CacheSizeMb *int32                      `json:"cache_size_mb,omitempty"`
 	ObjectStore *ConnectorBufferObjectStore `json:"object_store,omitempty"`
 }
 
@@ -5659,6 +5696,32 @@ func (t *ConnectorBigqueryAuth) MergeConnectorBigqueryAuth0(v ConnectorBigqueryA
 	return err
 }
 
+// AsConnectorBigqueryAuth1 returns the union data inside the ConnectorBigqueryAuth as a ConnectorBigqueryAuth1
+func (t ConnectorBigqueryAuth) AsConnectorBigqueryAuth1() (ConnectorBigqueryAuth1, error) {
+	var body ConnectorBigqueryAuth1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorBigqueryAuth1 overwrites any union data inside the ConnectorBigqueryAuth as the provided ConnectorBigqueryAuth1
+func (t *ConnectorBigqueryAuth) FromConnectorBigqueryAuth1(v ConnectorBigqueryAuth1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorBigqueryAuth1 performs a merge with any union data inside the ConnectorBigqueryAuth, using the provided ConnectorBigqueryAuth1
+func (t *ConnectorBigqueryAuth) MergeConnectorBigqueryAuth1(v ConnectorBigqueryAuth1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t ConnectorBigqueryAuth) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
@@ -6191,6 +6254,42 @@ func (t ConnectorCatalogSchema_Action) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ConnectorCatalogSchema_Action) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsConnectorCatalogSnapshotFilter0 returns the union data inside the ConnectorCatalogSnapshotFilter as a ConnectorCatalogSnapshotFilter0
+func (t ConnectorCatalogSnapshotFilter) AsConnectorCatalogSnapshotFilter0() (ConnectorCatalogSnapshotFilter0, error) {
+	var body ConnectorCatalogSnapshotFilter0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectorCatalogSnapshotFilter0 overwrites any union data inside the ConnectorCatalogSnapshotFilter as the provided ConnectorCatalogSnapshotFilter0
+func (t *ConnectorCatalogSnapshotFilter) FromConnectorCatalogSnapshotFilter0(v ConnectorCatalogSnapshotFilter0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConnectorCatalogSnapshotFilter0 performs a merge with any union data inside the ConnectorCatalogSnapshotFilter, using the provided ConnectorCatalogSnapshotFilter0
+func (t *ConnectorCatalogSnapshotFilter) MergeConnectorCatalogSnapshotFilter0(v ConnectorCatalogSnapshotFilter0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ConnectorCatalogSnapshotFilter) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ConnectorCatalogSnapshotFilter) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
