@@ -256,6 +256,163 @@ func TestAccConnectorResource_import(t *testing.T) {
 	})
 }
 
+func TestAccConnectorResource_grandfathersLegacyID(t *testing.T) {
+	h := newTestHarness(t)
+
+	const legacyID = "legacy-connector"
+	initialConfig := h.config(legacyID, "Legacy Connector", withDisabled())
+	updatedConfig := h.config(legacyID, "Updated Legacy Connector", withDisabled())
+	replacementConfig := h.config(
+		legacyID,
+		"Updated Legacy Connector",
+		withDisabled(),
+		withDatabase("replacement_db"),
+	)
+	migratedConfig := h.config(
+		"replacement_connector",
+		"Updated Legacy Connector",
+		withDisabled(),
+		withDatabase("replacement_db"),
+	)
+
+	createLegacyConnector(t, h, legacyID)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             initialConfig,
+				ResourceName:       "supermetal_connector.test",
+				ImportState:        true,
+				ImportStateId:      legacyID,
+				ImportStatePersist: true,
+			},
+			{
+				Config: updatedConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("supermetal_connector.test", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("supermetal_connector.test", "id", legacyID),
+					resource.TestCheckResourceAttr("supermetal_connector.test", "name", "Updated Legacy Connector"),
+				),
+			},
+			{
+				Config: updatedConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+			{
+				Config:      replacementConfig,
+				ExpectError: regexp.MustCompile(`Connector ID must contain only lowercase letters, numbers, and underscores`),
+			},
+			{
+				Config: migratedConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("supermetal_connector.test", plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: resource.TestCheckResourceAttr("supermetal_connector.test", "id", "replacement_connector"),
+			},
+			{
+				Config: migratedConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAccConnectorResource_destroysLegacyID(t *testing.T) {
+	h := newTestHarness(t)
+
+	const legacyID = "legacy-destroy"
+	config := h.config(legacyID, "Legacy Connector", withDisabled())
+	createLegacyConnector(t, h, legacyID)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             config,
+				ResourceName:       "supermetal_connector.test",
+				ImportState:        true,
+				ImportStateId:      legacyID,
+				ImportStatePersist: true,
+			},
+			{
+				Config:  config,
+				Destroy: true,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("supermetal_connector.test", plancheck.ResourceActionDestroy),
+					},
+				},
+			},
+		},
+	})
+}
+
+func createLegacyConnector(t *testing.T, h *testHarness, legacyID string) {
+	t.Helper()
+
+	body := fmt.Sprintf(`{
+  "id": %q,
+  "name": "Legacy Connector",
+  "disabled": true,
+  "source": {
+    "postgres": {
+      "connection": {
+        "host": %q,
+        "port": %d,
+        "database": "testdb",
+        "user": "testuser",
+        "password": "testpass",
+        "ssl_mode": "Disable"
+      },
+      "replication_type": { "snapshot": {} }
+    }
+  },
+  "sink": {
+    "duckdb": {
+      "target_database": "main",
+      "connection": {
+        "quack": {
+          "url": "http://localhost:9494",
+          "ssl": false
+        }
+      }
+    }
+  }
+}`, legacyID, h.postgresHost, h.postgresPort)
+	req, err := http.NewRequest(
+		"POST",
+		h.agentEndpoint+"/api/v1/connectors/"+legacyID,
+		strings.NewReader(body),
+	)
+	if err != nil {
+		t.Fatalf("build legacy connector request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("create legacy connector: %v", err)
+	}
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		t.Fatalf("create legacy connector returned status %d", resp.StatusCode)
+	}
+}
+
 func TestAccConnectorResource_tableSelection(t *testing.T) {
 	h := newTestHarness(t)
 

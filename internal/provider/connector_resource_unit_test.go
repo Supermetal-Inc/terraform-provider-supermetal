@@ -10,8 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	resourceschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -19,50 +17,86 @@ import (
 )
 
 func TestConnectorIDValidation(t *testing.T) {
-	var schemaResponse resource.SchemaResponse
-	(&ConnectorResource{}).Schema(context.Background(), resource.SchemaRequest{}, &schemaResponse)
-	idAttribute, ok := schemaResponse.Schema.Attributes["id"].(resourceschema.StringAttribute)
-	if !ok {
-		t.Fatalf("id attribute has type %T; want schema.StringAttribute", schemaResponse.Schema.Attributes["id"])
-	}
-
 	tests := map[string]struct {
-		id          string
-		expectError bool
+		plan            types.String
+		state           types.String
+		requiresReplace bool
+		expectError     bool
 	}{
-		"lowercase letters numbers and underscores": {
-			id: "connector_123",
+		"new lowercase letters numbers and underscores": {
+			plan:  types.StringValue("connector_123"),
+			state: types.StringNull(),
 		},
-		"30 characters": {
-			id: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"new 30 character ID": {
+			plan:  types.StringValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+			state: types.StringNull(),
 		},
-		"uppercase letters": {
-			id:          "Connector_123",
+		"new uppercase ID": {
+			plan:        types.StringValue("Connector_123"),
+			state:       types.StringNull(),
 			expectError: true,
 		},
-		"hyphens": {
-			id:          "connector-123",
+		"new hyphenated ID": {
+			plan:        types.StringValue("connector-123"),
+			state:       types.StringNull(),
 			expectError: true,
 		},
-		"31 characters": {
-			id:          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"new empty ID": {
+			plan:        types.StringValue(""),
+			state:       types.StringNull(),
+			expectError: true,
+		},
+		"new 31 character ID": {
+			plan:        types.StringValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+			state:       types.StringNull(),
+			expectError: true,
+		},
+		"unchanged legacy hyphenated ID": {
+			plan:  types.StringValue("legacy-connector"),
+			state: types.StringValue("legacy-connector"),
+		},
+		"unchanged legacy uppercase ID": {
+			plan:  types.StringValue("LegacyConnector"),
+			state: types.StringValue("LegacyConnector"),
+		},
+		"unchanged legacy long ID": {
+			plan:  types.StringValue("legacy_connector_identifier_over_thirty_characters"),
+			state: types.StringValue("legacy_connector_identifier_over_thirty_characters"),
+		},
+		"invalid replacement ID": {
+			plan:        types.StringValue("another-legacy-id"),
+			state:       types.StringValue("legacy-connector"),
+			expectError: true,
+		},
+		"replacement cannot reuse unchanged legacy ID": {
+			plan:            types.StringValue("legacy-connector"),
+			state:           types.StringValue("legacy-connector"),
+			requiresReplace: true,
+			expectError:     true,
+		},
+		"replace legacy ID with valid ID": {
+			plan:  types.StringValue("valid_connector"),
+			state: types.StringValue("legacy-connector"),
+		},
+		"destroy": {
+			plan:  types.StringNull(),
+			state: types.StringValue("legacy-connector"),
+		},
+		"unknown planned ID": {
+			plan:  types.StringUnknown(),
+			state: types.StringNull(),
+		},
+		"unknown state does not grandfather invalid ID": {
+			plan:        types.StringValue("new-invalid-id"),
+			state:       types.StringUnknown(),
 			expectError: true,
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			request := validator.StringRequest{
-				Path:           path.Root("id"),
-				PathExpression: path.MatchRoot("id"),
-				ConfigValue:    types.StringValue(test.id),
-			}
 			var diagnostics diag.Diagnostics
-			for _, attributeValidator := range idAttribute.Validators {
-				var response validator.StringResponse
-				attributeValidator.ValidateString(context.Background(), request, &response)
-				diagnostics.Append(response.Diagnostics...)
-			}
+			validateConnectorIDChange(test.plan, test.state, test.requiresReplace, path.Root("id"), &diagnostics)
 
 			if diagnostics.HasError() != test.expectError {
 				t.Fatalf("validation diagnostics = %v, expect error = %t", diagnostics, test.expectError)

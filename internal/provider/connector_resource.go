@@ -52,17 +52,12 @@ func (r *ConnectorResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 	attributes := map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			MarkdownDescription: "Unique identifier for this connector. Used in the API path and for import. " +
-				"Must contain only lowercase letters, numbers, and underscores (max 30 characters).",
+				"New identifiers must contain only lowercase letters, numbers, and underscores (max 30 characters). " +
+				"Existing identifiers that do not match this format may remain unchanged for in-place updates; " +
+				"replacement requires a valid new identifier.",
 			Required: true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
-			},
-			Validators: []validator.String{
-				stringvalidator.LengthAtMost(30),
-				stringvalidator.RegexMatches(
-					connectorIDPattern,
-					"must contain only lowercase letters, numbers, and underscores",
-				),
 			},
 		},
 		"name": schema.StringAttribute{
@@ -196,6 +191,11 @@ func (r *ConnectorResource) ValidateConfig(ctx context.Context, req resource.Val
 }
 
 func (r *ConnectorResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	validatePlannedConnectorID(ctx, req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if r.skipValidation || r.client == nil || req.Plan.Raw.IsNull() {
 		return
 	}
@@ -264,6 +264,27 @@ func (r *ConnectorResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		}
 		r.warnSinkValidation(ctx, apiSink, connectorID, &resp.Diagnostics)
 	}
+}
+
+func validatePlannedConnectorID(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !planAttributeIsKnown(req.Plan.Raw, "id") {
+		return
+	}
+
+	var plannedID types.String
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("id"), &plannedID)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	stateID := types.StringNull()
+	if !req.State.Raw.IsNull() && planAttributeIsKnown(req.State.Raw, "id") {
+		resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("id"), &stateID)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	validateConnectorIDChange(plannedID, stateID, len(resp.RequiresReplace) > 0, path.Root("id"), &resp.Diagnostics)
 }
 
 func planAttributeIsKnown(raw tftypes.Value, name string) bool {

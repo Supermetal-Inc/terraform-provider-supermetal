@@ -254,7 +254,41 @@ resource "supermetal_connector" "test" {
     }
   }
 }`,
-				ExpectError: regexp.MustCompile(`string length must be at most 30`),
+				ExpectError: regexp.MustCompile(`Connector ID must be at most 30 characters`),
+			},
+		},
+	})
+}
+
+func TestValidateConfig_connectorIDWithHyphen(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+provider "supermetal" { endpoint = "http://localhost:3000" }
+resource "supermetal_connector" "test" {
+  id   = "legacy-connector"
+  name = "test"
+  source = {
+    postgres = {
+      host     = "localhost"
+      port     = 5432
+      database = "db"
+      user     = "u"
+      password = "p"
+      ssl_mode = "Disable"
+      replication_type = { snapshot = {} }
+    }
+  }
+  sink = {
+    duckdb = {
+      target_database = "main"
+      connection = { quack = { url = "http://localhost:9494" } }
+    }
+  }
+}`,
+				ExpectError: regexp.MustCompile(`Connector ID must contain only lowercase letters, numbers, and underscores`),
 			},
 		},
 	})

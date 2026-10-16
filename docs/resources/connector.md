@@ -717,7 +717,7 @@ resource "supermetal_connector" "customers" {
 
 ### Required
 
-- `id` (String) Unique identifier for this connector. Used in the API path and for import. Must contain only lowercase letters, numbers, and underscores (max 30 characters).
+- `id` (String) Unique identifier for this connector. Used in the API path and for import. New identifiers must contain only lowercase letters, numbers, and underscores (max 30 characters). Existing identifiers that do not match this format may remain unchanged for in-place updates; replacement requires a valid new identifier.
 - `sink` (Attributes) Sink configuration. Exactly one sink type must be specified. (see [below for nested schema](#nestedatt--sink))
 - `source` (Attributes) Source configuration. Exactly one source type must be specified. (see [below for nested schema](#nestedatt--source))
 
